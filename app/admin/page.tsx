@@ -213,7 +213,7 @@ export default function AdminDashboard() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    if (password === 'alphaworldschool2026') {
+    if (password === 'aws-2026') {
       setAuthed(true)
       setAuthError('')
     } else {
