@@ -1,15 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import ApplicationForm from '@/components/ApplicationForm'
-import ExamplesTab from '@/components/ExamplesTab'
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'apply' | 'examples'>('apply')
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Header */}
+      {/* Header */}
       <header className="border-b border-gray-200 bg-white/95 sticky top-0 z-50 backdrop-blur">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -63,7 +59,7 @@ export default function Home() {
                 'They never wait to be told what to do',
                 'They design moments kids remember 10 years later',
                 'They stay calm when everyone else escalates',
-                'They hold the bar even when it\'s uncomfortable',
+                "They hold the bar even when it's uncomfortable",
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-2.5 text-sm text-gray-700">
                   <span className="text-blue-500">·</span> {item}
@@ -74,33 +70,9 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200 bg-white sticky top-[65px] z-40">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="flex gap-0">
-            {[
-              { id: 'apply', label: 'Application' },
-              { id: 'examples', label: 'Worked Examples — Build 2' },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as 'apply' | 'examples')}
-                className={`px-5 py-3.5 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Tab Content */}
+      {/* Form */}
       <main>
-        {activeTab === 'apply' ? <ApplicationForm /> : <ExamplesTab />}
+        <ApplicationForm />
       </main>
 
       {/* Footer */}
