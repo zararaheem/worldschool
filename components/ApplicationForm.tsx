@@ -2,54 +2,29 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CheckCircle, AlertCircle } from 'lucide-react'
+import {
+  CheckCircle, AlertCircle, X, BookOpen,
+  ChevronDown, ChevronRight, ArrowRight, ArrowLeft,
+} from 'lucide-react'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface FormData {
-  // Section 1
-  full_name: string
-  email: string
-  phone: string
-  role_at_alpha: string
-  campus: string
-  years_at_alpha: string
-  direct_manager: string
-  head_of_school: string
-  languages_spoken: string
-  prior_international_travel: string
-  developing_world_experience: string
-  health_considerations: string
-  family_obligations: string
-  emergency_contact: string
-  // Section 2
-  build1_link: string
-  build2_design_link: string
-  build2_video_link: string
-  build3_video_link: string
-  build4_language_link: string
-  // Section 4
-  reference1_name: string
-  reference1_role: string
-  reference1_relationship: string
-  reference1_phone: string
-  reference1_email: string
-  reference2_name: string
-  reference2_role: string
-  reference2_relationship: string
-  reference2_phone: string
-  reference2_email: string
-  manager_endorsement_status: string
-  manager_endorsement_text: string
-  endorser_name: string
-  endorser_role: string
-  // Section 5
-  ack_1: boolean
-  ack_2: boolean
-  ack_3: boolean
-  ack_4: boolean
-  ack_5: boolean
-  ack_6: boolean
-  ack_7: boolean
-  ack_8: boolean
+  full_name: string; email: string; phone: string; role_at_alpha: string
+  campus: string; years_at_alpha: string; direct_manager: string; head_of_school: string
+  languages_spoken: string; prior_international_travel: string
+  developing_world_experience: string; health_considerations: string
+  family_obligations: string; emergency_contact: string
+  build1_link: string; build2_design_link: string; build2_video_link: string
+  build3_video_link: string; build4_language_link: string
+  reference1_name: string; reference1_role: string; reference1_relationship: string
+  reference1_phone: string; reference1_email: string
+  reference2_name: string; reference2_role: string; reference2_relationship: string
+  reference2_phone: string; reference2_email: string
+  manager_endorsement_status: string; manager_endorsement_text: string
+  endorser_name: string; endorser_role: string
+  ack_1: boolean; ack_2: boolean; ack_3: boolean; ack_4: boolean
+  ack_5: boolean; ack_6: boolean; ack_7: boolean; ack_8: boolean
   applicant_name: string
 }
 
@@ -66,15 +41,26 @@ const initialForm: FormData = {
   applicant_name: '',
 }
 
-function Input({ label, name, value, onChange, required, placeholder, type = 'text' }: {
-  label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  required?: boolean; placeholder?: string; type?: string
+const STEPS = [
+  { id: 1, label: 'About You' },
+  { id: 2, label: 'The Builds' },
+  { id: 3, label: 'Submission Check' },
+  { id: 4, label: 'References' },
+  { id: 5, label: 'Sign & Submit' },
+]
+
+// ─── Shared field components ──────────────────────────────────────────────────
+
+function Input({ label, name, value, onChange, required, placeholder, type = 'text', hint }: {
+  label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  required?: boolean; placeholder?: string; type?: string; hint?: string
 }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1.5">
         {label}{required && <span className="text-blue-600 ml-1">*</span>}
       </label>
+      {hint && <p className="text-xs text-white/40 mb-1.5">{hint}</p>}
       <input
         type={type}
         name={name}
@@ -89,7 +75,7 @@ function Input({ label, name, value, onChange, required, placeholder, type = 'te
 }
 
 function Textarea({ label, name, value, onChange, required, placeholder, rows = 3, hint }: {
-  label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
   required?: boolean; placeholder?: string; rows?: number; hint?: string
 }) {
   return (
@@ -111,7 +97,49 @@ function Textarea({ label, name, value, onChange, required, placeholder, rows = 
   )
 }
 
-function SectionHeader({ number, title, subtitle }: { number: string; title: string; subtitle?: string }) {
+// ─── Examples Modal ───────────────────────────────────────────────────────────
+
+const constraints = [
+  {
+    id: 'conflict', label: 'Conflict by Week 5', color: 'amber',
+    examples: [
+      { title: 'The Sunday Council', summary: 'Weekly structured circle where friction gets surfaced before it festers.', detail: `Every Sunday at 6pm, the cohort sits in a circle for 30 minutes. Each person gets 90 seconds to name one thing they appreciated about another cohort member that week, and one thing that's grating on them. Guide facilitates the first three weeks, then a rotating cohort member runs it. By week 5, friction gets surfaced in real-time before it festers into factions.` },
+      { title: 'The Repair Protocol', summary: 'A laminated 4-step conflict resolution process the whole cohort commits to in week 1.', detail: `Cohort agrees in week 1 to a written 4-step protocol for handling friction. When something happens, the protocol says you say "I need a Repair." Within 24 hours, the two students sit with a guide for 20 minutes using a specific 4-question template. No avoidance, no triangulating. The protocol is laminated and lives on the wall of every common space all year.` },
+    ],
+  },
+  {
+    id: 'energy', label: 'Energy Drop at Mid-Rotation', color: 'green',
+    examples: [
+      { title: 'Friday Bring-Your-Best', summary: 'Rotating student-led recharge sessions that distribute ownership and spotlight.', detail: `Every Friday afternoon, one cohort member designs and leads a 30-minute recharge activity for the group. Rotates so every kid gets two slots per rotation. Solves energy AND distributes leadership ownership AND gives every kid a recurring moment in the spotlight.` },
+      { title: 'The Midpoint Reset Day', summary: "A structured retreat day built into the calendar at each rotation's exact midpoint.", detail: `Built into the calendar at the exact midpoint of each rotation. Morning is solo journaling, afternoon is a cohort conversation where everyone names one behavior they want to recommit to and one they want to drop, evening is a shared meal with a gratitude rotation.` },
+    ],
+  },
+  {
+    id: 'cultural', label: 'Cultural Missteps', color: 'blue',
+    examples: [
+      { title: 'The What-We-Got-Wrong Debrief', summary: 'Friday evening sessions co-facilitated by local guides.', detail: `Friday evenings in the local language (with the local guide co-facilitating). Each cohort member shares one cultural moment from the week where they felt unsure or knew they messed up. The local guide normalizes the mistake and teaches the next-level cultural understanding. Transforms shame into curriculum.` },
+      { title: 'The Cultural Compass', summary: 'A pre-arrival workshop covering 20 cultural norms through scenario role-play.', detail: `A 60-minute pre-arrival workshop the day before each rotation begins. Covers 20 specific cultural norms, then role-plays 10 hard scenarios. By naming the misstep ahead of time, when it happens it's predicted, not catastrophic.` },
+    ],
+  },
+  {
+    id: 'homesick', label: 'Someone Wants to Go Home (Week 10)', color: 'rose',
+    examples: [
+      { title: 'Buddy-Up Pairs', summary: 'Peer accountability pairs with daily check-ins who rotate every rotation.', detail: `Every cohort member is paired with one specific peer they're responsible for. Daily 5-minute check-ins built into the schedule, weekly 30-minute deeper conversation on Sundays. Pairs rotate every rotation. When someone starts to spiral, their buddy notices it the day it starts.` },
+      { title: 'The Sunday Letter Home', summary: 'Weekly letters/voice memos home that channel homesickness into connection.', detail: `Every Sunday at 4pm, every cohort member writes a letter or records a voice memo to someone back home. Then each shares one sentence from theirs with the cohort. Channels homesickness into connection rather than avoidance.` },
+    ],
+  },
+]
+
+const colorMap: Record<string, { badge: string; border: string; dot: string; title: string }> = {
+  amber: { badge: 'bg-amber-500/10 text-amber-300 border-amber-500/20', border: 'border-amber-500/20', dot: 'bg-amber-400', title: 'text-amber-300' },
+  green: { badge: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20', border: 'border-emerald-500/20', dot: 'bg-emerald-400', title: 'text-emerald-300' },
+  blue:  { badge: 'bg-blue-500/10 text-blue-300 border-blue-500/20',   border: 'border-blue-500/20',   dot: 'bg-blue-400',   title: 'text-blue-300'   },
+  rose:  { badge: 'bg-rose-500/10 text-rose-300 border-rose-500/20',   border: 'border-rose-500/20',   dot: 'bg-rose-400',   title: 'text-rose-300'   },
+}
+
+function ExampleCard({ title, summary, detail, color }: { title: string; summary: string; detail: string; color: string }) {
+  const [open, setOpen] = useState(false)
+  const c = colorMap[color]
   return (
     <div className="mb-6 pb-4 border-b border-gray-200">
       <div className="flex items-center gap-3 mb-1">
@@ -123,9 +151,9 @@ function SectionHeader({ number, title, subtitle }: { number: string; title: str
   )
 }
 
-function BuildCard({ number, title, testing, time, deliverable, children }: {
-  number: string; title: string; testing: string; time: string; deliverable: string; children: React.ReactNode
-}) {
+function ConstraintSection({ constraint }: { constraint: typeof constraints[0] }) {
+  const [open, setOpen] = useState(false)
+  const c = colorMap[constraint.color]
   return (
     <div className="rounded-xl border border-gray-200 overflow-hidden mb-6">
       <div className="px-5 py-4 bg-gray-50 border-b border-gray-200">
@@ -149,28 +177,83 @@ function BuildCard({ number, title, testing, time, deliverable, children }: {
             <div className="text-gray-700">{deliverable}</div>
           </div>
         </div>
-        {children}
       </div>
     </div>
   )
 }
 
+// ─── Build card ───────────────────────────────────────────────────────────────
+
+function BuildCard({ number, title, testing, time, deliverable, optional, children }: {
+  number: string; title: string; testing?: string; time?: string; deliverable?: string
+  optional?: boolean; children: React.ReactNode
+}) {
+  return (
+    <div className="rounded-2xl border border-white/10 overflow-hidden bg-white/5">
+      <div className="px-5 py-4 bg-white/5 border-b border-white/10 flex items-center gap-3">
+        <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 border ${optional ? 'border-white/20 text-white/30' : 'border-blue-400/40 bg-blue-500/10 text-blue-300'}`}>
+          {number}
+        </span>
+        <div>
+          {optional && <span className="text-xs font-bold text-white/30 uppercase tracking-wider block">Optional</span>}
+          <h3 className="font-bold text-white text-sm">{title}</h3>
+        </div>
+      </div>
+      {testing && (
+        <div className="grid grid-cols-3 gap-0 border-b border-white/10">
+          {[['Testing', testing], ['Time', time!], ['Deliverable', deliverable!]].map(([k, v]) => (
+            <div key={k} className="px-4 py-3 border-r last:border-r-0 border-white/10">
+              <div className="text-xs text-white/30 uppercase tracking-wider mb-0.5 font-medium">{k}</div>
+              <div className="text-xs text-white/60">{v}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="p-5 space-y-4">{children}</div>
+    </div>
+  )
+}
+
+// ─── Acknowledgment text ──────────────────────────────────────────────────────
+
 const acknowledgments = [
   'I understand this is a job. It is not a vacation.',
   'I understand I will be the primary 24/7 caretaker for 5–7 students for multiple weeks at a time, including travel time and re-entry weeks.',
   'I understand I will be away from my home, family, and routines for two extended international rotations and one U.S.-based rotation.',
-  'I understand I am responsible for upholding Alpha\'s three commitments — students love school, learn 2x in 2 hours, and learn life skills — in environments where the systems and tools we use at home are not available.',
+  "I understand I am responsible for upholding Alpha's three commitments — students love school, learn 2x in 2 hours, and learn life skills — in environments where the systems and tools we use at home are not available.",
   'I understand I will hold both students AND myself to a high physical, mental, emotional, and academic standard for the full year.',
   'I understand that when something goes wrong — medical, emotional, logistical — I am the first responder until the medical lead or local guide is on the scene.',
   'I understand that I represent Alpha to communities, parents, and partners who have trusted us with their kids and their land.',
   'My direct manager and Head of School are aware that I am applying.',
 ]
 
+// ─── Logo SVG (matching world.alpha.school geometric mark) ────────────────────
+
+function AlphaLogo({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="20,2 38,32 2,32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+      <line x1="20" y1="2" x2="20" y2="32" stroke="currentColor" strokeWidth="1.5" opacity="0.5"/>
+      <line x1="2" y1="32" x2="38" y2="32" stroke="currentColor" strokeWidth="1.5" opacity="0.5"/>
+      <line x1="20" y1="2" x2="8" y2="24" stroke="currentColor" strokeWidth="1" opacity="0.35"/>
+      <line x1="20" y1="2" x2="32" y2="24" stroke="currentColor" strokeWidth="1" opacity="0.35"/>
+      <circle cx="20" cy="20" r="4" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+    </svg>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export default function ApplicationForm() {
+  const [step, setStep] = useState(1)
   const [form, setForm] = useState<FormData>(initialForm)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showExamples, setShowExamples] = useState(false)
+
+  const totalSteps = STEPS.length
+  const progress = ((step - 1) / (totalSteps - 1)) * 100
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
@@ -181,23 +264,14 @@ export default function ApplicationForm() {
     }
   }
 
-  const allAcksChecked = form.ack_1 && form.ack_2 && form.ack_3 && form.ack_4 && form.ack_5 && form.ack_6 && form.ack_7 && form.ack_8
+  const allAcksChecked = [1,2,3,4,5,6,7,8].every(n => form[`ack_${n}` as keyof FormData])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!allAcksChecked) {
-      setError('Please initial all acknowledgments before submitting.')
-      return
-    }
+  const handleSubmit = async () => {
+    if (!allAcksChecked) { setError('Please check all acknowledgments before submitting.'); return }
     setSubmitting(true)
     setError(null)
-
     const { error: dbError } = await supabase.from('guide_applications').insert([form])
-    if (dbError) {
-      setError('Something went wrong. Please try again or email apply@alphaworldschool.com.')
-      setSubmitting(false)
-      return
-    }
+    if (dbError) { setError('Something went wrong. Please try again or email apply@alphaworldschool.com.'); setSubmitting(false); return }
     setSubmitted(true)
     setSubmitting(false)
   }
@@ -356,6 +430,15 @@ export default function ApplicationForm() {
             </p>
             <Input label="Build 4 — Language Video Link (Optional)" name="build4_language_link" value={form.build4_language_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive link (optional)" />
           </div>
+          <span className="text-xs text-white/30 font-medium uppercase tracking-wider">Step {step} of {totalSteps}</span>
+        </div>
+
+        {/* Progress bar */}
+        <div className="h-0.5 bg-white/5">
+          <div
+            className="h-full bg-blue-400 transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </section>
 
@@ -377,7 +460,7 @@ export default function ApplicationForm() {
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
       {/* SECTION 4 */}
       <section>
@@ -386,12 +469,21 @@ export default function ApplicationForm() {
           <div>
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Reference 1</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Name" name="reference1_name" value={form.reference1_name} onChange={handleChange} />
-              <Input label="Role" name="reference1_role" value={form.reference1_role} onChange={handleChange} />
-              <Input label="Relationship to You" name="reference1_relationship" value={form.reference1_relationship} onChange={handleChange} />
-              <Input label="Phone" name="reference1_phone" value={form.reference1_phone} onChange={handleChange} />
-              <Input label="Email" name="reference1_email" value={form.reference1_email} onChange={handleChange} type="email" />
+              <Input label="Full Name" name="full_name" value={form.full_name} onChange={handleChange} required placeholder="Jane Smith" />
+              <Input label="Email" name="email" value={form.email} onChange={handleChange} required placeholder="jane@alpha.school" type="email" />
+              <Input label="Phone" name="phone" value={form.phone} onChange={handleChange} placeholder="+1 (555) 000-0000" />
+              <Input label="Current Role at Alpha" name="role_at_alpha" value={form.role_at_alpha} onChange={handleChange} required placeholder="e.g. Guide, Academic Coach" />
+              <Input label="Campus" name="campus" value={form.campus} onChange={handleChange} placeholder="e.g. Austin, NYC" />
+              <Input label="Years at Alpha" name="years_at_alpha" value={form.years_at_alpha} onChange={handleChange} placeholder="e.g. 2 years" />
+              <Input label="Direct Manager" name="direct_manager" value={form.direct_manager} onChange={handleChange} placeholder="Name of direct manager" />
+              <Input label="Head of School" name="head_of_school" value={form.head_of_school} onChange={handleChange} placeholder="Name of Head of School" />
             </div>
+            <Textarea label="Languages Spoken" name="languages_spoken" value={form.languages_spoken} onChange={handleChange} placeholder="English (native), Spanish (conversational), Swahili (basic)" hint="Note proficiency: conversational, fluent, or native" />
+            <Textarea label="Prior International Travel" name="prior_international_travel" value={form.prior_international_travel} onChange={handleChange} placeholder="Kenya (3 weeks, community development), Ecuador (1 month, volunteer teaching)..." hint="List countries, length of stay, and purpose" rows={3} />
+            <Textarea label="Developing-World Living Experience" name="developing_world_experience" value={form.developing_world_experience} onChange={handleChange} placeholder="Yes — spent 6 weeks in rural Guatemala..." hint="Have you spent 2+ weeks living in a developing-world setting? Y/N — describe" rows={3} />
+            <Textarea label="Health Considerations" name="health_considerations" value={form.health_considerations} onChange={handleChange} placeholder="Any current health considerations relevant to extended international travel..." rows={2} />
+            <Textarea label="Personal or Family Obligations" name="family_obligations" value={form.family_obligations} onChange={handleChange} placeholder="Partner, children, caregiving responsibilities..." hint="Relevant to a 38-week commitment" rows={3} />
+            <Input label="Emergency Contact" name="emergency_contact" value={form.emergency_contact} onChange={handleChange} placeholder="Name, relationship, phone number" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Reference 2</h3>
@@ -403,6 +495,27 @@ export default function ApplicationForm() {
               <Input label="Email" name="reference2_email" value={form.reference2_email} onChange={handleChange} type="email" />
             </div>
           </div>
+        )}
+
+        {/* STEP 4 — References */}
+        {step === 4 && (
+          <div className="space-y-6">
+            <div>
+              <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Step 4 of 5</p>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tight">References</h1>
+              <p className="text-white/40 text-sm mt-2">Two internal Alpha references. One must be your direct manager or Head of School.</p>
+            </div>
+
+            <div className="bg-white/5 rounded-2xl border border-white/10 p-5 space-y-4">
+              <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Reference 1</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input label="Name" name="reference1_name" value={form.reference1_name} onChange={handleChange} />
+                <Input label="Role" name="reference1_role" value={form.reference1_role} onChange={handleChange} />
+                <Input label="Relationship to You" name="reference1_relationship" value={form.reference1_relationship} onChange={handleChange} />
+                <Input label="Phone" name="reference1_phone" value={form.reference1_phone} onChange={handleChange} />
+                <Input label="Email" name="reference1_email" value={form.reference1_email} onChange={handleChange} type="email" />
+              </div>
+            </div>
 
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
             <h3 className="font-semibold text-blue-700 mb-1 text-sm">Manager / Head of School Endorsement</h3>
@@ -426,14 +539,7 @@ export default function ApplicationForm() {
                   ))}
                 </div>
               </div>
-              <Textarea
-                label="Endorsement Statement (150 words minimum)"
-                name="manager_endorsement_text"
-                value={form.manager_endorsement_text}
-                onChange={handleChange}
-                placeholder="In your judgment, is this guide ready for the demands of this role — physically, emotionally, and as a representative of Alpha to families, students, and partner communities? Why or why not?"
-                rows={5}
-              />
+              <Textarea label="Endorsement Statement (150 words minimum)" name="manager_endorsement_text" value={form.manager_endorsement_text} onChange={handleChange} placeholder="In your judgment, is this guide ready for the demands of this role — physically, emotionally, and as a representative of Alpha to families, students, and partner communities? Why or why not?" rows={5} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input label="Endorser Printed Name" name="endorser_name" value={form.endorser_name} onChange={handleChange} />
                 <Input label="Endorser Role" name="endorser_role" value={form.endorser_role} onChange={handleChange} />

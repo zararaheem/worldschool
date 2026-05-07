@@ -1,8 +1,6 @@
 'use client'
 
-import { useState } from 'react'
 import ApplicationForm from '@/components/ApplicationForm'
-import ExamplesTab from '@/components/ExamplesTab'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'apply' | 'examples'>('apply')
