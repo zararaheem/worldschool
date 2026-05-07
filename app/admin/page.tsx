@@ -196,6 +196,8 @@ export default function AdminDashboard() {
   const [selectedApp, setSelectedApp] = useState<GuideApplication | null>(null)
   const [sortField, setSortField] = useState<'created_at' | 'full_name'>('created_at')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [newCount, setNewCount] = useState(0)
+  const [liveConnected, setLiveConnected] = useState(false)
 
   const fetchApplications = useCallback(async () => {
     setLoading(true)
@@ -211,9 +213,25 @@ export default function AdminDashboard() {
     if (authed) fetchApplications()
   }, [authed, fetchApplications])
 
+  useEffect(() => {
+    if (!authed) return
+    const channel = supabase
+      .channel('guide_applications_live')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'guide_applications' },
+        (payload) => {
+          setApplications(prev => [payload.new as GuideApplication, ...prev])
+          setNewCount(c => c + 1)
+        }
+      )
+      .subscribe((status) => {
+        setLiveConnected(status === 'SUBSCRIBED')
+      })
+    return () => { supabase.removeChannel(channel) }
+  }, [authed])
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    if (password === 'alphaworldschool2026') {
+    if (password === 'aws-2026') {
       setAuthed(true)
       setAuthError('')
     } else {
@@ -302,11 +320,27 @@ export default function AdminDashboard() {
               <span className="text-stone-500 text-xs ml-2">Admin</span>
             </div>
           </div>
-          <a href="/" className="text-stone-500 hover:text-white text-xs transition-colors">← View Form</a>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className={`w-2 h-2 rounded-full ${liveConnected ? 'bg-green-400 animate-pulse' : 'bg-stone-600'}`} />
+              <span className={liveConnected ? 'text-green-400' : 'text-stone-500'}>{liveConnected ? 'Live' : 'Connecting…'}</span>
+            </div>
+            <a href="/" className="text-stone-500 hover:text-white text-xs transition-colors">← View Form</a>
+          </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* New applications banner */}
+        {newCount > 0 && (
+          <div className="mb-5 flex items-center justify-between px-4 py-3 bg-green-900/30 border border-green-700/50 rounded-xl text-sm">
+            <span className="text-green-300 font-medium">
+              {newCount} new application{newCount > 1 ? 's' : ''} received since you opened this page
+            </span>
+            <button onClick={() => setNewCount(0)} className="text-green-600 hover:text-green-400 text-xs ml-4">Dismiss</button>
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
           {[
