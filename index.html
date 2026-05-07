@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Alpha World School — Guide Application 2026–27</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1c1917;--bg2:#292524;--bg3:#3c3330;
+  --border:#44403c;--border2:#57534e;
+  --text:#e7e5e4;--muted:#a8a29e;--dim:#78716c;
+  --amber:#f59e0b;--amber-dark:#d97706;--amber-light:#fcd34d;
+  --green:#4ade80;--blue:#60a5fa;--rose:#fb7185;
+  --radius:10px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+a{color:var(--amber);text-decoration:none}
+/* Header */
+header{background:#111827;border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.logo{background:var(--amber);color:#111;font-weight:900;font-size:13px;letter-spacing:.08em;padding:5px 10px;border-radius:6px;text-transform:uppercase;flex-shrink:0}
+header h1{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:.03em}
+header .year{margin-left:auto;font-size:12px;font-weight:700;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;flex-shrink:0}
+/* Tabs */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--bg);position:sticky;top:57px;z-index:99;padding:0 24px}
+.tab-btn{padding:14px 20px;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;border:none;background:none;color:var(--dim);border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s}
+.tab-btn.active{color:var(--amber);border-bottom-color:var(--amber)}
+.tab-btn:hover:not(.active){color:var(--muted)}
+/* Layout */
+.container{max-width:780px;margin:0 auto;padding:40px 20px 80px}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+/* Section headers */
+.section-header{margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.section-header .row{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.section-num{width:28px;height:28px;border-radius:50%;background:var(--amber);color:#111;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.section-header h2{font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.section-header p{font-size:13px;color:var(--muted);margin-left:40px}
+/* Form */
+section.form-section{margin-bottom:48px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.grid2{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:500;color:var(--muted)}
+.field label .req{color:var(--amber);margin-left:3px}
+.field .hint{font-size:11px;color:var(--dim);margin-top:-2px}
+input[type=text],input[type=email],input[type=tel],textarea,select{
+  width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 14px;color:var(--text);font-family:inherit;font-size:13px;
+  transition:border-color .15s,box-shadow .15s;outline:none
+}
+input::placeholder,textarea::placeholder{color:var(--dim)}
+input:focus,textarea:focus,select:focus{border-color:var(--amber);box-shadow:0 0 0 2px rgba(245,158,11,.15)}
+textarea{resize:none}
+.fields-stack{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+/* Build Cards */
+.build-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.build-card-head{padding:16px 20px;background:rgba(41,37,36,.7);border-bottom:1px solid var(--border)}
+.build-tag{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:4px}
+.build-tag.optional{color:var(--dim)}
+.build-card-head h3{font-size:15px;font-weight:700;color:var(--text)}
+.build-card-body{padding:20px}
+.build-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+@media(max-width:500px){.build-meta{grid-template-columns:1fr}}
+.meta-item{background:rgba(255,255,255,.04);border-radius:8px;padding:10px}
+.meta-item .meta-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.meta-item .meta-val{font-size:12px;color:var(--muted)}
+.build-desc{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:16px}
+.build-desc em{color:var(--text);font-style:normal}
+.constraint-list{margin:8px 0 4px 4px;list-style:none;display:flex;flex-direction:column;gap:4px}
+.constraint-list li{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:flex-start}
+.constraint-list li::before{content:"·";color:var(--amber);flex-shrink:0;margin-top:1px}
+.example-note{font-size:11px;color:rgba(245,158,11,.7);margin-top:6px}
+/* Tracker */
+.tracker-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;margin-bottom:6px;border:1px solid var(--border);background:var(--bg2)}
+.tracker-item.done{background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.3)}
+.tracker-dot{width:8px;height:8px;border-radius:50%;background:var(--dim);flex-shrink:0}
+.tracker-item.done .tracker-dot{background:var(--green)}
+.tracker-label{font-size:13px;color:var(--dim)}
+.tracker-item.done .tracker-label{color:rgba(74,222,128,.85)}
+.tracker-val{font-size:11px;color:var(--dim);margin-left:auto;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Reference boxes */
+.ref-block{margin-bottom:20px}
+.ref-block h3{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+/* Endorsement */
+.endorsement{border:1px solid rgba(217,119,6,.4);border-radius:12px;background:rgba(120,53,15,.1);padding:20px;margin-top:20px}
+.endorsement h3{font-size:13px;font-weight:700;color:var(--amber-light);margin-bottom:4px}
+.endorsement p{font-size:11px;color:var(--dim);margin-bottom:16px}
+.radio-group{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px}
+.radio-group label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer}
+input[type=radio]{accent-color:var(--amber);width:14px;height:14px}
+/* Acknowledgments */
+.ack-item{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.02);cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:8px}
+.ack-item:has(input:checked){border-color:rgba(217,119,6,.5);background:rgba(120,53,15,.15)}
+.ack-item input[type=checkbox]{margin-top:2px;accent-color:var(--amber);width:15px;height:15px;flex-shrink:0;cursor:pointer}
+.ack-item span{font-size:13px;color:var(--muted);line-height:1.6}
+/* Signature block */
+.sig-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.sig-block p{font-size:13px;color:var(--dim);font-style:italic;margin-bottom:16px}
+/* Error */
+.error-box{background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.4);border-radius:8px;padding:12px 16px;font-size:13px;color:#fda4af;margin-bottom:16px;display:none}
+.error-box.show{display:block}
+/* Submit */
+.submit-btn{width:100%;padding:15px;border-radius:12px;background:var(--amber);color:#111;font-weight:800;font-size:14px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:none;transition:background .15s,opacity .15s}
+.submit-btn:hover{background:var(--amber-light)}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed}
+/* Success */
+#success-panel{text-align:center;padding:80px 20px}
+.success-icon{width:64px;height:64px;border-radius:50%;background:rgba(74,222,128,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:28px}
+#success-panel h2{font-size:28px;font-weight:800;margin-bottom:12px}
+#success-panel p{font-size:16px;color:var(--muted);max-width:480px;margin:0 auto 8px}
+/* Examples tab */
+.examples-intro{margin-bottom:32px}
+.examples-intro h2{font-size:22px;font-weight:800;margin-bottom:8px}
+.examples-intro p{font-size:14px;color:var(--muted)}
+.constraint-toggle{width:100%;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;border:1px solid;font-size:13px;font-weight:600;cursor:pointer;text-align:left;background:transparent;transition:opacity .15s;margin-bottom:8px}
+.constraint-toggle:hover{opacity:.85}
+.constraint-toggle .arrow{font-size:12px;flex-shrink:0}
+.c-amber{color:#fcd34d;border-color:rgba(217,119,6,.5);background:rgba(120,53,15,.2)}
+.c-green{color:#86efac;border-color:rgba(74,222,128,.3);background:rgba(20,83,45,.2)}
+.c-blue{color:#93c5fd;border-color:rgba(96,165,250,.3);background:rgba(30,64,175,.15)}
+.c-rose{color:#fda4af;border-color:rgba(251,113,133,.3);background:rgba(159,18,57,.15)}
+.examples-section{margin-bottom:12px}
+.example-cards{display:none;flex-direction:column;gap:10px;padding-left:8px;margin-top:8px}
+.example-cards.open{display:flex}
+.ex-card{border-radius:8px;overflow:hidden}
+.ex-card-top{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;cursor:pointer;transition:background .15s}
+.ex-card-top:hover{background:rgba(255,255,255,.04)}
+.ex-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.ex-card-top h4{font-size:13px;font-weight:700}
+.ex-card-top p{font-size:12px;color:var(--muted);margin-top:2px}
+.ex-arrow{margin-left:auto;flex-shrink:0;font-size:11px;color:var(--dim)}
+.ex-detail{display:none;padding:0 16px 14px 34px;font-size:13px;color:var(--muted);line-height:1.7;border-top:1px solid var(--border)}
+.ex-detail.open{display:block}
+/* Quality notes */
+.quality-box{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:32px}
+.quality-head{padding:14px 20px;background:rgba(41,37,36,.6);border-bottom:1px solid var(--border);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.quality-grid{display:grid;grid-template-columns:1fr 1fr}
+@media(max-width:500px){.quality-grid{grid-template-columns:1fr}}
+.quality-col{padding:16px 20px;border-right:1px solid var(--border)}
+.quality-col:last-child{border-right:none}
+@media(max-width:500px){.quality-col{border-right:none;border-bottom:1px solid var(--border)}.quality-col:last-child{border-bottom:none}}
+.quality-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-bottom:10px}
+.badge-strong{background:rgba(74,222,128,.15);color:#86efac}
+.badge-weak{background:rgba(251,113,133,.12);color:#fda4af}
+.quality-col ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.quality-col li{display:flex;gap:8px;font-size:12px;color:var(--muted);align-items:flex-start}
+.qd-strong::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px}
+.qd-weak::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--rose);flex-shrink:0;margin-top:5px}
+/* Endorsement radio helper */
+.radio-label{font-size:13px;font-weight:500;color:var(--muted);margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">AWS</div>
+  <h1>Alpha World School — Guide Application</h1>
+  <span class="year">2026–27</span>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="application">Application</button>
+  <button class="tab-btn" data-tab="examples">Worked Examples</button>
+</nav>
+
+<!-- ───────────────────────── APPLICATION TAB ───────────────────────── -->
+<div id="tab-application" class="tab-panel active">
+
+  <div id="success-panel" style="display:none">
+    <div class="success-icon">✓</div>
+    <h2>Application Submitted</h2>
+    <p>We have your application on file. Our team will review it carefully.</p>
+    <p style="color:var(--dim);margin-top:8px">You'll hear from us when decisions are made. In the meantime, keep being the person who applied.</p>
+  </div>
+
+  <div class="container" id="form-wrap">
+    <form id="app-form" novalidate>
+
+      <!-- ── SECTION 1 ── -->
+      <section class="form-section">
+        <div class="section-header">
+          <div class="row"><span class="section-num">1</span><h2>About You</h2></div>
+          <p>Basic info. If a field does not apply, write "N/A."</p>
+        </div>
+        <div class="grid2">
+          <div class="field"><label>Full Name <span class="req">*</span></label><input type="text" name="full_name" placeholder="Jane Smith" required /></div>
+          <div class="field"><label>Email <span class="req">*</span></label><input type="email" name="email" placeholder="jane@alpha.school" required /></div>
+          <div class="field"><label>Phone</label><input type="tel" name="phone" placeholder="+1 (555) 000-0000" /></div>
+          <div class="field"><label>Current Role at Alpha <span class="req">*</span></label><input type="text" name="role_at_alpha" placeholder="e.g. Guide, Academic Coach" required /></div>
+          <div class="field"><label>Campus</label><input type="text" name="campus" placeholder="e.g. Austin, NYC" /></div>
+          <div class="field"><label>Years at Alpha</label><input type="text" name="years_at_alpha" placeholder="e.g. 2 years" /></div>
+          <div class="field"><label>Direct Manager</label><input type="text" name="direct_manager" placeholder="Name of direct manager" /></div>
+          <div class="field"><label>Head of School</label><input type="text" name="head_of_school" placeholder="Name of Head of School" /></div>
+        </div>
+        <div class="fields-stack">
+          <div class="field">
+            <label>Languages Spoken</label>
+            <span class="hint">Note proficiency: conversational, fluent, or native</span>
+            <textarea name="languages_spoken" rows="2" placeholder="English (native), Spanish (conversational), Swahili (basic)"></textarea>
+          </div>
+          <div class="field">
+            <label>Prior International Travel</label>
+            <span class="hint">List countries, length of stay, and purpose</span>
+            <textarea name="prior_international_travel" rows="3" placeholder="Kenya (3 weeks, community development), Ecuador (1 month, volunteer teaching)..."></textarea>
+          </div>
+          <div class="field">
+            <label>Developing-World Living Experience</label>
+            <span class="hint">Have you spent 2+ weeks living in a developing-world setting? Y/N — describe</span>
+            <textarea name="developing_world_experience" rows="3" placeholder="Yes — spent 6 weeks in rural Guatemala building water systems with a local NGO..."></textarea>
+          </div>
+          <div class="field">
+            <label>Health Considerations</label>
+            <textarea name="health_considerations" rows="2" placeholder="Any current health considerations relevant to extended international travel..."></textarea>
+          </div>
+          <div class="field">
+            <label>Personal or Family Obligations</label>
+            <span class="hint">Relevant to a 38-week commitment</span>
+            <textarea name="family_obligations" rows="3" placeholder="Partner, children, caregiving responsibilities — please be specific so we can plan with you, not around you..."></textarea>
+          </div>
+          <div class="field"><label>Emergency Contact</label><input type="text" name="emergency_contact" placeholder="Name, relationship, phone number" /></div>
+        </div>
+      </section>
+
+      <!-- ── SECTION 2 ── -->
+      <section class="form-section">
+        <div class="section-header">
+          <div class="row"><span class="section-num">2</span><h2>The Builds</h2></div>
+          <p>Three required Builds. One optional fourth. Submit each to the shared Drive folder from your invitation email.</p>
+        </div>
+
+        <!-- Build 1 -->
+        <div class="build-card">
+          <div class="build-card-head">
+            <div class="build-tag">Build 1</div>
+            <h3>The Workshop Sprint</h3>
+          </div>
+          <div class="build-card-body">
+            <div class="build-meta">
+              <div class="meta-item"><div class="meta-label">Testing</div><div class="meta-val">Life skills design, project orientation, taste, AI fluency</div></div>
+              <div class="meta-item"><div class="meta-label">Time</div><div class="meta-val">2 hours max</div></div>
+              <div class="meta-item"><div class="meta-label">Deliverable</div><div class="meta-val">Workshop artifact (slides / Notion / one-pager)</div></div>
+            </div>
+            <p class="build-desc">Design and produce a real 90-minute kickoff workshop for your cohort of 5–7 students — anchored in one of: <em>Food · Water · Empowerment · Education · Healthcare · Culture &amp; Conservation · Community</em>. The workshop should launch a real project that continues building over the rotation, with a real output the community actually uses.</p>
+            <div class="field"><label>Build 1 Link or File Name</label><input type="text" name="build1_link" placeholder="https://docs.google.com/... or Smith_Jane_Build1.pdf" /></div>
+          </div>
+        </div>
+
+        <!-- Build 2 -->
+        <div class="build-card">
+          <div class="build-card-head">
+            <div class="build-tag">Build 2</div>
+            <h3>The Cohort Experience</h3>
+          </div>
+          <div class="build-card-body">
+            <div class="build-meta">
+              <div class="meta-item"><div class="meta-label">Testing</div><div class="meta-val">Anticipating breaking points, design instinct, cultural humility, cohort resilience</div></div>
+              <div class="meta-item"><div class="meta-label">Time</div><div class="meta-val">1.5–2 hours</div></div>
+              <div class="meta-item"><div class="meta-label">Deliverable</div><div class="meta-val">Two links: experience design + 3-min walkthrough video</div></div>
+            </div>
+            <p class="build-desc">Design something that prevents a cohort from breaking. Pick one design constraint:</p>
+            <ul class="constraint-list">
+              <li>Assume your cohort has conflict by week 5.</li>
+              <li>Assume energy drops by mid-rotation.</li>
+              <li>Assume cultural missteps happen.</li>
+              <li>Assume someone wants to go home by week 10.</li>
+            </ul>
+            <p class="example-note">See the Worked Examples tab for what strong submissions look like.</p>
+            <div class="grid2" style="margin-top:16px">
+              <div class="field"><label>Build 2 — Design Doc Link</label><input type="text" name="build2_design_link" placeholder="Link to one-pager, plan, or visual flow" /></div>
+              <div class="field"><label>Build 2 — 3-Minute Video Link</label><input type="text" name="build2_video_link" placeholder="YouTube, Loom, or Drive link" /></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Build 3 -->
+        <div class="build-card">
+          <div class="build-card-head">
+            <div class="build-tag">Build 3</div>
+            <h3>The Video</h3>
+          </div>
+          <div class="build-card-body">
+            <div class="build-meta">
+              <div class="meta-item"><div class="meta-label">Testing</div><div class="meta-val">Self-awareness, honesty, mindset</div></div>
+              <div class="meta-item"><div class="meta-label">Time</div><div class="meta-val">20 minutes</div></div>
+              <div class="meta-item"><div class="meta-label">Deliverable</div><div class="meta-val">One 90-second to 2-minute video</div></div>
+            </div>
+            <p class="build-desc">Talk to us. 90 seconds to 2 minutes. Phone-quality is fine. Don't script. Don't read. Two questions: <em>(1) What are you most excited about for this year?</em> <em>(2) What do you understand your role to be on this trip?</em> Be specific — not what you hope it will be, what you actually believe it is.</p>
+            <div class="field"><label>Build 3 — Video Link</label><input type="text" name="build3_video_link" placeholder="YouTube, Loom, or Drive link" /></div>
+          </div>
+        </div>
+
+        <!-- Build 4 (Optional) -->
+        <div class="build-card" style="border-color:var(--border2);opacity:.85">
+          <div class="build-card-head" style="background:rgba(41,37,36,.4)">
+            <div class="build-tag optional">Build 4 · Optional</div>
+            <h3 style="color:var(--muted)">Language Tape</h3>
+          </div>
+          <div class="build-card-body">
+            <p class="build-desc">If you speak a language other than English — especially Swahili, Spanish, or any language relevant to Kenya or Ecuador — talk to us in it. Tell us about your morning, your last vacation, your favorite food. Anything natural. ≤60 seconds.</p>
+            <div class="field"><label>Build 4 — Language Video Link <span style="color:var(--dim);font-weight:400">(Optional)</span></label><input type="text" name="build4_language_link" placeholder="YouTube, Loom, or Drive link (optional)" /></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SECTION 3 ── -->
+      <section class="form-section">
+        <div class="section-header">
+          <div class="row"><span class="section-num">3</span><h2>Submission Tracker</h2></div>
+          <p>Confirm your builds are ready. Paste links above in Section 2.</p>
+        </div>
+        <div id="tracker"></div>
+      </section>
+
+      <!-- ── SECTION 4 ── -->
+      <section class="form-section">
+        <div class="section-header">
+          <div class="row"><span class="section-num">4</span><h2>References &amp; Endorsement</h2></div>
+          <p>Two internal Alpha references. One must be your direct manager or Head of School.</p>
+        </div>
+
+        <div class="ref-block">
+          <h3>Reference 1</h3>
+          <div class="grid2">
+            <div class="field"><label>Name</label><input type="text" name="reference1_name" placeholder="Full name" /></div>
+            <div class="field"><label>Role</label><input type="text" name="reference1_role" placeholder="Their role at Alpha" /></div>
+            <div class="field"><label>Relationship to You</label><input type="text" name="reference1_relationship" placeholder="e.g. Direct manager, colleague" /></div>
+            <div class="field"><label>Phone</label><input type="tel" name="reference1_phone" placeholder="+1 (555) 000-0000" /></div>
+            <div class="field"><label>Email</label><input type="email" name="reference1_email" placeholder="ref@alpha.school" /></div>
+          </div>
+        </div>
+
+        <div class="ref-block">
+          <h3>Reference 2</h3>
+          <div class="grid2">
+            <div class="field"><label>Name</label><input type="text" name="reference2_name" placeholder="Full name" /></div>
+            <div class="field"><label>Role</label><input type="text" name="reference2_role" placeholder="Their role at Alpha" /></div>
+            <div class="field"><label>Relationship to You</label><input type="text" name="reference2_relationship" placeholder="e.g. Colleague, Head of School" /></div>
+            <div class="field"><label>Phone</label><input type="tel" name="reference2_phone" placeholder="+1 (555) 000-0000" /></div>
+            <div class="field"><label>Email</label><input type="email" name="reference2_email" placeholder="ref@alpha.school" /></div>
+          </div>
+        </div>
+
+        <div class="endorsement">
+          <h3>Manager / Head of School Endorsement</h3>
+          <p>To be filled out by the candidate's direct manager or Head of School — <em>not</em> by the candidate.</p>
+          <div class="field" style="margin-bottom:16px">
+            <div class="radio-label">Has this guide had your verbal support to apply?</div>
+            <div class="radio-group">
+              <label><input type="radio" name="manager_endorsement_status" value="Yes" /> Yes</label>
+              <label><input type="radio" name="manager_endorsement_status" value="No" /> No</label>
+              <label><input type="radio" name="manager_endorsement_status" value="Conversation pending" /> Conversation pending</label>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:16px">
+            <label>Endorsement Statement <span style="font-weight:400;color:var(--dim)">(150 words minimum)</span></label>
+            <textarea name="manager_endorsement_text" rows="5" placeholder="In your judgment, is this guide ready for the demands of this role — physically, emotionally, and as a representative of Alpha to families, students, and partner communities? Why or why not?"></textarea>
+          </div>
+          <div class="grid2">
+            <div class="field"><label>Endorser Printed Name</label><input type="text" name="endorser_name" placeholder="Full name" /></div>
+            <div class="field"><label>Endorser Role</label><input type="text" name="endorser_role" placeholder="Their role at Alpha" /></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SECTION 5 ── -->
+      <section class="form-section">
+        <div class="section-header">
+          <div class="row"><span class="section-num">5</span><h2>Acknowledgments &amp; Signature</h2></div>
+          <p>Initial each line. Each one is a real thing you are agreeing to.</p>
+        </div>
+
+        <div id="ack-list"></div>
+
+        <div class="sig-block">
+          <p>I am submitting this application of my own volition. I have read everything in this packet. I understand what I am signing up for.</p>
+          <div class="field"><label>Full Name (Signature) <span class="req">*</span></label><input type="text" name="applicant_name" placeholder="Type your full legal name" required /></div>
+        </div>
+
+        <div class="error-box" id="error-box"></div>
+
+        <button type="submit" class="submit-btn" id="submit-btn">Submit Application</button>
+      </section>
+
+    </form>
+  </div>
+</div>
+
+<!-- ───────────────────────── EXAMPLES TAB ───────────────────────── -->
+<div id="tab-examples" class="tab-panel">
+  <div class="container">
+    <div class="examples-intro">
+      <h2>Worked Examples</h2>
+      <p>Strong submissions for Build 2 — The Cohort Experience. Click any constraint to see what good looks like.</p>
+    </div>
+
+    <div id="examples-list"></div>
+
+    <div class="quality-box">
+      <div class="quality-head">What Makes a Submission Strong vs. Weak</div>
+      <div class="quality-grid">
+        <div class="quality-col">
+          <span class="quality-badge badge-strong">Strong</span>
+          <ul>
+            <li class="qd-strong">A repeating structural feature, not a one-time event</li>
+            <li class="qd-strong">Specifies sequence, timing, prompts, what the guide says, what students do</li>
+            <li class="qd-strong">Names what happens when it goes sideways</li>
+            <li class="qd-strong">Cultural humility built in — local community as co-facilitators, not scenery</li>
+          </ul>
+        </div>
+        <div class="quality-col">
+          <span class="quality-badge badge-weak">Weak</span>
+          <ul>
+            <li class="qd-weak">Vague principle (e.g., "we'll have honest conversations")</li>
+            <li class="qd-weak">A one-time workshop or off-the-shelf program that doesn't fit the cohort</li>
+            <li class="qd-weak">Local community featured but not consulted</li>
+            <li class="qd-weak">Design treats the local community as a teaching prop</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+const supabase = createClient(
+  'https://zbduxegkxhgyfvrfkgai.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpiZHV4ZWdreGhneWZ2cmZrZ2FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NTIzOTUsImV4cCI6MjA5MzIyODM5NX0.pTdpdvjkaWFPQdRm7k0xqtAxcUsMo015qRH2_H4spOk'
+)
+
+// ── Tab switching ──
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'))
+    btn.classList.add('active')
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active')
+  })
+})
+
+// ── Acknowledgments ──
+const acks = [
+  'I understand this is a job. It is not a vacation.',
+  'I understand I will be the primary 24/7 caretaker for 5–7 students for multiple weeks at a time, including travel time and re-entry weeks.',
+  'I understand I will be away from my home, family, and routines for two extended international rotations and one U.S.-based rotation.',
+  "I understand I am responsible for upholding Alpha's three commitments — students love school, learn 2x in 2 hours, and learn life skills — in environments where the systems and tools we use at home are not available.",
+  'I understand I will hold both students AND myself to a high physical, mental, emotional, and academic standard for the full year.',
+  'I understand that when something goes wrong — medical, emotional, logistical — I am the first responder until the medical lead or local guide is on the scene.',
+  'I understand that I represent Alpha to communities, parents, and partners who have trusted us with their kids and their land.',
+  'My direct manager and Head of School are aware that I am applying.',
+]
+const ackList = document.getElementById('ack-list')
+acks.forEach((text, i) => {
+  const label = document.createElement('label')
+  label.className = 'ack-item'
+  label.innerHTML = `<input type="checkbox" name="ack_${i+1}" /><span>${text}</span>`
+  ackList.appendChild(label)
+})
+
+// ── Submission tracker ──
+const trackerFields = [
+  { key: 'build1_link', label: 'Build 1 — Workshop Sprint' },
+  { key: 'build2_design_link', label: 'Build 2 — Cohort Experience (design)' },
+  { key: 'build2_video_link', label: 'Build 2 — Cohort Experience (video)' },
+  { key: 'build3_video_link', label: 'Build 3 — The Video' },
+  { key: 'build4_language_link', label: 'Build 4 — Language Tape (optional)' },
+]
+const tracker = document.getElementById('tracker')
+function renderTracker(form) {
+  tracker.innerHTML = ''
+  trackerFields.forEach(({ key, label }) => {
+    const val = form[key] || ''
+    const div = document.createElement('div')
+    div.className = 'tracker-item' + (val ? ' done' : '')
+    div.innerHTML = `<span class="tracker-dot"></span><span class="tracker-label">${label}</span>${val ? `<span class="tracker-val">${val}</span>` : ''}`
+    tracker.appendChild(div)
+  })
+}
+renderTracker({})
+
+// Live tracker updates
+const form = document.getElementById('app-form')
+trackerFields.forEach(({ key }) => {
+  const input = form.elements[key]
+  if (input) input.addEventListener('input', () => {
+    const vals = {}
+    trackerFields.forEach(f => { vals[f.key] = form.elements[f.key]?.value || '' })
+    renderTracker(vals)
+  })
+})
+
+// ── Form submission ──
+form.addEventListener('submit', async (e) => {
+  e.preventDefault()
+  const errorBox = document.getElementById('error-box')
+  const btn = document.getElementById('submit-btn')
+  errorBox.classList.remove('show')
+
+  // Check all acks
+  const allAcks = acks.every((_, i) => form.elements[`ack_${i+1}`]?.checked)
+  if (!allAcks) {
+    errorBox.textContent = 'Please check all acknowledgments before submitting.'
+    errorBox.classList.add('show')
+    errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    return
+  }
+
+  btn.disabled = true
+  btn.textContent = 'Submitting...'
+
+  const data = {
+    full_name: form.elements.full_name.value,
+    email: form.elements.email.value,
+    phone: form.elements.phone.value,
+    role_at_alpha: form.elements.role_at_alpha.value,
+    campus: form.elements.campus.value,
+    years_at_alpha: form.elements.years_at_alpha.value,
+    direct_manager: form.elements.direct_manager.value,
+    head_of_school: form.elements.head_of_school.value,
+    languages_spoken: form.elements.languages_spoken.value,
+    prior_international_travel: form.elements.prior_international_travel.value,
+    developing_world_experience: form.elements.developing_world_experience.value,
+    health_considerations: form.elements.health_considerations.value,
+    family_obligations: form.elements.family_obligations.value,
+    emergency_contact: form.elements.emergency_contact.value,
+    build1_link: form.elements.build1_link.value,
+    build2_design_link: form.elements.build2_design_link.value,
+    build2_video_link: form.elements.build2_video_link.value,
+    build3_video_link: form.elements.build3_video_link.value,
+    build4_language_link: form.elements.build4_language_link.value,
+    reference1_name: form.elements.reference1_name.value,
+    reference1_role: form.elements.reference1_role.value,
+    reference1_relationship: form.elements.reference1_relationship.value,
+    reference1_phone: form.elements.reference1_phone.value,
+    reference1_email: form.elements.reference1_email.value,
+    reference2_name: form.elements.reference2_name.value,
+    reference2_role: form.elements.reference2_role.value,
+    reference2_relationship: form.elements.reference2_relationship.value,
+    reference2_phone: form.elements.reference2_phone.value,
+    reference2_email: form.elements.reference2_email.value,
+    manager_endorsement_status: form.elements.manager_endorsement_status?.value || '',
+    manager_endorsement_text: form.elements.manager_endorsement_text.value,
+    endorser_name: form.elements.endorser_name.value,
+    endorser_role: form.elements.endorser_role.value,
+    ack_1: form.elements.ack_1.checked,
+    ack_2: form.elements.ack_2.checked,
+    ack_3: form.elements.ack_3.checked,
+    ack_4: form.elements.ack_4.checked,
+    ack_5: form.elements.ack_5.checked,
+    ack_6: form.elements.ack_6.checked,
+    ack_7: form.elements.ack_7.checked,
+    ack_8: form.elements.ack_8.checked,
+    applicant_name: form.elements.applicant_name.value,
+  }
+
+  const { error } = await supabase.from('guide_applications').insert([data])
+  if (error) {
+    errorBox.textContent = 'Something went wrong. Please try again.'
+    errorBox.classList.add('show')
+    btn.disabled = false
+    btn.textContent = 'Submit Application'
+    return
+  }
+
+  document.getElementById('form-wrap').style.display = 'none'
+  document.getElementById('success-panel').style.display = 'block'
+  window.scrollTo({ top: 0 })
+})
+
+// ── Examples tab ──
+const constraints = [
+  {
+    id: 'conflict', label: 'Conflict by Week 5', cls: 'c-amber', dotCls: 'bg-amber-dot',
+    dotColor: '#f59e0b',
+    examples: [
+      { title: 'The Sunday Council', summary: 'Weekly structured circle where friction gets surfaced before it festers.', detail: 'Every Sunday at 6pm, the cohort sits in a circle for 30 minutes. Each person gets 90 seconds to name one thing they appreciated about another cohort member that week, and one thing that\'s grating on them. Structured rules — start with appreciation, name a specific behavior (not a personality trait), no debating in the moment. Guide facilitates the first three weeks, then a rotating cohort member runs it. By week 5, friction gets surfaced in real-time before it festers into factions.' },
+      { title: 'The Repair Protocol', summary: 'A laminated 4-step conflict resolution process the whole cohort commits to in week 1.', detail: 'Cohort agrees in week 1 to a written 4-step protocol for handling friction. When something happens, the protocol says you say "I need a Repair." Within 24 hours, the two students sit with a guide for 20 minutes using a specific 4-question template (what happened / how it landed / what I want / what I\'ll do differently). No avoidance, no triangulating through other cohort members. The protocol is laminated and lives on the wall of every common space all year.' },
+    ],
+  },
+  {
+    id: 'energy', label: 'Energy Drop at Mid-Rotation', cls: 'c-green', dotColor: '#4ade80',
+    examples: [
+      { title: 'Friday Bring-Your-Best', summary: 'Rotating student-led recharge sessions that distribute ownership and spotlight.', detail: 'Every Friday afternoon, one cohort member designs and leads a 30-minute recharge activity for the group — could be a game from their hometown, a skill they want to teach, a meditation, a dance, whatever. Rotates so every kid gets two slots per rotation. Solves energy AND distributes leadership ownership AND gives every kid a recurring moment in the spotlight.' },
+      { title: 'The Midpoint Reset Day', summary: "A structured retreat day built into the calendar at each rotation's exact midpoint.", detail: 'Built into the calendar at the exact midpoint of each rotation (around week 4). Looks like a structured retreat day: morning is solo journaling against three specific prompts, afternoon is a cohort conversation where everyone names one behavior they want to recommit to and one they want to drop, evening is a shared meal with a gratitude rotation. Built-in reset valve before the energy crash actually compounds.' },
+    ],
+  },
+  {
+    id: 'cultural', label: 'Cultural Missteps', cls: 'c-blue', dotColor: '#60a5fa',
+    examples: [
+      { title: 'The What-We-Got-Wrong Debrief', summary: 'Friday evening sessions in the local language, co-facilitated by local guides.', detail: 'Friday evenings in the local language (with the local guide co-facilitating). Each cohort member shares one cultural moment from the week where they felt unsure or knew they messed up. The local guide normalizes the mistake — "that\'s a normal thing to get wrong, here\'s why" — and teaches the next-level cultural understanding. Transforms shame into curriculum.' },
+      { title: 'The Cultural Compass', summary: 'A pre-arrival workshop covering 20 cultural norms through scenario role-play.', detail: 'A 60-minute pre-arrival workshop the day before each rotation begins. Covers 20 specific cultural norms, then role-plays 10 hard scenarios, then each student writes down the specific moment they expect to mess up first. By naming it ahead, when it happens it\'s predicted, not catastrophic.' },
+    ],
+  },
+  {
+    id: 'homesick', label: 'Someone Wants to Go Home (Week 10)', cls: 'c-rose', dotColor: '#fb7185',
+    examples: [
+      { title: 'Buddy-Up Pairs', summary: 'Peer accountability pairs with daily check-ins who rotate every rotation.', detail: 'Every cohort member is paired with one specific peer they\'re responsible for. Daily 5-minute check-ins built into the schedule, weekly 30-minute deeper conversation on Sundays. Pairs rotate every rotation. So when someone starts to spiral, their buddy notices it the day it starts, and there\'s already a structure for that conversation. Distributes the emotional load.' },
+      { title: 'The Sunday Letter Home', summary: 'Weekly letters/voice memos home that channel homesickness into connection.', detail: 'Every Sunday at 4pm, every cohort member writes a letter or records a voice memo to a parent, grandparent, sibling, or friend back home. Then each shares one sentence from theirs with the cohort. Channels homesickness into connection (and into a written record they\'ll have forever) rather than avoidance.' },
+    ],
+  },
+]
+
+const exList = document.getElementById('examples-list')
+constraints.forEach(c => {
+  const section = document.createElement('div')
+  section.className = 'examples-section'
+
+  const toggle = document.createElement('button')
+  toggle.className = `constraint-toggle ${c.cls}`
+  toggle.innerHTML = `<span class="arrow">▶</span> Design Constraint: ${c.label}`
+  toggle.type = 'button'
+
+  const cards = document.createElement('div')
+  cards.className = 'example-cards'
+
+  c.examples.forEach(ex => {
+    const card = document.createElement('div')
+    card.className = 'ex-card'
+    card.style.border = `1px solid ${c.dotColor}33`
+    card.style.background = 'rgba(255,255,255,.02)'
+    card.innerHTML = `
+      <div class="ex-card-top">
+        <span class="ex-dot" style="background:${c.dotColor}"></span>
+        <div><h4 style="color:${c.dotColor}">${ex.title}</h4><p>${ex.summary}</p></div>
+        <span class="ex-arrow">▶</span>
+      </div>
+      <div class="ex-detail">${ex.detail}</div>
+    `
+    const top = card.querySelector('.ex-card-top')
+    const detail = card.querySelector('.ex-detail')
+    const arr = card.querySelector('.ex-arrow')
+    top.addEventListener('click', () => {
+      const open = detail.classList.toggle('open')
+      arr.textContent = open ? '▼' : '▶'
+    })
+    cards.appendChild(card)
+  })
+
+  toggle.addEventListener('click', () => {
+    const open = cards.classList.toggle('open')
+    toggle.querySelector('.arrow').textContent = open ? '▼' : '▶'
+  })
+
+  section.appendChild(toggle)
+  section.appendChild(cards)
+  exList.appendChild(section)
+})
+</script>
+</body>
+</html>
