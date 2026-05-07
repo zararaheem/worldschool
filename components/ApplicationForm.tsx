@@ -57,13 +57,13 @@ function Input({ label, name, value, onChange, required, placeholder, type = 'te
 }) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-800 mb-1">
-        {label}{required && <span className="text-blue-600 ml-1">*</span>}
+      <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-1.5">
+        {label}{required && <span className="text-blue-400 ml-1">*</span>}
       </label>
-      {hint && <p className="text-xs text-gray-400 mb-1.5">{hint}</p>}
+      {hint && <p className="text-xs text-white/40 mb-1.5">{hint}</p>}
       <input
         type={type} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
-        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm shadow-sm"
+        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/60 focus:ring-1 focus:ring-blue-400/30 transition-all text-sm"
       />
     </div>
   )
@@ -75,13 +75,13 @@ function Textarea({ label, name, value, onChange, required, placeholder, rows = 
 }) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-800 mb-1">
-        {label}{required && <span className="text-blue-600 ml-1">*</span>}
+      <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-1.5">
+        {label}{required && <span className="text-blue-400 ml-1">*</span>}
       </label>
-      {hint && <p className="text-xs text-gray-400 mb-1.5">{hint}</p>}
+      {hint && <p className="text-xs text-white/40 mb-1.5">{hint}</p>}
       <textarea
         name={name} value={value} onChange={onChange} required={required} placeholder={placeholder} rows={rows}
-        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all resize-none text-sm shadow-sm"
+        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/60 focus:ring-1 focus:ring-blue-400/30 transition-all resize-none text-sm"
       />
     </div>
   )
@@ -121,26 +121,26 @@ const constraints = [
 ]
 
 const colorMap: Record<string, { badge: string; border: string; dot: string; title: string }> = {
-  amber: { badge: 'bg-amber-50 text-amber-700 border-amber-200', border: 'border-amber-200', dot: 'bg-amber-500', title: 'text-amber-700' },
-  green:  { badge: 'bg-green-50 text-green-700 border-green-200',  border: 'border-green-200',  dot: 'bg-green-500',  title: 'text-green-700'  },
-  blue:   { badge: 'bg-blue-50 text-blue-700 border-blue-200',     border: 'border-blue-200',   dot: 'bg-blue-500',   title: 'text-blue-700'   },
-  rose:   { badge: 'bg-rose-50 text-rose-700 border-rose-200',     border: 'border-rose-200',   dot: 'bg-rose-500',   title: 'text-rose-700'   },
+  amber: { badge: 'bg-amber-500/10 text-amber-300 border-amber-500/20', border: 'border-amber-500/20', dot: 'bg-amber-400', title: 'text-amber-300' },
+  green: { badge: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20', border: 'border-emerald-500/20', dot: 'bg-emerald-400', title: 'text-emerald-300' },
+  blue:  { badge: 'bg-blue-500/10 text-blue-300 border-blue-500/20',   border: 'border-blue-500/20',   dot: 'bg-blue-400',   title: 'text-blue-300'   },
+  rose:  { badge: 'bg-rose-500/10 text-rose-300 border-rose-500/20',   border: 'border-rose-500/20',   dot: 'bg-rose-400',   title: 'text-rose-300'   },
 }
 
 function ExampleCard({ title, summary, detail, color }: { title: string; summary: string; detail: string; color: string }) {
   const [open, setOpen] = useState(false)
   const c = colorMap[color]
   return (
-    <div className={`border ${c.border} rounded-lg bg-white overflow-hidden`}>
-      <button className="w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors" onClick={() => setOpen(!open)}>
+    <div className={`border ${c.border} rounded-lg bg-white/5 overflow-hidden`}>
+      <button className="w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-white/5 transition-colors" onClick={() => setOpen(!open)}>
         <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${c.dot}`} />
         <div className="flex-1 min-w-0">
           <div className={`font-semibold text-sm ${c.title}`}>{title}</div>
-          <div className="text-xs text-gray-500 mt-0.5">{summary}</div>
+          <div className="text-xs text-white/40 mt-0.5">{summary}</div>
         </div>
-        {open ? <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" /> : <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />}
+        {open ? <ChevronDown className="w-4 h-4 text-white/30 flex-shrink-0 mt-0.5" /> : <ChevronRight className="w-4 h-4 text-white/30 flex-shrink-0 mt-0.5" />}
       </button>
-      {open && <div className="px-4 pb-4 pt-1 border-t border-gray-100"><p className="text-gray-700 text-sm leading-relaxed">{detail}</p></div>}
+      {open && <div className="px-4 pb-4 pt-1 border-t border-white/10"><p className="text-white/60 text-sm leading-relaxed">{detail}</p></div>}
     </div>
   )
 }
@@ -166,34 +166,34 @@ function ConstraintSection({ constraint }: { constraint: typeof constraints[0] }
 function ExamplesModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-2xl mx-4 my-10 bg-white rounded-2xl border border-gray-200 shadow-2xl">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 sticky top-0 bg-white rounded-t-2xl">
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-2xl mx-4 my-10 bg-[#0d1b2e] rounded-2xl border border-white/10 shadow-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 sticky top-0 bg-[#0d1b2e] rounded-t-2xl">
           <div>
-            <h2 className="font-bold text-gray-900">Worked Examples — Build 2</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Click any constraint to see what a strong submission looks like</p>
+            <h2 className="font-bold text-white">Worked Examples — Build 2</h2>
+            <p className="text-xs text-white/40 mt-0.5">Click any constraint to see what a strong submission looks like</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-4">
+          <button onClick={onClose} className="text-white/30 hover:text-white/60 ml-4 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
         <div className="px-6 py-5 max-h-[75vh] overflow-y-auto">
           {constraints.map(c => <ConstraintSection key={c.id} constraint={c} />)}
-          <div className="mt-5 rounded-xl border border-gray-200 overflow-hidden">
-            <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-              <h3 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Strong vs. Weak</h3>
+          <div className="mt-5 rounded-xl border border-white/10 overflow-hidden">
+            <div className="px-4 py-3 bg-white/5 border-b border-white/10">
+              <h3 className="font-bold text-white text-sm uppercase tracking-wide">Strong vs. Weak</h3>
             </div>
-            <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+            <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10">
               {[
                 { label: 'Strong', color: 'green', items: ['A repeating structural feature, not a one-time event', 'Specifies sequence, timing, prompts, what the guide says', 'Names what happens when it goes sideways', 'Local community as co-facilitators, not scenery'] },
                 { label: 'Weak', color: 'rose', items: ["Vague principle ("we'll have honest conversations")", "A one-time workshop that doesn't fit the cohort", 'Local community featured but not consulted', 'Design treats the community as a teaching prop'] },
               ].map(({ label, color, items }) => (
                 <div key={label} className="p-4">
-                  <div className={`inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3 ${color === 'green' ? 'bg-green-100 text-green-700' : 'bg-rose-100 text-rose-700'}`}>{label}</div>
+                  <div className={`inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3 ${color === 'green' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-rose-500/10 text-rose-300'}`}>{label}</div>
                   <ul className="space-y-1.5">
                     {items.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                        <span className={`mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${color === 'green' ? 'bg-green-500' : 'bg-rose-500'}`} />
+                      <li key={i} className="flex items-start gap-2 text-sm text-white/60">
+                        <span className={`mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${color === 'green' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
                         {item}
                       </li>
                     ))}
@@ -215,22 +215,22 @@ function BuildCard({ number, title, testing, time, deliverable, optional, childr
   optional?: boolean; children: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white shadow-sm">
-      <div className="px-5 py-4 bg-gray-50 border-b border-gray-200 flex items-center gap-3">
-        <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 ${optional ? 'bg-gray-200 text-gray-500' : 'bg-blue-600 text-white'}`}>
+    <div className="rounded-2xl border border-white/10 overflow-hidden bg-white/5">
+      <div className="px-5 py-4 bg-white/5 border-b border-white/10 flex items-center gap-3">
+        <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 border ${optional ? 'border-white/20 text-white/30' : 'border-blue-400/40 bg-blue-500/10 text-blue-300'}`}>
           {number}
         </span>
         <div>
-          {optional && <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Optional</span>}
-          <h3 className="font-bold text-gray-900 text-sm">{title}</h3>
+          {optional && <span className="text-xs font-bold text-white/30 uppercase tracking-wider block">Optional</span>}
+          <h3 className="font-bold text-white text-sm">{title}</h3>
         </div>
       </div>
       {testing && (
-        <div className="grid grid-cols-3 gap-0 border-b border-gray-100">
+        <div className="grid grid-cols-3 gap-0 border-b border-white/10">
           {[['Testing', testing], ['Time', time!], ['Deliverable', deliverable!]].map(([k, v]) => (
-            <div key={k} className="px-4 py-3 border-r last:border-r-0 border-gray-100">
-              <div className="text-xs text-gray-400 uppercase tracking-wider mb-0.5 font-medium">{k}</div>
-              <div className="text-xs text-gray-700">{v}</div>
+            <div key={k} className="px-4 py-3 border-r last:border-r-0 border-white/10">
+              <div className="text-xs text-white/30 uppercase tracking-wider mb-0.5 font-medium">{k}</div>
+              <div className="text-xs text-white/60">{v}</div>
             </div>
           ))}
         </div>
@@ -252,6 +252,21 @@ const acknowledgments = [
   'I understand that I represent Alpha to communities, parents, and partners who have trusted us with their kids and their land.',
   'My direct manager and Head of School are aware that I am applying.',
 ]
+
+// ─── Logo SVG (matching world.alpha.school geometric mark) ────────────────────
+
+function AlphaLogo({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="20,2 38,32 2,32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+      <line x1="20" y1="2" x2="20" y2="32" stroke="currentColor" strokeWidth="1.5" opacity="0.5"/>
+      <line x1="2" y1="32" x2="38" y2="32" stroke="currentColor" strokeWidth="1.5" opacity="0.5"/>
+      <line x1="20" y1="2" x2="8" y2="24" stroke="currentColor" strokeWidth="1" opacity="0.35"/>
+      <line x1="20" y1="2" x2="32" y2="24" stroke="currentColor" strokeWidth="1" opacity="0.35"/>
+      <circle cx="20" cy="20" r="4" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+    </svg>
+  )
+}
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -289,72 +304,66 @@ export default function ApplicationForm() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#0a1628] flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-8 h-8 text-green-600" />
-          </div>
-          <h2 className="text-3xl font-black text-gray-900 mb-3">Application Submitted</h2>
-          <p className="text-gray-500 text-lg mb-2">We have your application on file.</p>
-          <p className="text-gray-400 text-sm">Our team will review it carefully. You'll hear from us when decisions are made.</p>
+          <AlphaLogo className="w-12 h-12 text-blue-400 mx-auto mb-6" />
+          <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-3">Application Received</p>
+          <h2 className="text-4xl font-black text-white mb-4 uppercase tracking-tight">You&rsquo;re In The Pool.</h2>
+          <p className="text-white/50 text-base mb-2">We have your application on file.</p>
+          <p className="text-white/30 text-sm">Our team will review it carefully. You'll hear from us when decisions are made.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#0a1628] flex flex-col">
 
       {/* ── Header ── */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <img
-              src="https://world.alpha.school/favicon.ico"
-              alt="Alpha World School"
-              className="w-7 h-7 rounded"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
+      <header className="border-b border-white/10 sticky top-0 z-40 bg-[#0a1628]/95 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlphaLogo className="w-8 h-8 text-white/80" />
             <div>
-              <span className="text-gray-900 font-bold text-sm">Alpha World School</span>
-              <span className="text-gray-400 text-xs block leading-none">Guide Application · 2026–2027</span>
+              <span className="text-white font-black text-sm tracking-wider uppercase">Alpha World School</span>
+              <span className="text-white/30 text-xs block leading-none tracking-wide">Guide Application · 2026–2027</span>
             </div>
           </div>
-          <span className="text-xs text-gray-400">Step {step} of {totalSteps}</span>
+          <span className="text-xs text-white/30 font-medium uppercase tracking-wider">Step {step} of {totalSteps}</span>
         </div>
 
         {/* Progress bar */}
-        <div className="h-0.5 bg-gray-100">
+        <div className="h-0.5 bg-white/5">
           <div
-            className="h-full bg-blue-600 transition-all duration-500 ease-out"
+            className="h-full bg-blue-400 transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
       </header>
 
-      {/* ── Step dots ── */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-2 overflow-x-auto">
+      {/* ── Step indicators ── */}
+      <div className="border-b border-white/5 bg-white/[0.02]">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-1 overflow-x-auto">
           {STEPS.map((s, i) => (
-            <div key={s.id} className="flex items-center gap-2 flex-shrink-0">
+            <div key={s.id} className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={() => s.id < step && setStep(s.id)}
-                className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${
-                  s.id === step ? 'text-blue-600' :
-                  s.id < step  ? 'text-gray-400 hover:text-gray-600 cursor-pointer' :
-                  'text-gray-300 cursor-default'
+                className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all ${
+                  s.id === step  ? 'bg-blue-500/20 text-blue-300 border border-blue-400/30' :
+                  s.id < step   ? 'text-white/40 hover:text-white/60 cursor-pointer' :
+                  'text-white/20 cursor-default'
                 }`}
               >
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                  s.id === step  ? 'bg-blue-600 text-white' :
-                  s.id < step   ? 'bg-gray-200 text-gray-500' :
-                  'bg-gray-100 text-gray-300'
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 border ${
+                  s.id === step  ? 'bg-blue-500 border-blue-400 text-white' :
+                  s.id < step   ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' :
+                  'border-white/10 text-white/20'
                 }`}>
                   {s.id < step ? '✓' : s.id}
                 </span>
-                {s.label}
+                <span className="hidden sm:inline">{s.label}</span>
               </button>
-              {i < STEPS.length - 1 && <span className="text-gray-200 text-xs">›</span>}
+              {i < STEPS.length - 1 && <span className="text-white/10 px-0.5">›</span>}
             </div>
           ))}
         </div>
@@ -367,9 +376,9 @@ export default function ApplicationForm() {
         {step === 1 && (
           <div className="space-y-6">
             <div>
-              <p className="text-blue-600 text-xs font-bold uppercase tracking-widest mb-1">Step 1 of 5</p>
-              <h1 className="text-2xl font-black text-gray-900">About You</h1>
-              <p className="text-gray-400 text-sm mt-1">Basic info. If a field does not apply, write "N/A."</p>
+              <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Step 1 of 5</p>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tight">About You</h1>
+              <p className="text-white/40 text-sm mt-2">Basic info. If a field does not apply, write "N/A."</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input label="Full Name" name="full_name" value={form.full_name} onChange={handleChange} required placeholder="Jane Smith" />
@@ -394,28 +403,28 @@ export default function ApplicationForm() {
         {step === 2 && (
           <div className="space-y-6">
             <div>
-              <p className="text-blue-600 text-xs font-bold uppercase tracking-widest mb-1">Step 2 of 5</p>
-              <h1 className="text-2xl font-black text-gray-900">The Builds</h1>
-              <p className="text-gray-400 text-sm mt-1">Three required Builds. One optional fourth. Submit each to the shared Drive folder from your invitation email.</p>
+              <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Step 2 of 5</p>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tight">The Builds</h1>
+              <p className="text-white/40 text-sm mt-2">Three required Builds. One optional fourth. Submit each to the shared Drive folder from your invitation email.</p>
             </div>
 
             <BuildCard number="1" title="The Workshop Sprint" testing="Life skills design, project orientation, taste, AI fluency" time="2 hours max" deliverable="Workshop artifact (slides / Notion / one-pager)">
-              <p className="text-gray-500 text-sm leading-relaxed">
-                Design and produce a real 90-minute kickoff workshop for your cohort of 5–7 students — anchored in one of: <span className="text-gray-800 font-medium">Food · Water · Empowerment · Education · Healthcare · Culture & Conservation · Community</span>. The workshop should launch a real project with a real output the community actually uses.
+              <p className="text-white/50 text-sm leading-relaxed">
+                Design and produce a real 90-minute kickoff workshop for your cohort of 5–7 students — anchored in one of: <span className="text-white/80 font-medium">Food · Water · Empowerment · Education · Healthcare · Culture & Conservation · Community</span>. The workshop should launch a real project with a real output the community actually uses.
               </p>
               <Input label="Build 1 Link or File Name" name="build1_link" value={form.build1_link} onChange={handleChange} placeholder="https://docs.google.com/... or Smith_Jane_Build1.pdf" />
             </BuildCard>
 
             <BuildCard number="2" title="The Cohort Experience" testing="Anticipating breaking points, design instinct, cultural humility" time="1.5–2 hours" deliverable="Two links: experience design + 3-min walkthrough video">
-              <div className="text-gray-500 text-sm leading-relaxed space-y-2">
+              <div className="text-white/50 text-sm leading-relaxed space-y-2">
                 <p>Design something that prevents a cohort from breaking. Pick one design constraint:</p>
                 <ul className="space-y-1 ml-4">
                   {['Assume your cohort has conflict by week 5.', 'Assume energy drops by mid-rotation.', 'Assume cultural missteps happen.', 'Assume someone wants to go home by week 10.'].map(c => (
-                    <li key={c} className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">·</span> {c}</li>
+                    <li key={c} className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">·</span> {c}</li>
                   ))}
                 </ul>
-                <button type="button" onClick={() => setShowExamples(true)} className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-500 text-xs font-semibold mt-1 transition-colors">
-                  <BookOpen className="w-3.5 h-3.5" /> See worked examples →
+                <button type="button" onClick={() => setShowExamples(true)} className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-xs font-bold uppercase tracking-wider mt-1 transition-colors border border-blue-400/30 hover:border-blue-400/60 px-3 py-1.5 rounded-full">
+                  <BookOpen className="w-3.5 h-3.5" /> See worked examples
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -425,14 +434,14 @@ export default function ApplicationForm() {
             </BuildCard>
 
             <BuildCard number="3" title="The Video" testing="Self-awareness, honesty, mindset" time="20 minutes" deliverable="One 90-second to 2-minute video">
-              <p className="text-gray-500 text-sm leading-relaxed">
-                Talk to us. 90 seconds to 2 minutes. Phone-quality is fine. Don't script. Don't read. <span className="text-gray-800">(1) What are you most excited about for this year?</span> <span className="text-gray-800">(2) What do you understand your role to be on this trip?</span>
+              <p className="text-white/50 text-sm leading-relaxed">
+                Talk to us. 90 seconds to 2 minutes. Phone-quality is fine. Don't script. Don't read. <span className="text-white/80">(1) What are you most excited about for this year?</span> <span className="text-white/80">(2) What do you understand your role to be on this trip?</span>
               </p>
               <Input label="Video Link" name="build3_video_link" value={form.build3_video_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive link" />
             </BuildCard>
 
             <BuildCard number="4" title="Language Tape" optional>
-              <p className="text-gray-500 text-sm leading-relaxed">
+              <p className="text-white/50 text-sm leading-relaxed">
                 If you speak a language other than English — especially Swahili, Spanish, or any language relevant to Kenya or Ecuador — talk to us in it. Anything natural. ≤60 seconds.
               </p>
               <Input label="Language Video Link (optional)" name="build4_language_link" value={form.build4_language_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive link" />
@@ -444,9 +453,9 @@ export default function ApplicationForm() {
         {step === 3 && (
           <div className="space-y-6">
             <div>
-              <p className="text-blue-600 text-xs font-bold uppercase tracking-widest mb-1">Step 3 of 5</p>
-              <h1 className="text-2xl font-black text-gray-900">Submission Check</h1>
-              <p className="text-gray-400 text-sm mt-1">Confirm your builds are uploaded and linked. Go back to fix anything missing.</p>
+              <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Step 3 of 5</p>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tight">Submission Check</h1>
+              <p className="text-white/40 text-sm mt-2">Confirm your builds are uploaded and linked. Go back to fix anything missing.</p>
             </div>
             <div className="space-y-3">
               {[
@@ -456,22 +465,22 @@ export default function ApplicationForm() {
                 { label: 'Build 3 — The Video', value: form.build3_video_link, required: true },
                 { label: 'Build 4 — Language Tape', value: form.build4_language_link, required: false },
               ].map(({ label, value, required }) => (
-                <div key={label} className={`flex items-center gap-4 px-5 py-4 rounded-2xl border ${value ? 'bg-green-50 border-green-200' : required ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200'}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${value ? 'bg-green-500' : required ? 'bg-orange-200' : 'bg-gray-200'}`}>
+                <div key={label} className={`flex items-center gap-4 px-5 py-4 rounded-2xl border ${value ? 'bg-emerald-500/10 border-emerald-500/20' : required ? 'bg-rose-500/10 border-rose-500/20' : 'bg-white/5 border-white/10'}`}>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 border ${value ? 'bg-emerald-500/20 border-emerald-500/40' : required ? 'bg-rose-500/10 border-rose-500/30' : 'border-white/10'}`}>
                     {value
-                      ? <CheckCircle className="w-4 h-4 text-white" />
-                      : <span className={`text-xs font-bold ${required ? 'text-orange-600' : 'text-gray-400'}`}>{required ? '!' : '–'}</span>
+                      ? <span className="text-emerald-400 font-black text-sm">✓</span>
+                      : <span className={`text-xs font-bold ${required ? 'text-rose-400' : 'text-white/20'}`}>{required ? '!' : '–'}</span>
                     }
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-sm font-semibold ${value ? 'text-green-800' : required ? 'text-orange-700' : 'text-gray-400'}`}>{label}</div>
+                    <div className={`text-sm font-bold uppercase tracking-wide ${value ? 'text-emerald-300' : required ? 'text-rose-300' : 'text-white/30'}`}>{label}</div>
                     {value
-                      ? <div className="text-xs text-gray-400 truncate mt-0.5">{value}</div>
-                      : <div className={`text-xs mt-0.5 ${required ? 'text-orange-500' : 'text-gray-400'}`}>{required ? 'Missing — go back and add a link' : 'Optional — skip if not applicable'}</div>
+                      ? <div className="text-xs text-white/30 truncate mt-0.5">{value}</div>
+                      : <div className={`text-xs mt-0.5 ${required ? 'text-rose-400/70' : 'text-white/30'}`}>{required ? 'Missing — go back and add a link' : 'Optional — skip if not applicable'}</div>
                     }
                   </div>
                   {!value && required && (
-                    <button onClick={() => setStep(2)} className="text-xs text-blue-600 hover:text-blue-500 font-semibold flex-shrink-0">Fix →</button>
+                    <button onClick={() => setStep(2)} className="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider flex-shrink-0 border border-blue-400/30 px-3 py-1 rounded-full transition-colors">Fix</button>
                   )}
                 </div>
               ))}
@@ -483,13 +492,13 @@ export default function ApplicationForm() {
         {step === 4 && (
           <div className="space-y-6">
             <div>
-              <p className="text-blue-600 text-xs font-bold uppercase tracking-widest mb-1">Step 4 of 5</p>
-              <h1 className="text-2xl font-black text-gray-900">References & Endorsement</h1>
-              <p className="text-gray-400 text-sm mt-1">Two internal Alpha references. One must be your direct manager or Head of School.</p>
+              <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Step 4 of 5</p>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tight">References</h1>
+              <p className="text-white/40 text-sm mt-2">Two internal Alpha references. One must be your direct manager or Head of School.</p>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
-              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Reference 1</h3>
+            <div className="bg-white/5 rounded-2xl border border-white/10 p-5 space-y-4">
+              <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Reference 1</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input label="Name" name="reference1_name" value={form.reference1_name} onChange={handleChange} />
                 <Input label="Role" name="reference1_role" value={form.reference1_role} onChange={handleChange} />
@@ -499,8 +508,8 @@ export default function ApplicationForm() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
-              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Reference 2</h3>
+            <div className="bg-white/5 rounded-2xl border border-white/10 p-5 space-y-4">
+              <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Reference 2</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input label="Name" name="reference2_name" value={form.reference2_name} onChange={handleChange} />
                 <Input label="Role" name="reference2_role" value={form.reference2_role} onChange={handleChange} />
@@ -510,17 +519,17 @@ export default function ApplicationForm() {
               </div>
             </div>
 
-            <div className="bg-blue-50 rounded-2xl border border-blue-200 p-5 space-y-4">
+            <div className="bg-blue-500/10 rounded-2xl border border-blue-400/20 p-5 space-y-4">
               <div>
-                <h3 className="text-sm font-bold text-blue-700">Manager / Head of School Endorsement</h3>
-                <p className="text-xs text-gray-500 mt-1">To be filled out by the candidate's direct manager or Head of School — <em>not</em> by the candidate.</p>
+                <h3 className="text-xs font-black text-blue-300 uppercase tracking-widest">Manager / Head of School Endorsement</h3>
+                <p className="text-xs text-white/30 mt-1">To be filled out by the candidate's direct manager or Head of School — <em>not</em> by the candidate.</p>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-800 mb-2">Has this guide had your verbal support to apply?</label>
+                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-3">Has this guide had your verbal support to apply?</label>
                 <div className="flex flex-wrap gap-3">
                   {['Yes', 'No', 'Conversation pending'].map(opt => (
-                    <label key={opt} className={`flex items-center gap-2 px-4 py-2 rounded-xl border cursor-pointer text-sm transition-all ${form.manager_endorsement_status === opt ? 'border-blue-500 bg-white text-blue-700 font-semibold' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}>
-                      <input type="radio" name="manager_endorsement_status" value={opt} checked={form.manager_endorsement_status === opt} onChange={handleChange} className="accent-blue-600" />
+                    <label key={opt} className={`flex items-center gap-2 px-4 py-2 rounded-full border cursor-pointer text-sm font-bold uppercase tracking-wide transition-all ${form.manager_endorsement_status === opt ? 'border-blue-400/60 bg-blue-500/20 text-blue-300' : 'border-white/10 text-white/30 hover:border-white/20'}`}>
+                      <input type="radio" name="manager_endorsement_status" value={opt} checked={form.manager_endorsement_status === opt} onChange={handleChange} className="sr-only" />
                       {opt}
                     </label>
                   ))}
@@ -539,46 +548,46 @@ export default function ApplicationForm() {
         {step === 5 && (
           <div className="space-y-6">
             <div>
-              <p className="text-blue-600 text-xs font-bold uppercase tracking-widest mb-1">Step 5 of 5</p>
-              <h1 className="text-2xl font-black text-gray-900">Acknowledgments & Signature</h1>
-              <p className="text-gray-400 text-sm mt-1">Check each line. Each one is a real thing you are agreeing to.</p>
+              <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Step 5 of 5</p>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tight">Acknowledge & Sign</h1>
+              <p className="text-white/40 text-sm mt-2">Check each line. Each one is a real thing you are agreeing to.</p>
             </div>
             <div className="space-y-3">
               {acknowledgments.map((text, i) => {
                 const key = `ack_${i + 1}` as keyof FormData
                 return (
-                  <label key={i} className={`flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${form[key] ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
-                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${form[key] ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white'}`}>
-                      {form[key] && <CheckCircle className="w-3 h-3 text-white" />}
+                  <label key={i} className={`flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${form[key] ? 'border-blue-400/30 bg-blue-500/10' : 'border-white/10 bg-white/5 hover:border-white/20'}`}>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${form[key] ? 'bg-blue-500 border-blue-400' : 'border-white/20'}`}>
+                      {form[key] && <span className="text-white text-xs font-black">✓</span>}
                     </div>
                     <input type="checkbox" name={key} checked={form[key] as boolean} onChange={handleChange} className="sr-only" />
-                    <span className="text-sm text-gray-700 leading-relaxed">{text}</span>
+                    <span className="text-sm text-white/60 leading-relaxed">{text}</span>
                   </label>
                 )
               })}
             </div>
 
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
-              <p className="text-gray-500 text-sm mb-4 italic">I am submitting this application of my own volition. I have read everything in this packet. I understand what I am signing up for.</p>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+              <p className="text-white/30 text-sm mb-4 italic">I am submitting this application of my own volition. I have read everything in this packet. I understand what I am signing up for.</p>
               <Input label="Full Name (Signature)" name="applicant_name" value={form.applicant_name} onChange={handleChange} required placeholder="Type your full legal name" />
             </div>
 
             {error && (
-              <div className="flex items-start gap-3 px-4 py-3 bg-rose-50 border border-rose-200 rounded-xl">
-                <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
-                <p className="text-rose-700 text-sm">{error}</p>
+              <div className="flex items-start gap-3 px-4 py-3 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+                <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+                <p className="text-rose-300 text-sm">{error}</p>
               </div>
             )}
           </div>
         )}
 
         {/* ── Navigation ── */}
-        <div className="flex items-center justify-between mt-10 pt-6 border-t border-gray-200">
+        <div className="flex items-center justify-between mt-12 pt-6 border-t border-white/10">
           <button
             type="button"
             onClick={() => setStep(s => s - 1)}
             disabled={step === 1}
-            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-500 hover:text-gray-700 disabled:opacity-0 transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-white/30 hover:text-white/60 disabled:opacity-0 transition-colors rounded-full border border-transparent hover:border-white/10"
           >
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
@@ -587,7 +596,7 @@ export default function ApplicationForm() {
             <button
               type="button"
               onClick={() => setStep(s => s + 1)}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors shadow-sm"
+              className="flex items-center gap-2 px-8 py-3 bg-white text-[#0a1628] font-black uppercase tracking-wider text-sm rounded-full hover:bg-white/90 transition-colors shadow-lg"
             >
               Continue <ArrowRight className="w-4 h-4" />
             </button>
@@ -596,7 +605,7 @@ export default function ApplicationForm() {
               type="button"
               onClick={handleSubmit}
               disabled={submitting}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold rounded-xl transition-colors shadow-sm"
+              className="flex items-center gap-2 px-8 py-3 bg-white text-[#0a1628] font-black uppercase tracking-wider text-sm rounded-full hover:bg-white/90 disabled:opacity-50 transition-colors shadow-lg"
             >
               {submitting ? 'Submitting…' : 'Submit Application'} {!submitting && <ArrowRight className="w-4 h-4" />}
             </button>
