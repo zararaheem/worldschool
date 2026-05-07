@@ -186,7 +186,7 @@ function ExamplesModal({ onClose }: { onClose: () => void }) {
             <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10">
               {[
                 { label: 'Strong', color: 'green', items: ['A repeating structural feature, not a one-time event', 'Specifies sequence, timing, prompts, what the guide says', 'Names what happens when it goes sideways', 'Local community as co-facilitators, not scenery'] },
-                { label: 'Weak', color: 'rose', items: ["Vague principle ("we'll have honest conversations")", "A one-time workshop that doesn't fit the cohort", 'Local community featured but not consulted', 'Design treats the community as a teaching prop'] },
+                { label: 'Weak', color: 'rose', items: ["Vague principle (\"we'll have honest conversations\")", "A one-time workshop that doesn't fit the cohort", 'Local community featured but not consulted', 'Design treats the community as a teaching prop'] },
               ].map(({ label, color, items }) => (
                 <div key={label} className="p-4">
                   <div className={`inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3 ${color === 'green' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-rose-500/10 text-rose-300'}`}>{label}</div>
@@ -271,6 +271,7 @@ function AlphaLogo({ className = '' }: { className?: string }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ApplicationForm() {
+  const [started, setStarted] = useState(false)
   const [step, setStep] = useState(1)
   const [form, setForm] = useState<FormData>(initialForm)
   const [submitting, setSubmitting] = useState(false)
@@ -311,6 +312,79 @@ export default function ApplicationForm() {
           <h2 className="text-4xl font-black text-white mb-4 uppercase tracking-tight">You&rsquo;re In The Pool.</h2>
           <p className="text-white/50 text-base mb-2">We have your application on file.</p>
           <p className="text-white/30 text-sm">Our team will review it carefully. You'll hear from us when decisions are made.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!started) {
+    return (
+      <div className="min-h-screen bg-[#0a1628] flex flex-col">
+        {/* Nav */}
+        <nav className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <AlphaLogo className="w-7 h-7 text-white/80" />
+            <div>
+              <span className="text-white font-black text-xs tracking-widest uppercase">Alpha World School</span>
+              <span className="text-white/30 text-xs block leading-none tracking-wide uppercase">For Guides</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-white/40 uppercase tracking-wider px-4 py-1.5 rounded-full border border-white/10">For Students</span>
+            <span className="text-xs font-bold text-white/40 uppercase tracking-wider px-4 py-1.5 rounded-full">For Parents</span>
+          </div>
+        </nav>
+
+        {/* Hero */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-20 text-center">
+          <div className="flex items-center gap-3 mb-8 opacity-60">
+            <AlphaLogo className="w-5 h-5 text-white" />
+            <span className="text-white text-xs font-bold uppercase tracking-widest">Alpha World School</span>
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tight leading-none mb-6 max-w-3xl">
+            Guide Application
+          </h1>
+
+          <p className="text-white/50 text-lg md:text-xl max-w-xl mb-4 leading-relaxed">
+            This is not a year off. This is the hardest job Alpha has ever asked anyone to do — and the most rewarding year of your career.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-12">
+            {['38 Weeks', '3 Continents', '20 Students', 'Kenya · Ecuador · USA'].map((stat, i) => (
+              <span key={stat} className="flex items-center gap-2 text-white/40 text-sm">
+                {i > 0 && <span className="w-1 h-1 rounded-full bg-white/20" />}
+                {stat}
+              </span>
+            ))}
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <button
+              onClick={() => setStarted(true)}
+              className="flex items-center gap-2 px-8 py-3.5 bg-blue-500 hover:bg-blue-400 text-white font-black uppercase tracking-wider text-sm rounded-full transition-colors shadow-lg shadow-blue-500/20"
+            >
+              Apply Now <ArrowRight className="w-4 h-4" />
+            </button>
+            <a
+              href="https://world.alpha.school"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-8 py-3.5 text-white/60 hover:text-white font-bold uppercase tracking-wider text-sm rounded-full border border-white/20 hover:border-white/40 transition-colors"
+            >
+              Explore the Program
+            </a>
+          </div>
+        </div>
+
+        {/* Stats bar */}
+        <div className="border-t border-white/10 grid grid-cols-3">
+          {[['20', 'Students Selected'], ['3', 'Continents'], ['1', 'School Year']].map(([n, label]) => (
+            <div key={label} className="py-8 flex flex-col items-center gap-1 border-r last:border-r-0 border-white/10">
+              <span className="text-3xl font-black text-blue-400">{n}</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-white/30">{label}</span>
+            </div>
+          ))}
         </div>
       </div>
     )
