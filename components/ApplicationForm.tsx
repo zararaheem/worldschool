@@ -2,37 +2,120 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CheckCircle, AlertCircle, X, BookOpen, ChevronDown, ChevronRight } from 'lucide-react'
+import {
+  CheckCircle, AlertCircle, X, BookOpen,
+  ChevronDown, ChevronRight, ArrowRight, ArrowLeft,
+} from 'lucide-react'
 
-// ── Worked Examples Modal ────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface FormData {
+  full_name: string; email: string; phone: string; role_at_alpha: string
+  campus: string; years_at_alpha: string; direct_manager: string; head_of_school: string
+  languages_spoken: string; prior_international_travel: string
+  developing_world_experience: string; health_considerations: string
+  family_obligations: string; emergency_contact: string
+  build1_link: string; build2_design_link: string; build2_video_link: string
+  build3_video_link: string; build4_language_link: string
+  reference1_name: string; reference1_role: string; reference1_relationship: string
+  reference1_phone: string; reference1_email: string
+  reference2_name: string; reference2_role: string; reference2_relationship: string
+  reference2_phone: string; reference2_email: string
+  manager_endorsement_status: string; manager_endorsement_text: string
+  endorser_name: string; endorser_role: string
+  ack_1: boolean; ack_2: boolean; ack_3: boolean; ack_4: boolean
+  ack_5: boolean; ack_6: boolean; ack_7: boolean; ack_8: boolean
+  applicant_name: string
+}
+
+const initialForm: FormData = {
+  full_name: '', email: '', phone: '', role_at_alpha: '', campus: '', years_at_alpha: '',
+  direct_manager: '', head_of_school: '', languages_spoken: '', prior_international_travel: '',
+  developing_world_experience: '', health_considerations: '', family_obligations: '', emergency_contact: '',
+  build1_link: '', build2_design_link: '', build2_video_link: '', build3_video_link: '', build4_language_link: '',
+  reference1_name: '', reference1_role: '', reference1_relationship: '', reference1_phone: '', reference1_email: '',
+  reference2_name: '', reference2_role: '', reference2_relationship: '', reference2_phone: '', reference2_email: '',
+  manager_endorsement_status: '', manager_endorsement_text: '', endorser_name: '', endorser_role: '',
+  ack_1: false, ack_2: false, ack_3: false, ack_4: false,
+  ack_5: false, ack_6: false, ack_7: false, ack_8: false,
+  applicant_name: '',
+}
+
+const STEPS = [
+  { id: 1, label: 'About You' },
+  { id: 2, label: 'The Builds' },
+  { id: 3, label: 'Submission Check' },
+  { id: 4, label: 'References' },
+  { id: 5, label: 'Sign & Submit' },
+]
+
+// ─── Shared field components ──────────────────────────────────────────────────
+
+function Input({ label, name, value, onChange, required, placeholder, type = 'text', hint }: {
+  label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  required?: boolean; placeholder?: string; type?: string; hint?: string
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-semibold text-gray-800 mb-1">
+        {label}{required && <span className="text-blue-600 ml-1">*</span>}
+      </label>
+      {hint && <p className="text-xs text-gray-400 mb-1.5">{hint}</p>}
+      <input
+        type={type} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
+        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm shadow-sm"
+      />
+    </div>
+  )
+}
+
+function Textarea({ label, name, value, onChange, required, placeholder, rows = 3, hint }: {
+  label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+  required?: boolean; placeholder?: string; rows?: number; hint?: string
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-semibold text-gray-800 mb-1">
+        {label}{required && <span className="text-blue-600 ml-1">*</span>}
+      </label>
+      {hint && <p className="text-xs text-gray-400 mb-1.5">{hint}</p>}
+      <textarea
+        name={name} value={value} onChange={onChange} required={required} placeholder={placeholder} rows={rows}
+        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all resize-none text-sm shadow-sm"
+      />
+    </div>
+  )
+}
+
+// ─── Examples Modal ───────────────────────────────────────────────────────────
 
 const constraints = [
   {
     id: 'conflict', label: 'Conflict by Week 5', color: 'amber',
     examples: [
-      { title: 'The Sunday Council', summary: 'Weekly structured circle where friction gets surfaced before it festers.', detail: `Every Sunday at 6pm, the cohort sits in a circle for 30 minutes. Each person gets 90 seconds to name one thing they appreciated about another cohort member that week, and one thing that's grating on them. Structured rules — start with appreciation, name a specific behavior (not a personality trait), no debating in the moment. Guide facilitates the first three weeks, then a rotating cohort member runs it. By week 5, friction gets surfaced in real-time before it festers into factions.` },
-      { title: 'The Repair Protocol', summary: 'A laminated 4-step conflict resolution process the whole cohort commits to in week 1.', detail: `Cohort agrees in week 1 to a written 4-step protocol for handling friction. When something happens, the protocol says you say "I need a Repair." Within 24 hours, the two students sit with a guide for 20 minutes using a specific 4-question template (what happened / how it landed / what I want / what I'll do differently). No avoidance, no triangulating through other cohort members. The protocol is laminated and lives on the wall of every common space all year.` },
+      { title: 'The Sunday Council', summary: 'Weekly structured circle where friction gets surfaced before it festers.', detail: `Every Sunday at 6pm, the cohort sits in a circle for 30 minutes. Each person gets 90 seconds to name one thing they appreciated about another cohort member that week, and one thing that's grating on them. Guide facilitates the first three weeks, then a rotating cohort member runs it. By week 5, friction gets surfaced in real-time before it festers into factions.` },
+      { title: 'The Repair Protocol', summary: 'A laminated 4-step conflict resolution process the whole cohort commits to in week 1.', detail: `Cohort agrees in week 1 to a written 4-step protocol for handling friction. When something happens, the protocol says you say "I need a Repair." Within 24 hours, the two students sit with a guide for 20 minutes using a specific 4-question template. No avoidance, no triangulating. The protocol is laminated and lives on the wall of every common space all year.` },
     ],
   },
   {
     id: 'energy', label: 'Energy Drop at Mid-Rotation', color: 'green',
     examples: [
-      { title: 'Friday Bring-Your-Best', summary: 'Rotating student-led recharge sessions that distribute ownership and spotlight.', detail: `Every Friday afternoon, one cohort member designs and leads a 30-minute recharge activity for the group — could be a game from their hometown, a skill they want to teach, a meditation, a dance, whatever. Rotates so every kid gets two slots per rotation. Solves energy AND distributes leadership ownership AND gives every kid a recurring moment in the spotlight.` },
-      { title: 'The Midpoint Reset Day', summary: "A structured retreat day built into the calendar at each rotation's exact midpoint.", detail: `Built into the calendar at the exact midpoint of each rotation (around week 4). Looks like a structured retreat day: morning is solo journaling against three specific prompts, afternoon is a cohort conversation where everyone names one behavior they want to recommit to and one they want to drop, evening is a shared meal with a gratitude rotation. Built-in reset valve before the energy crash actually compounds.` },
+      { title: 'Friday Bring-Your-Best', summary: 'Rotating student-led recharge sessions that distribute ownership and spotlight.', detail: `Every Friday afternoon, one cohort member designs and leads a 30-minute recharge activity for the group. Rotates so every kid gets two slots per rotation. Solves energy AND distributes leadership ownership AND gives every kid a recurring moment in the spotlight.` },
+      { title: 'The Midpoint Reset Day', summary: "A structured retreat day built into the calendar at each rotation's exact midpoint.", detail: `Built into the calendar at the exact midpoint of each rotation. Morning is solo journaling, afternoon is a cohort conversation where everyone names one behavior they want to recommit to and one they want to drop, evening is a shared meal with a gratitude rotation.` },
     ],
   },
   {
     id: 'cultural', label: 'Cultural Missteps', color: 'blue',
     examples: [
-      { title: 'The What-We-Got-Wrong Debrief', summary: 'Friday evening sessions in the local language, co-facilitated by local guides.', detail: `Friday evenings in the local language (with the local guide co-facilitating). Each cohort member shares one cultural moment from the week where they felt unsure or knew they messed up. The local guide normalizes the mistake — "that's a normal thing to get wrong, here's why" — and teaches the next-level cultural understanding. Transforms shame into curriculum.` },
-      { title: 'The Cultural Compass', summary: 'A pre-arrival workshop covering 20 cultural norms through scenario role-play.', detail: `A 60-minute pre-arrival workshop the day before each rotation begins. Covers 20 specific cultural norms, then role-plays 10 hard scenarios, then each student writes down the specific moment they expect to mess up first. By naming it ahead, when it happens it's predicted, not catastrophic.` },
+      { title: 'The What-We-Got-Wrong Debrief', summary: 'Friday evening sessions co-facilitated by local guides.', detail: `Friday evenings in the local language (with the local guide co-facilitating). Each cohort member shares one cultural moment from the week where they felt unsure or knew they messed up. The local guide normalizes the mistake and teaches the next-level cultural understanding. Transforms shame into curriculum.` },
+      { title: 'The Cultural Compass', summary: 'A pre-arrival workshop covering 20 cultural norms through scenario role-play.', detail: `A 60-minute pre-arrival workshop the day before each rotation begins. Covers 20 specific cultural norms, then role-plays 10 hard scenarios. By naming the misstep ahead of time, when it happens it's predicted, not catastrophic.` },
     ],
   },
   {
     id: 'homesick', label: 'Someone Wants to Go Home (Week 10)', color: 'rose',
     examples: [
-      { title: 'Buddy-Up Pairs', summary: 'Peer accountability pairs with daily check-ins who rotate every rotation.', detail: `Every cohort member is paired with one specific peer they're responsible for. Daily 5-minute check-ins built into the schedule, weekly 30-minute deeper conversation on Sundays. Pairs rotate every rotation. So when someone starts to spiral, their buddy notices it the day it starts, and there's already a structure for that conversation. Distributes the emotional load.` },
-      { title: 'The Sunday Letter Home', summary: 'Weekly letters/voice memos home that channel homesickness into connection.', detail: `Every Sunday at 4pm, every cohort member writes a letter or records a voice memo to a parent, grandparent, sibling, or friend back home. Then each shares one sentence from theirs with the cohort. Channels homesickness into connection (and into a written record they'll have forever) rather than avoidance.` },
+      { title: 'Buddy-Up Pairs', summary: 'Peer accountability pairs with daily check-ins who rotate every rotation.', detail: `Every cohort member is paired with one specific peer they're responsible for. Daily 5-minute check-ins built into the schedule, weekly 30-minute deeper conversation on Sundays. Pairs rotate every rotation. When someone starts to spiral, their buddy notices it the day it starts.` },
+      { title: 'The Sunday Letter Home', summary: 'Weekly letters/voice memos home that channel homesickness into connection.', detail: `Every Sunday at 4pm, every cohort member writes a letter or records a voice memo to someone back home. Then each shares one sentence from theirs with the cohort. Channels homesickness into connection rather than avoidance.` },
     ],
   },
 ]
@@ -85,7 +168,7 @@ function ExamplesModal({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 w-full max-w-2xl mx-4 my-10 bg-white rounded-2xl border border-gray-200 shadow-2xl">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 sticky top-0 bg-white rounded-t-2xl">
           <div>
             <h2 className="font-bold text-gray-900">Worked Examples — Build 2</h2>
             <p className="text-xs text-gray-500 mt-0.5">Click any constraint to see what a strong submission looks like</p>
@@ -103,7 +186,7 @@ function ExamplesModal({ onClose }: { onClose: () => void }) {
             <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200">
               {[
                 { label: 'Strong', color: 'green', items: ['A repeating structural feature, not a one-time event', 'Specifies sequence, timing, prompts, what the guide says', 'Names what happens when it goes sideways', 'Local community as co-facilitators, not scenery'] },
-                { label: 'Weak', color: 'rose', items: ['Vague principle ("we\'ll have honest conversations")', 'A one-time workshop that doesn\'t fit the cohort', 'Local community featured but not consulted', 'Design treats the community as a teaching prop'] },
+                { label: 'Weak', color: 'rose', items: ["Vague principle ("we'll have honest conversations")", "A one-time workshop that doesn't fit the cohort", 'Local community featured but not consulted', 'Design treats the community as a teaching prop'] },
               ].map(({ label, color, items }) => (
                 <div key={label} className="p-4">
                   <div className={`inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3 ${color === 'green' ? 'bg-green-100 text-green-700' : 'bg-rose-100 text-rose-700'}`}>{label}</div>
@@ -125,174 +208,63 @@ function ExamplesModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-interface FormData {
-  // Section 1
-  full_name: string
-  email: string
-  phone: string
-  role_at_alpha: string
-  campus: string
-  years_at_alpha: string
-  direct_manager: string
-  head_of_school: string
-  languages_spoken: string
-  prior_international_travel: string
-  developing_world_experience: string
-  health_considerations: string
-  family_obligations: string
-  emergency_contact: string
-  // Section 2
-  build1_link: string
-  build2_design_link: string
-  build2_video_link: string
-  build3_video_link: string
-  build4_language_link: string
-  // Section 4
-  reference1_name: string
-  reference1_role: string
-  reference1_relationship: string
-  reference1_phone: string
-  reference1_email: string
-  reference2_name: string
-  reference2_role: string
-  reference2_relationship: string
-  reference2_phone: string
-  reference2_email: string
-  manager_endorsement_status: string
-  manager_endorsement_text: string
-  endorser_name: string
-  endorser_role: string
-  // Section 5
-  ack_1: boolean
-  ack_2: boolean
-  ack_3: boolean
-  ack_4: boolean
-  ack_5: boolean
-  ack_6: boolean
-  ack_7: boolean
-  ack_8: boolean
-  applicant_name: string
-}
+// ─── Build card ───────────────────────────────────────────────────────────────
 
-const initialForm: FormData = {
-  full_name: '', email: '', phone: '', role_at_alpha: '', campus: '', years_at_alpha: '',
-  direct_manager: '', head_of_school: '', languages_spoken: '', prior_international_travel: '',
-  developing_world_experience: '', health_considerations: '', family_obligations: '', emergency_contact: '',
-  build1_link: '', build2_design_link: '', build2_video_link: '', build3_video_link: '', build4_language_link: '',
-  reference1_name: '', reference1_role: '', reference1_relationship: '', reference1_phone: '', reference1_email: '',
-  reference2_name: '', reference2_role: '', reference2_relationship: '', reference2_phone: '', reference2_email: '',
-  manager_endorsement_status: '', manager_endorsement_text: '', endorser_name: '', endorser_role: '',
-  ack_1: false, ack_2: false, ack_3: false, ack_4: false,
-  ack_5: false, ack_6: false, ack_7: false, ack_8: false,
-  applicant_name: '',
-}
-
-function Input({ label, name, value, onChange, required, placeholder, type = 'text' }: {
-  label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  required?: boolean; placeholder?: string; type?: string
+function BuildCard({ number, title, testing, time, deliverable, optional, children }: {
+  number: string; title: string; testing?: string; time?: string; deliverable?: string
+  optional?: boolean; children: React.ReactNode
 }) {
   return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">
-        {label}{required && <span className="text-blue-600 ml-1">*</span>}
-      </label>
-      <input
-        type={type}
-        name={name}
-        value={value}
-        onChange={onChange}
-        required={required}
-        placeholder={placeholder}
-        className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors text-sm"
-      />
-    </div>
-  )
-}
-
-function Textarea({ label, name, value, onChange, required, placeholder, rows = 3, hint }: {
-  label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  required?: boolean; placeholder?: string; rows?: number; hint?: string
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">
-        {label}{required && <span className="text-blue-600 ml-1">*</span>}
-      </label>
-      {hint && <p className="text-xs text-gray-400 mb-2">{hint}</p>}
-      <textarea
-        name={name}
-        value={value}
-        onChange={onChange}
-        required={required}
-        placeholder={placeholder}
-        rows={rows}
-        className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none text-sm"
-      />
-    </div>
-  )
-}
-
-function SectionHeader({ number, title, subtitle }: { number: string; title: string; subtitle?: string }) {
-  return (
-    <div className="mb-6 pb-4 border-b border-gray-200">
-      <div className="flex items-center gap-3 mb-1">
-        <span className="w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">{number}</span>
-        <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wider">{title}</h2>
-      </div>
-      {subtitle && <p className="text-gray-500 text-sm ml-10">{subtitle}</p>}
-    </div>
-  )
-}
-
-function BuildCard({ number, title, testing, time, deliverable, children }: {
-  number: string; title: string; testing: string; time: string; deliverable: string; children: React.ReactNode
-}) {
-  return (
-    <div className="rounded-xl border border-gray-200 overflow-hidden mb-6">
-      <div className="px-5 py-4 bg-gray-50 border-b border-gray-200">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Build {number}</span>
+    <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white shadow-sm">
+      <div className="px-5 py-4 bg-gray-50 border-b border-gray-200 flex items-center gap-3">
+        <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 ${optional ? 'bg-gray-200 text-gray-500' : 'bg-blue-600 text-white'}`}>
+          {number}
+        </span>
+        <div>
+          {optional && <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Optional</span>}
+          <h3 className="font-bold text-gray-900 text-sm">{title}</h3>
         </div>
-        <h3 className="font-bold text-gray-900">{title}</h3>
       </div>
-      <div className="p-5 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-          <div className="bg-gray-100 rounded-lg p-3">
-            <div className="text-gray-400 uppercase tracking-wider mb-1 font-medium">Testing</div>
-            <div className="text-gray-700">{testing}</div>
-          </div>
-          <div className="bg-gray-100 rounded-lg p-3">
-            <div className="text-gray-400 uppercase tracking-wider mb-1 font-medium">Time</div>
-            <div className="text-gray-700">{time}</div>
-          </div>
-          <div className="bg-gray-100 rounded-lg p-3">
-            <div className="text-gray-400 uppercase tracking-wider mb-1 font-medium">Deliverable</div>
-            <div className="text-gray-700">{deliverable}</div>
-          </div>
+      {testing && (
+        <div className="grid grid-cols-3 gap-0 border-b border-gray-100">
+          {[['Testing', testing], ['Time', time!], ['Deliverable', deliverable!]].map(([k, v]) => (
+            <div key={k} className="px-4 py-3 border-r last:border-r-0 border-gray-100">
+              <div className="text-xs text-gray-400 uppercase tracking-wider mb-0.5 font-medium">{k}</div>
+              <div className="text-xs text-gray-700">{v}</div>
+            </div>
+          ))}
         </div>
-        {children}
-      </div>
+      )}
+      <div className="p-5 space-y-4">{children}</div>
     </div>
   )
 }
+
+// ─── Acknowledgment text ──────────────────────────────────────────────────────
 
 const acknowledgments = [
   'I understand this is a job. It is not a vacation.',
   'I understand I will be the primary 24/7 caretaker for 5–7 students for multiple weeks at a time, including travel time and re-entry weeks.',
   'I understand I will be away from my home, family, and routines for two extended international rotations and one U.S.-based rotation.',
-  'I understand I am responsible for upholding Alpha\'s three commitments — students love school, learn 2x in 2 hours, and learn life skills — in environments where the systems and tools we use at home are not available.',
+  "I understand I am responsible for upholding Alpha's three commitments — students love school, learn 2x in 2 hours, and learn life skills — in environments where the systems and tools we use at home are not available.",
   'I understand I will hold both students AND myself to a high physical, mental, emotional, and academic standard for the full year.',
   'I understand that when something goes wrong — medical, emotional, logistical — I am the first responder until the medical lead or local guide is on the scene.',
   'I understand that I represent Alpha to communities, parents, and partners who have trusted us with their kids and their land.',
   'My direct manager and Head of School are aware that I am applying.',
 ]
 
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export default function ApplicationForm() {
+  const [step, setStep] = useState(1)
   const [form, setForm] = useState<FormData>(initialForm)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showExamples, setShowExamples] = useState(false)
+
+  const totalSteps = STEPS.length
+  const progress = ((step - 1) / (totalSteps - 1)) * 100
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
@@ -303,322 +275,336 @@ export default function ApplicationForm() {
     }
   }
 
-  const allAcksChecked = form.ack_1 && form.ack_2 && form.ack_3 && form.ack_4 && form.ack_5 && form.ack_6 && form.ack_7 && form.ack_8
+  const allAcksChecked = [1,2,3,4,5,6,7,8].every(n => form[`ack_${n}` as keyof FormData])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!allAcksChecked) {
-      setError('Please initial all acknowledgments before submitting.')
-      return
-    }
+  const handleSubmit = async () => {
+    if (!allAcksChecked) { setError('Please check all acknowledgments before submitting.'); return }
     setSubmitting(true)
     setError(null)
-
     const { error: dbError } = await supabase.from('guide_applications').insert([form])
-    if (dbError) {
-      setError('Something went wrong. Please try again or email apply@alphaworldschool.com.')
-      setSubmitting(false)
-      return
-    }
+    if (dbError) { setError('Something went wrong. Please try again or email apply@alphaworldschool.com.'); setSubmitting(false); return }
     setSubmitted(true)
     setSubmitting(false)
   }
 
   if (submitted) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
-          <CheckCircle className="w-8 h-8 text-green-600" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-8 h-8 text-green-600" />
+          </div>
+          <h2 className="text-3xl font-black text-gray-900 mb-3">Application Submitted</h2>
+          <p className="text-gray-500 text-lg mb-2">We have your application on file.</p>
+          <p className="text-gray-400 text-sm">Our team will review it carefully. You'll hear from us when decisions are made.</p>
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Application Submitted</h2>
-        <p className="text-gray-700 text-lg mb-3">
-          We have your application on file. Our team will review it carefully.
-        </p>
-        <p className="text-gray-400">
-          You'll hear from us when decisions are made. In the meantime, keep being the person who applied.
-        </p>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl mx-auto px-4 py-10 space-y-12">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
 
-      {/* SECTION 1 */}
-      <section>
-        <SectionHeader number="1" title="About You" subtitle='Basic info. If a field does not apply, write "N/A."' />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <Input label="Full Name" name="full_name" value={form.full_name} onChange={handleChange} required placeholder="Jane Smith" />
-          <Input label="Email" name="email" value={form.email} onChange={handleChange} required placeholder="jane@alpha.school" type="email" />
-          <Input label="Phone" name="phone" value={form.phone} onChange={handleChange} placeholder="+1 (555) 000-0000" />
-          <Input label="Current Role at Alpha" name="role_at_alpha" value={form.role_at_alpha} onChange={handleChange} required placeholder="e.g. Guide, Academic Coach" />
-          <Input label="Campus" name="campus" value={form.campus} onChange={handleChange} placeholder="e.g. Austin, NYC" />
-          <Input label="Years at Alpha" name="years_at_alpha" value={form.years_at_alpha} onChange={handleChange} placeholder="e.g. 2 years" />
-          <Input label="Direct Manager" name="direct_manager" value={form.direct_manager} onChange={handleChange} placeholder="Name of direct manager" />
-          <Input label="Head of School" name="head_of_school" value={form.head_of_school} onChange={handleChange} placeholder="Name of Head of School" />
-        </div>
-        <div className="mt-5 space-y-5">
-          <Textarea
-            label="Languages Spoken"
-            name="languages_spoken"
-            value={form.languages_spoken}
-            onChange={handleChange}
-            placeholder="English (native), Spanish (conversational), Swahili (basic)"
-            hint="Note proficiency: conversational, fluent, or native"
-          />
-          <Textarea
-            label="Prior International Travel"
-            name="prior_international_travel"
-            value={form.prior_international_travel}
-            onChange={handleChange}
-            placeholder="Kenya (3 weeks, community development), Ecuador (1 month, volunteer teaching)..."
-            hint="List countries, length of stay, and purpose"
-            rows={3}
-          />
-          <Textarea
-            label="Developing-World Living Experience"
-            name="developing_world_experience"
-            value={form.developing_world_experience}
-            onChange={handleChange}
-            placeholder="Yes — spent 6 weeks in rural Guatemala building water systems with a local NGO..."
-            hint="Have you spent 2+ weeks living in a developing-world setting? Y/N — describe"
-            rows={3}
-          />
-          <Textarea
-            label="Health Considerations"
-            name="health_considerations"
-            value={form.health_considerations}
-            onChange={handleChange}
-            placeholder="Any current health considerations relevant to extended international travel..."
-            rows={2}
-          />
-          <Textarea
-            label="Personal or Family Obligations"
-            name="family_obligations"
-            value={form.family_obligations}
-            onChange={handleChange}
-            placeholder="Partner, children, caregiving responsibilities — please be specific so we can plan with you, not around you..."
-            hint="Relevant to a 38-week commitment"
-            rows={3}
-          />
-          <Input label="Emergency Contact" name="emergency_contact" value={form.emergency_contact} onChange={handleChange} placeholder="Name, relationship, phone number" />
-        </div>
-      </section>
-
-      {/* SECTION 2 */}
-      <section>
-        <SectionHeader number="2" title="The Builds" subtitle="Three required Builds. One optional fourth. Submit each to the shared Drive folder from your invitation email." />
-
-        <BuildCard
-          number="1"
-          title="The Workshop Sprint"
-          testing="Life skills design, project orientation, taste, AI fluency"
-          time="2 hours max"
-          deliverable="Workshop artifact (slides / Notion / one-pager)"
-        >
-          <p className="text-gray-500 text-sm leading-relaxed">
-            Design and produce a real 90-minute kickoff workshop for your cohort of 5–7 students — anchored in one of: <span className="text-gray-900">Food · Water · Empowerment · Education · Healthcare · Culture & Conservation · Community</span>. The workshop should launch a real project that continues building over the rotation, with a real output the community actually uses.
-          </p>
-          <Input
-            label="Build 1 Link or File Name"
-            name="build1_link"
-            value={form.build1_link}
-            onChange={handleChange}
-            placeholder="https://docs.google.com/... or Smith_Jane_Build1.pdf"
-          />
-        </BuildCard>
-
-        <BuildCard
-          number="2"
-          title="The Cohort Experience"
-          testing="Anticipating breaking points, design instinct, cultural humility, cohort resilience"
-          time="1.5–2 hours"
-          deliverable="Two links: experience design + 3-min walkthrough video"
-        >
-          <div className="text-gray-500 text-sm leading-relaxed space-y-2">
-            <p>Design something that prevents a cohort from breaking. Pick one design constraint:</p>
-            <ul className="space-y-1 ml-4">
-              {['Assume your cohort has conflict by week 5.', 'Assume energy drops by mid-rotation.', 'Assume cultural missteps happen.', 'Assume someone wants to go home by week 10.'].map(c => (
-                <li key={c} className="flex items-start gap-2">
-                  <span className="text-blue-500 mt-1">·</span> {c}
-                </li>
-              ))}
-            </ul>
-            <button type="button" onClick={() => setShowExamples(true)} className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-500 text-xs font-medium mt-2 transition-colors">
-              <BookOpen className="w-3.5 h-3.5" /> See worked examples →
-            </button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-            <Input label="Build 2 — Design Doc Link" name="build2_design_link" value={form.build2_design_link} onChange={handleChange} placeholder="Link to one-pager, plan, or visual flow" />
-            <Input label="Build 2 — 3-Minute Video Link" name="build2_video_link" value={form.build2_video_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive link" />
-          </div>
-        </BuildCard>
-
-        <BuildCard
-          number="3"
-          title="The Video"
-          testing="Self-awareness, honesty, mindset"
-          time="20 minutes"
-          deliverable="One 90-second to 2-minute video"
-        >
-          <p className="text-gray-500 text-sm leading-relaxed">
-            Talk to us. 90 seconds to 2 minutes. Phone-quality is fine. Don't script. Don't read. Two questions: <span className="text-gray-900">(1) What are you most excited about for this year?</span> <span className="text-gray-900">(2) What do you understand your role to be on this trip?</span> Be specific — not what you hope it will be, what you actually believe it is.
-          </p>
-          <Input label="Build 3 — Video Link" name="build3_video_link" value={form.build3_video_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive link" />
-        </BuildCard>
-
-        <div className="rounded-xl border border-gray-200 overflow-hidden">
-          <div className="px-5 py-4 bg-gray-50 border-b border-gray-200">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Build 4 · Optional</span>
+      {/* ── Header ── */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <img
+              src="https://world.alpha.school/favicon.ico"
+              alt="Alpha World School"
+              className="w-7 h-7 rounded"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+            />
+            <div>
+              <span className="text-gray-900 font-bold text-sm">Alpha World School</span>
+              <span className="text-gray-400 text-xs block leading-none">Guide Application · 2026–2027</span>
             </div>
-            <h3 className="font-bold text-gray-700">Language Tape</h3>
           </div>
-          <div className="p-5 space-y-4">
-            <p className="text-gray-500 text-sm leading-relaxed">
-              If you speak a language other than English — especially Swahili, Spanish, or any language relevant to Kenya or Ecuador — talk to us in it. Tell us about your morning, your last vacation, your favorite food. Anything natural. ≤60 seconds.
-            </p>
-            <Input label="Build 4 — Language Video Link (Optional)" name="build4_language_link" value={form.build4_language_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive link (optional)" />
-          </div>
+          <span className="text-xs text-gray-400">Step {step} of {totalSteps}</span>
         </div>
-      </section>
 
-      {/* SECTION 3 — Submission Tracker */}
-      <section>
-        <SectionHeader number="3" title="Submission Tracker" subtitle="Confirm your builds are ready. Paste links above in Section 2." />
-        <div className="space-y-2">
-          {[
-            { key: 'build1', label: 'Build 1 — Workshop Sprint', value: form.build1_link },
-            { key: 'build2d', label: 'Build 2 — Cohort Experience (design)', value: form.build2_design_link },
-            { key: 'build2v', label: 'Build 2 — Cohort Experience (video)', value: form.build2_video_link },
-            { key: 'build3', label: 'Build 3 — The Video', value: form.build3_video_link },
-            { key: 'build4', label: 'Build 4 — Language Tape (optional)', value: form.build4_language_link },
-          ].map(({ key, label, value }) => (
-            <div key={key} className={`flex items-center gap-3 px-4 py-3 rounded-lg ${value ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
-              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${value ? 'bg-green-500' : 'bg-gray-300'}`} />
-              <span className={`text-sm ${value ? 'text-green-700' : 'text-gray-400'}`}>{label}</span>
-              {value && <span className="text-xs text-gray-400 ml-auto truncate max-w-[40%]">{value}</span>}
+        {/* Progress bar */}
+        <div className="h-0.5 bg-gray-100">
+          <div
+            className="h-full bg-blue-600 transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </header>
+
+      {/* ── Step dots ── */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-2 overflow-x-auto">
+          {STEPS.map((s, i) => (
+            <div key={s.id} className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => s.id < step && setStep(s.id)}
+                className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${
+                  s.id === step ? 'text-blue-600' :
+                  s.id < step  ? 'text-gray-400 hover:text-gray-600 cursor-pointer' :
+                  'text-gray-300 cursor-default'
+                }`}
+              >
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                  s.id === step  ? 'bg-blue-600 text-white' :
+                  s.id < step   ? 'bg-gray-200 text-gray-500' :
+                  'bg-gray-100 text-gray-300'
+                }`}>
+                  {s.id < step ? '✓' : s.id}
+                </span>
+                {s.label}
+              </button>
+              {i < STEPS.length - 1 && <span className="text-gray-200 text-xs">›</span>}
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
-      {/* SECTION 4 */}
-      <section>
-        <SectionHeader number="4" title="References & Endorsement" subtitle="Two internal Alpha references. One must be your direct manager or Head of School." />
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Reference 1</h3>
+      {/* ── Step content ── */}
+      <div className="flex-1 max-w-3xl w-full mx-auto px-4 py-10">
+
+        {/* STEP 1 — About You */}
+        {step === 1 && (
+          <div className="space-y-6">
+            <div>
+              <p className="text-blue-600 text-xs font-bold uppercase tracking-widest mb-1">Step 1 of 5</p>
+              <h1 className="text-2xl font-black text-gray-900">About You</h1>
+              <p className="text-gray-400 text-sm mt-1">Basic info. If a field does not apply, write "N/A."</p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Name" name="reference1_name" value={form.reference1_name} onChange={handleChange} />
-              <Input label="Role" name="reference1_role" value={form.reference1_role} onChange={handleChange} />
-              <Input label="Relationship to You" name="reference1_relationship" value={form.reference1_relationship} onChange={handleChange} />
-              <Input label="Phone" name="reference1_phone" value={form.reference1_phone} onChange={handleChange} />
-              <Input label="Email" name="reference1_email" value={form.reference1_email} onChange={handleChange} type="email" />
+              <Input label="Full Name" name="full_name" value={form.full_name} onChange={handleChange} required placeholder="Jane Smith" />
+              <Input label="Email" name="email" value={form.email} onChange={handleChange} required placeholder="jane@alpha.school" type="email" />
+              <Input label="Phone" name="phone" value={form.phone} onChange={handleChange} placeholder="+1 (555) 000-0000" />
+              <Input label="Current Role at Alpha" name="role_at_alpha" value={form.role_at_alpha} onChange={handleChange} required placeholder="e.g. Guide, Academic Coach" />
+              <Input label="Campus" name="campus" value={form.campus} onChange={handleChange} placeholder="e.g. Austin, NYC" />
+              <Input label="Years at Alpha" name="years_at_alpha" value={form.years_at_alpha} onChange={handleChange} placeholder="e.g. 2 years" />
+              <Input label="Direct Manager" name="direct_manager" value={form.direct_manager} onChange={handleChange} placeholder="Name of direct manager" />
+              <Input label="Head of School" name="head_of_school" value={form.head_of_school} onChange={handleChange} placeholder="Name of Head of School" />
+            </div>
+            <Textarea label="Languages Spoken" name="languages_spoken" value={form.languages_spoken} onChange={handleChange} placeholder="English (native), Spanish (conversational), Swahili (basic)" hint="Note proficiency: conversational, fluent, or native" />
+            <Textarea label="Prior International Travel" name="prior_international_travel" value={form.prior_international_travel} onChange={handleChange} placeholder="Kenya (3 weeks, community development), Ecuador (1 month, volunteer teaching)..." hint="List countries, length of stay, and purpose" rows={3} />
+            <Textarea label="Developing-World Living Experience" name="developing_world_experience" value={form.developing_world_experience} onChange={handleChange} placeholder="Yes — spent 6 weeks in rural Guatemala..." hint="Have you spent 2+ weeks living in a developing-world setting? Y/N — describe" rows={3} />
+            <Textarea label="Health Considerations" name="health_considerations" value={form.health_considerations} onChange={handleChange} placeholder="Any current health considerations relevant to extended international travel..." rows={2} />
+            <Textarea label="Personal or Family Obligations" name="family_obligations" value={form.family_obligations} onChange={handleChange} placeholder="Partner, children, caregiving responsibilities..." hint="Relevant to a 38-week commitment" rows={3} />
+            <Input label="Emergency Contact" name="emergency_contact" value={form.emergency_contact} onChange={handleChange} placeholder="Name, relationship, phone number" />
+          </div>
+        )}
+
+        {/* STEP 2 — The Builds */}
+        {step === 2 && (
+          <div className="space-y-6">
+            <div>
+              <p className="text-blue-600 text-xs font-bold uppercase tracking-widest mb-1">Step 2 of 5</p>
+              <h1 className="text-2xl font-black text-gray-900">The Builds</h1>
+              <p className="text-gray-400 text-sm mt-1">Three required Builds. One optional fourth. Submit each to the shared Drive folder from your invitation email.</p>
+            </div>
+
+            <BuildCard number="1" title="The Workshop Sprint" testing="Life skills design, project orientation, taste, AI fluency" time="2 hours max" deliverable="Workshop artifact (slides / Notion / one-pager)">
+              <p className="text-gray-500 text-sm leading-relaxed">
+                Design and produce a real 90-minute kickoff workshop for your cohort of 5–7 students — anchored in one of: <span className="text-gray-800 font-medium">Food · Water · Empowerment · Education · Healthcare · Culture & Conservation · Community</span>. The workshop should launch a real project with a real output the community actually uses.
+              </p>
+              <Input label="Build 1 Link or File Name" name="build1_link" value={form.build1_link} onChange={handleChange} placeholder="https://docs.google.com/... or Smith_Jane_Build1.pdf" />
+            </BuildCard>
+
+            <BuildCard number="2" title="The Cohort Experience" testing="Anticipating breaking points, design instinct, cultural humility" time="1.5–2 hours" deliverable="Two links: experience design + 3-min walkthrough video">
+              <div className="text-gray-500 text-sm leading-relaxed space-y-2">
+                <p>Design something that prevents a cohort from breaking. Pick one design constraint:</p>
+                <ul className="space-y-1 ml-4">
+                  {['Assume your cohort has conflict by week 5.', 'Assume energy drops by mid-rotation.', 'Assume cultural missteps happen.', 'Assume someone wants to go home by week 10.'].map(c => (
+                    <li key={c} className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">·</span> {c}</li>
+                  ))}
+                </ul>
+                <button type="button" onClick={() => setShowExamples(true)} className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-500 text-xs font-semibold mt-1 transition-colors">
+                  <BookOpen className="w-3.5 h-3.5" /> See worked examples →
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input label="Design Doc Link" name="build2_design_link" value={form.build2_design_link} onChange={handleChange} placeholder="Link to one-pager, plan, or visual flow" />
+                <Input label="3-Minute Video Link" name="build2_video_link" value={form.build2_video_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive link" />
+              </div>
+            </BuildCard>
+
+            <BuildCard number="3" title="The Video" testing="Self-awareness, honesty, mindset" time="20 minutes" deliverable="One 90-second to 2-minute video">
+              <p className="text-gray-500 text-sm leading-relaxed">
+                Talk to us. 90 seconds to 2 minutes. Phone-quality is fine. Don't script. Don't read. <span className="text-gray-800">(1) What are you most excited about for this year?</span> <span className="text-gray-800">(2) What do you understand your role to be on this trip?</span>
+              </p>
+              <Input label="Video Link" name="build3_video_link" value={form.build3_video_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive link" />
+            </BuildCard>
+
+            <BuildCard number="4" title="Language Tape" optional>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                If you speak a language other than English — especially Swahili, Spanish, or any language relevant to Kenya or Ecuador — talk to us in it. Anything natural. ≤60 seconds.
+              </p>
+              <Input label="Language Video Link (optional)" name="build4_language_link" value={form.build4_language_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive link" />
+            </BuildCard>
+          </div>
+        )}
+
+        {/* STEP 3 — Submission Tracker */}
+        {step === 3 && (
+          <div className="space-y-6">
+            <div>
+              <p className="text-blue-600 text-xs font-bold uppercase tracking-widest mb-1">Step 3 of 5</p>
+              <h1 className="text-2xl font-black text-gray-900">Submission Check</h1>
+              <p className="text-gray-400 text-sm mt-1">Confirm your builds are uploaded and linked. Go back to fix anything missing.</p>
+            </div>
+            <div className="space-y-3">
+              {[
+                { label: 'Build 1 — Workshop Sprint', value: form.build1_link, required: true },
+                { label: 'Build 2 — Cohort Experience (design doc)', value: form.build2_design_link, required: true },
+                { label: 'Build 2 — Cohort Experience (3-min video)', value: form.build2_video_link, required: true },
+                { label: 'Build 3 — The Video', value: form.build3_video_link, required: true },
+                { label: 'Build 4 — Language Tape', value: form.build4_language_link, required: false },
+              ].map(({ label, value, required }) => (
+                <div key={label} className={`flex items-center gap-4 px-5 py-4 rounded-2xl border ${value ? 'bg-green-50 border-green-200' : required ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${value ? 'bg-green-500' : required ? 'bg-orange-200' : 'bg-gray-200'}`}>
+                    {value
+                      ? <CheckCircle className="w-4 h-4 text-white" />
+                      : <span className={`text-xs font-bold ${required ? 'text-orange-600' : 'text-gray-400'}`}>{required ? '!' : '–'}</span>
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-sm font-semibold ${value ? 'text-green-800' : required ? 'text-orange-700' : 'text-gray-400'}`}>{label}</div>
+                    {value
+                      ? <div className="text-xs text-gray-400 truncate mt-0.5">{value}</div>
+                      : <div className={`text-xs mt-0.5 ${required ? 'text-orange-500' : 'text-gray-400'}`}>{required ? 'Missing — go back and add a link' : 'Optional — skip if not applicable'}</div>
+                    }
+                  </div>
+                  {!value && required && (
+                    <button onClick={() => setStep(2)} className="text-xs text-blue-600 hover:text-blue-500 font-semibold flex-shrink-0">Fix →</button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Reference 2</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Name" name="reference2_name" value={form.reference2_name} onChange={handleChange} />
-              <Input label="Role" name="reference2_role" value={form.reference2_role} onChange={handleChange} />
-              <Input label="Relationship to You" name="reference2_relationship" value={form.reference2_relationship} onChange={handleChange} />
-              <Input label="Phone" name="reference2_phone" value={form.reference2_phone} onChange={handleChange} />
-              <Input label="Email" name="reference2_email" value={form.reference2_email} onChange={handleChange} type="email" />
-            </div>
-          </div>
+        )}
 
-          <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
-            <h3 className="font-semibold text-blue-700 mb-1 text-sm">Manager / Head of School Endorsement</h3>
-            <p className="text-gray-500 text-xs mb-4">To be filled out by the candidate's direct manager or Head of School — <em>not</em> by the candidate.</p>
-            <div className="space-y-4">
+        {/* STEP 4 — References */}
+        {step === 4 && (
+          <div className="space-y-6">
+            <div>
+              <p className="text-blue-600 text-xs font-bold uppercase tracking-widest mb-1">Step 4 of 5</p>
+              <h1 className="text-2xl font-black text-gray-900">References & Endorsement</h1>
+              <p className="text-gray-400 text-sm mt-1">Two internal Alpha references. One must be your direct manager or Head of School.</p>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
+              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Reference 1</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input label="Name" name="reference1_name" value={form.reference1_name} onChange={handleChange} />
+                <Input label="Role" name="reference1_role" value={form.reference1_role} onChange={handleChange} />
+                <Input label="Relationship to You" name="reference1_relationship" value={form.reference1_relationship} onChange={handleChange} />
+                <Input label="Phone" name="reference1_phone" value={form.reference1_phone} onChange={handleChange} />
+                <Input label="Email" name="reference1_email" value={form.reference1_email} onChange={handleChange} type="email" />
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
+              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Reference 2</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input label="Name" name="reference2_name" value={form.reference2_name} onChange={handleChange} />
+                <Input label="Role" name="reference2_role" value={form.reference2_role} onChange={handleChange} />
+                <Input label="Relationship to You" name="reference2_relationship" value={form.reference2_relationship} onChange={handleChange} />
+                <Input label="Phone" name="reference2_phone" value={form.reference2_phone} onChange={handleChange} />
+                <Input label="Email" name="reference2_email" value={form.reference2_email} onChange={handleChange} type="email" />
+              </div>
+            </div>
+
+            <div className="bg-blue-50 rounded-2xl border border-blue-200 p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Has this guide had your verbal support to apply?</label>
-                <div className="flex gap-4">
+                <h3 className="text-sm font-bold text-blue-700">Manager / Head of School Endorsement</h3>
+                <p className="text-xs text-gray-500 mt-1">To be filled out by the candidate's direct manager or Head of School — <em>not</em> by the candidate.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-800 mb-2">Has this guide had your verbal support to apply?</label>
+                <div className="flex flex-wrap gap-3">
                   {['Yes', 'No', 'Conversation pending'].map(opt => (
-                    <label key={opt} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="manager_endorsement_status"
-                        value={opt}
-                        checked={form.manager_endorsement_status === opt}
-                        onChange={handleChange}
-                        className="accent-blue-600"
-                      />
+                    <label key={opt} className={`flex items-center gap-2 px-4 py-2 rounded-xl border cursor-pointer text-sm transition-all ${form.manager_endorsement_status === opt ? 'border-blue-500 bg-white text-blue-700 font-semibold' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}>
+                      <input type="radio" name="manager_endorsement_status" value={opt} checked={form.manager_endorsement_status === opt} onChange={handleChange} className="accent-blue-600" />
                       {opt}
                     </label>
                   ))}
                 </div>
               </div>
-              <Textarea
-                label="Endorsement Statement (150 words minimum)"
-                name="manager_endorsement_text"
-                value={form.manager_endorsement_text}
-                onChange={handleChange}
-                placeholder="In your judgment, is this guide ready for the demands of this role — physically, emotionally, and as a representative of Alpha to families, students, and partner communities? Why or why not?"
-                rows={5}
-              />
+              <Textarea label="Endorsement Statement (150 words minimum)" name="manager_endorsement_text" value={form.manager_endorsement_text} onChange={handleChange} placeholder="In your judgment, is this guide ready for the demands of this role — physically, emotionally, and as a representative of Alpha to families, students, and partner communities? Why or why not?" rows={5} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input label="Endorser Printed Name" name="endorser_name" value={form.endorser_name} onChange={handleChange} />
                 <Input label="Endorser Role" name="endorser_role" value={form.endorser_role} onChange={handleChange} />
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        )}
 
-      {/* SECTION 5 */}
-      <section>
-        <SectionHeader number="5" title="Acknowledgments & Signature" subtitle="Initial each line. Each one is a real thing you are agreeing to." />
-        <div className="space-y-3 mb-6">
-          {acknowledgments.map((text, i) => {
-            const key = `ack_${i + 1}` as keyof FormData
-            return (
-              <label key={i} className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-colors ${form[key] ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}>
-                <input
-                  type="checkbox"
-                  name={key}
-                  checked={form[key] as boolean}
-                  onChange={handleChange}
-                  className="mt-0.5 accent-blue-600 w-4 h-4 flex-shrink-0"
-                />
-                <span className="text-sm text-gray-700 leading-relaxed">{text}</span>
-              </label>
-            )
-          })}
-        </div>
+        {/* STEP 5 — Acknowledgments */}
+        {step === 5 && (
+          <div className="space-y-6">
+            <div>
+              <p className="text-blue-600 text-xs font-bold uppercase tracking-widest mb-1">Step 5 of 5</p>
+              <h1 className="text-2xl font-black text-gray-900">Acknowledgments & Signature</h1>
+              <p className="text-gray-400 text-sm mt-1">Check each line. Each one is a real thing you are agreeing to.</p>
+            </div>
+            <div className="space-y-3">
+              {acknowledgments.map((text, i) => {
+                const key = `ack_${i + 1}` as keyof FormData
+                return (
+                  <label key={i} className={`flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${form[key] ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${form[key] ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white'}`}>
+                      {form[key] && <CheckCircle className="w-3 h-3 text-white" />}
+                    </div>
+                    <input type="checkbox" name={key} checked={form[key] as boolean} onChange={handleChange} className="sr-only" />
+                    <span className="text-sm text-gray-700 leading-relaxed">{text}</span>
+                  </label>
+                )
+              })}
+            </div>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
-          <p className="text-gray-500 text-sm mb-4 italic">
-            I am submitting this application of my own volition. I have read everything in this packet. I understand what I am signing up for.
-          </p>
-          <Input
-            label="Full Name (Signature)"
-            name="applicant_name"
-            value={form.applicant_name}
-            onChange={handleChange}
-            required
-            placeholder="Type your full legal name"
-          />
-        </div>
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
+              <p className="text-gray-500 text-sm mb-4 italic">I am submitting this application of my own volition. I have read everything in this packet. I understand what I am signing up for.</p>
+              <Input label="Full Name (Signature)" name="applicant_name" value={form.applicant_name} onChange={handleChange} required placeholder="Type your full legal name" />
+            </div>
 
-        {error && (
-          <div className="flex items-start gap-3 px-4 py-3 bg-rose-50 border border-rose-200 rounded-lg mb-4">
-            <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
-            <p className="text-rose-700 text-sm">{error}</p>
+            {error && (
+              <div className="flex items-start gap-3 px-4 py-3 bg-rose-50 border border-rose-200 rounded-xl">
+                <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
+                <p className="text-rose-700 text-sm">{error}</p>
+              </div>
+            )}
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-base transition-colors uppercase tracking-wider"
-        >
-          {submitting ? 'Submitting...' : 'Submit Application'}
-        </button>
-      </section>
-    </form>
+        {/* ── Navigation ── */}
+        <div className="flex items-center justify-between mt-10 pt-6 border-t border-gray-200">
+          <button
+            type="button"
+            onClick={() => setStep(s => s - 1)}
+            disabled={step === 1}
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-500 hover:text-gray-700 disabled:opacity-0 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
 
-    {showExamples && <ExamplesModal onClose={() => setShowExamples(false)} />}
+          {step < totalSteps ? (
+            <button
+              type="button"
+              onClick={() => setStep(s => s + 1)}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors shadow-sm"
+            >
+              Continue <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold rounded-xl transition-colors shadow-sm"
+            >
+              {submitting ? 'Submitting…' : 'Submit Application'} {!submitting && <ArrowRight className="w-4 h-4" />}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {showExamples && <ExamplesModal onClose={() => setShowExamples(false)} />}
+    </div>
   )
 }
