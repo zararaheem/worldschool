@@ -75,31 +75,31 @@ const constraints = [
 ]
 
 const colorMap: Record<string, { badge: string; border: string; dot: string; title: string }> = {
-  amber: { badge: 'bg-amber-900/40 text-amber-300 border-amber-700/50', border: 'border-amber-700/30', dot: 'bg-amber-400', title: 'text-amber-300' },
-  green: { badge: 'bg-green-900/40 text-green-300 border-green-700/50', border: 'border-green-700/30', dot: 'bg-green-400', title: 'text-green-300' },
-  blue: { badge: 'bg-blue-900/40 text-blue-300 border-blue-700/50', border: 'border-blue-700/30', dot: 'bg-blue-400', title: 'text-blue-300' },
-  rose: { badge: 'bg-rose-900/40 text-rose-300 border-rose-700/50', border: 'border-rose-700/30', dot: 'bg-rose-400', title: 'text-rose-300' },
+  amber: { badge: 'bg-amber-50 text-amber-700 border-amber-200', border: 'border-amber-200', dot: 'bg-amber-500', title: 'text-amber-700' },
+  green: { badge: 'bg-green-50 text-green-700 border-green-200', border: 'border-green-200', dot: 'bg-green-500', title: 'text-green-700' },
+  blue: { badge: 'bg-blue-50 text-blue-700 border-blue-200', border: 'border-blue-200', dot: 'bg-blue-500', title: 'text-blue-700' },
+  rose: { badge: 'bg-rose-50 text-rose-700 border-rose-200', border: 'border-rose-200', dot: 'bg-rose-500', title: 'text-rose-700' },
 }
 
 function ExampleCard({ title, summary, detail, color }: { title: string; summary: string; detail: string; color: string }) {
   const [open, setOpen] = useState(false)
   const c = colorMap[color]
   return (
-    <div className={`border ${c.border} rounded-lg bg-stone-900/60 overflow-hidden`}>
+    <div className={`border ${c.border} rounded-lg bg-white overflow-hidden`}>
       <button
-        className="w-full text-left px-5 py-4 flex items-start gap-3 hover:bg-stone-800/50 transition-colors"
+        className="w-full text-left px-5 py-4 flex items-start gap-3 hover:bg-gray-50 transition-colors"
         onClick={() => setOpen(!open)}
       >
         <span className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${c.dot}`} />
         <div className="flex-1 min-w-0">
           <div className={`font-semibold ${c.title}`}>{title}</div>
-          <div className="text-sm text-stone-400 mt-0.5">{summary}</div>
+          <div className="text-sm text-gray-500 mt-0.5">{summary}</div>
         </div>
-        {open ? <ChevronDown className="w-4 h-4 text-stone-500 flex-shrink-0 mt-1" /> : <ChevronRight className="w-4 h-4 text-stone-500 flex-shrink-0 mt-1" />}
+        {open ? <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 mt-1" /> : <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 mt-1" />}
       </button>
       {open && (
-        <div className="px-5 pb-5 pt-1 border-t border-stone-800">
-          <p className="text-stone-300 text-sm leading-relaxed">{detail}</p>
+        <div className="px-5 pb-5 pt-1 border-t border-gray-200">
+          <p className="text-gray-700 text-sm leading-relaxed">{detail}</p>
         </div>
       )}
     </div>
@@ -138,8 +138,8 @@ export default function ExamplesTab() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-white mb-2">Worked Examples</h2>
-        <p className="text-stone-400">Strong submissions for Build 2 — The Cohort Experience. Click any constraint to see what good looks like.</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Worked Examples</h2>
+        <p className="text-gray-500">Strong submissions for Build 2 — The Cohort Experience. Click any constraint to see what good looks like.</p>
       </div>
 
       <div className="space-y-3 mb-10">
@@ -148,20 +148,20 @@ export default function ExamplesTab() {
         ))}
       </div>
 
-      <div className="rounded-xl border border-stone-700 overflow-hidden">
-        <div className="px-5 py-4 bg-stone-800/60 border-b border-stone-700">
-          <h3 className="font-bold text-white text-sm uppercase tracking-wide">What Makes a Submission Strong vs. Weak</h3>
+      <div className="rounded-xl border border-gray-200 overflow-hidden">
+        <div className="px-5 py-4 bg-gray-50 border-b border-gray-200">
+          <h3 className="font-bold text-gray-900 text-sm uppercase tracking-wide">What Makes a Submission Strong vs. Weak</h3>
         </div>
-        <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-stone-700">
+        <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200">
           {qualityNotes.map(({ label, items }) => (
             <div key={label} className="p-5">
-              <div className={`inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3 ${label === 'Strong' ? 'bg-green-900/50 text-green-300' : 'bg-rose-900/50 text-rose-300'}`}>
+              <div className={`inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3 ${label === 'Strong' ? 'bg-green-100 text-green-700' : 'bg-rose-100 text-rose-700'}`}>
                 {label}
               </div>
               <ul className="space-y-2">
                 {items.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-stone-300">
-                    <span className={`mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${label === 'Strong' ? 'bg-green-400' : 'bg-rose-400'}`} />
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <span className={`mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${label === 'Strong' ? 'bg-green-500' : 'bg-rose-500'}`} />
                     {item}
                   </li>
                 ))}

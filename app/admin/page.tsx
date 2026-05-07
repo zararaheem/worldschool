@@ -8,11 +8,11 @@ import {
 } from 'lucide-react'
 
 const STATUS_CONFIG: Record<ApplicationStatus, { label: string; color: string; bg: string; border: string }> = {
-  submitted: { label: 'Submitted', color: 'text-blue-300', bg: 'bg-blue-900/40', border: 'border-blue-700/50' },
-  under_review: { label: 'Under Review', color: 'text-amber-300', bg: 'bg-amber-900/40', border: 'border-amber-700/50' },
-  advancing: { label: 'Advancing', color: 'text-green-300', bg: 'bg-green-900/40', border: 'border-green-700/50' },
-  rejected: { label: 'Rejected', color: 'text-red-300', bg: 'bg-red-900/40', border: 'border-red-700/50' },
-  accepted: { label: 'Accepted', color: 'text-emerald-300', bg: 'bg-emerald-900/40', border: 'border-emerald-700/50' },
+  submitted: { label: 'Submitted', color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200' },
+  under_review: { label: 'Under Review', color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200' },
+  advancing: { label: 'Advancing', color: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200' },
+  rejected: { label: 'Rejected', color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200' },
+  accepted: { label: 'Accepted', color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200' },
 }
 
 function StatusBadge({ status }: { status: ApplicationStatus }) {
@@ -42,8 +42,8 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
   const Field = ({ label, value }: { label: string; value: string | null | undefined }) => (
     value ? (
       <div>
-        <div className="text-xs text-stone-500 uppercase tracking-wider mb-1">{label}</div>
-        <div className="text-sm text-stone-200 leading-relaxed whitespace-pre-wrap">{value}</div>
+        <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">{label}</div>
+        <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{value}</div>
       </div>
     ) : null
   )
@@ -51,24 +51,24 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
   const LinkField = ({ label, value }: { label: string; value: string | null | undefined }) => (
     value ? (
       <div>
-        <div className="text-xs text-stone-500 uppercase tracking-wider mb-1">{label}</div>
-        <a href={value} target="_blank" rel="noopener noreferrer" className="text-sm text-amber-400 hover:text-amber-300 break-all">{value}</a>
+        <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">{label}</div>
+        <a href={value} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-500 break-all">{value}</a>
       </div>
     ) : null
   )
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-3xl mx-4 my-8 bg-stone-900 rounded-2xl border border-stone-700 shadow-2xl">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-3xl mx-4 my-8 bg-white rounded-2xl border border-gray-200 shadow-2xl">
         {/* Header */}
-        <div className="flex items-start justify-between px-6 py-5 border-b border-stone-800">
+        <div className="flex items-start justify-between px-6 py-5 border-b border-gray-200">
           <div>
-            <h2 className="text-xl font-bold text-white">{app.full_name}</h2>
-            <p className="text-stone-400 text-sm">{app.email} · {app.campus || 'Campus N/A'} · {app.role_at_alpha || 'Role N/A'}</p>
-            <p className="text-stone-500 text-xs mt-1">Submitted {new Date(app.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+            <h2 className="text-xl font-bold text-gray-900">{app.full_name}</h2>
+            <p className="text-gray-500 text-sm">{app.email} · {app.campus || 'Campus N/A'} · {app.role_at_alpha || 'Role N/A'}</p>
+            <p className="text-gray-400 text-xs mt-1">Submitted {new Date(app.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
           </div>
-          <button onClick={onClose} className="text-stone-500 hover:text-white ml-4 flex-shrink-0">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-4 flex-shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -77,11 +77,11 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
           {/* Status & Admin Notes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <div className="text-xs text-stone-500 uppercase tracking-wider mb-2">Application Status</div>
+              <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Application Status</div>
               <select
                 value={app.status}
                 onChange={(e) => onStatusChange(app.id, e.target.value as ApplicationStatus)}
-                className="w-full bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
+                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500"
               >
                 {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
                   <option key={key} value={key}>{cfg.label}</option>
@@ -89,18 +89,18 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
               </select>
             </div>
             <div className="flex flex-col">
-              <div className="text-xs text-stone-500 uppercase tracking-wider mb-2">Admin Notes</div>
+              <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Admin Notes</div>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Internal notes..."
                 rows={3}
-                className="flex-1 bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500 resize-none"
+                className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 resize-none"
               />
               <button
                 onClick={saveNotes}
                 disabled={saving}
-                className="mt-2 px-3 py-1.5 bg-stone-700 hover:bg-stone-600 text-white text-xs rounded-lg transition-colors disabled:opacity-50"
+                className="mt-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg transition-colors disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Save Notes'}
               </button>
@@ -109,7 +109,7 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
 
           {/* About */}
           <div>
-            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-wider mb-3 pb-2 border-b border-stone-800">Section 1 — About</h3>
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 pb-2 border-b border-gray-200">Section 1 — About</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Phone" value={app.phone} />
               <Field label="Direct Manager" value={app.direct_manager} />
@@ -128,7 +128,7 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
 
           {/* Builds */}
           <div>
-            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-wider mb-3 pb-2 border-b border-stone-800">Section 2 — The Builds</h3>
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 pb-2 border-b border-gray-200">Section 2 — The Builds</h3>
             <div className="space-y-3">
               <LinkField label="Build 1 — Workshop Sprint" value={app.build1_link} />
               <LinkField label="Build 2 — Cohort Experience (Design)" value={app.build2_design_link} />
@@ -140,17 +140,17 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
 
           {/* References */}
           <div>
-            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-wider mb-3 pb-2 border-b border-stone-800">Section 4 — References</h3>
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 pb-2 border-b border-gray-200">Section 4 — References</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <p className="text-xs font-medium text-stone-500 mb-2">Reference 1</p>
+                <p className="text-xs font-medium text-gray-400 mb-2">Reference 1</p>
                 <Field label="Name" value={app.reference1_name} />
                 <Field label="Role" value={app.reference1_role} />
                 <Field label="Relationship" value={app.reference1_relationship} />
                 <Field label="Contact" value={app.reference1_phone || app.reference1_email ? `${app.reference1_phone || ''} ${app.reference1_email || ''}`.trim() : null} />
               </div>
               <div>
-                <p className="text-xs font-medium text-stone-500 mb-2">Reference 2</p>
+                <p className="text-xs font-medium text-gray-400 mb-2">Reference 2</p>
                 <Field label="Name" value={app.reference2_name} />
                 <Field label="Role" value={app.reference2_role} />
                 <Field label="Relationship" value={app.reference2_relationship} />
@@ -166,12 +166,12 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
 
           {/* Acknowledgments */}
           <div>
-            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-wider mb-3 pb-2 border-b border-stone-800">Section 5 — Acknowledgments</h3>
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 pb-2 border-b border-gray-200">Section 5 — Acknowledgments</h3>
             <div className="grid grid-cols-4 gap-2 mb-2">
               {([1,2,3,4,5,6,7,8] as const).map(n => {
                 const key = `ack_${n}` as keyof GuideApplication
                 return (
-                  <div key={n} className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-xs ${app[key] ? 'bg-green-900/40 text-green-300' : 'bg-stone-800 text-stone-600'}`}>
+                  <div key={n} className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-xs ${app[key] ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
                     {app[key] ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />} Ack {n}
                   </div>
                 )
@@ -272,32 +272,32 @@ export default function AdminDashboard() {
 
   if (!authed) {
     return (
-      <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="w-full max-w-sm">
           <div className="flex items-center gap-3 mb-8 justify-center">
-            <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center">
-              <span className="text-stone-950 font-black text-xs">A</span>
+            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+              <span className="text-white font-black text-xs">A</span>
             </div>
             <div>
-              <span className="text-white font-bold text-sm">Alpha World School</span>
-              <span className="text-stone-500 text-xs block">Admin Dashboard</span>
+              <span className="text-gray-900 font-bold text-sm">Alpha World School</span>
+              <span className="text-gray-400 text-xs block">Admin Dashboard</span>
             </div>
           </div>
-          <form onSubmit={handleLogin} className="bg-stone-900 border border-stone-700 rounded-2xl p-6 space-y-4">
-            <h1 className="text-lg font-bold text-white text-center">Sign In</h1>
+          <form onSubmit={handleLogin} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-sm">
+            <h1 className="text-lg font-bold text-gray-900 text-center">Sign In</h1>
             <div>
-              <label className="block text-sm font-medium text-stone-400 mb-1.5">Password</label>
+              <label className="block text-sm font-medium text-gray-600 mb-1.5">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full bg-stone-800 border border-stone-700 rounded-lg px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 text-sm"
+                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm"
                 placeholder="Enter admin password"
                 autoFocus
               />
             </div>
-            {authError && <p className="text-rose-400 text-sm">{authError}</p>}
-            <button type="submit" className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold rounded-lg transition-colors text-sm">
+            {authError && <p className="text-rose-600 text-sm">{authError}</p>}
+            <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors text-sm">
               Access Dashboard
             </button>
           </form>
@@ -307,25 +307,25 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-950">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="border-b border-stone-800 bg-stone-950/95 sticky top-0 z-40 backdrop-blur">
+      <header className="border-b border-gray-200 bg-white/95 sticky top-0 z-40 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center">
-              <span className="text-stone-950 font-black text-xs">A</span>
+            <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center">
+              <span className="text-white font-black text-xs">A</span>
             </div>
             <div>
-              <span className="text-white font-bold text-sm">Alpha World School</span>
-              <span className="text-stone-500 text-xs ml-2">Admin</span>
+              <span className="text-gray-900 font-bold text-sm">Alpha World School</span>
+              <span className="text-gray-400 text-xs ml-2">Admin</span>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5 text-xs">
-              <span className={`w-2 h-2 rounded-full ${liveConnected ? 'bg-green-400 animate-pulse' : 'bg-stone-600'}`} />
-              <span className={liveConnected ? 'text-green-400' : 'text-stone-500'}>{liveConnected ? 'Live' : 'Connecting…'}</span>
+              <span className={`w-2 h-2 rounded-full ${liveConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`} />
+              <span className={liveConnected ? 'text-green-600' : 'text-gray-400'}>{liveConnected ? 'Live' : 'Connecting…'}</span>
             </div>
-            <a href="/" className="text-stone-500 hover:text-white text-xs transition-colors">← View Form</a>
+            <a href="/" className="text-gray-400 hover:text-gray-700 text-xs transition-colors">← View Form</a>
           </div>
         </div>
       </header>
@@ -333,26 +333,26 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* New applications banner */}
         {newCount > 0 && (
-          <div className="mb-5 flex items-center justify-between px-4 py-3 bg-green-900/30 border border-green-700/50 rounded-xl text-sm">
-            <span className="text-green-300 font-medium">
+          <div className="mb-5 flex items-center justify-between px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-sm">
+            <span className="text-green-700 font-medium">
               {newCount} new application{newCount > 1 ? 's' : ''} received since you opened this page
             </span>
-            <button onClick={() => setNewCount(0)} className="text-green-600 hover:text-green-400 text-xs ml-4">Dismiss</button>
+            <button onClick={() => setNewCount(0)} className="text-green-500 hover:text-green-700 text-xs ml-4">Dismiss</button>
           </div>
         )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
           {[
-            { label: 'Total', value: stats.total, icon: Users, color: 'text-white' },
-            { label: 'Submitted', value: stats.submitted, icon: Clock, color: 'text-blue-400' },
-            { label: 'Under Review', value: stats.under_review, icon: Eye, color: 'text-amber-400' },
-            { label: 'Advancing', value: stats.advancing, icon: TrendingUp, color: 'text-green-400' },
-            { label: 'Accepted', value: stats.accepted, icon: Award, color: 'text-emerald-400' },
+            { label: 'Total', value: stats.total, icon: Users, color: 'text-gray-900' },
+            { label: 'Submitted', value: stats.submitted, icon: Clock, color: 'text-blue-600' },
+            { label: 'Under Review', value: stats.under_review, icon: Eye, color: 'text-amber-600' },
+            { label: 'Advancing', value: stats.advancing, icon: TrendingUp, color: 'text-green-600' },
+            { label: 'Accepted', value: stats.accepted, icon: Award, color: 'text-emerald-600' },
           ].map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="bg-stone-900 border border-stone-800 rounded-xl p-4">
+            <div key={label} className="bg-white border border-gray-200 rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-stone-500">{label}</span>
+                <span className="text-xs text-gray-400">{label}</span>
                 <Icon className={`w-4 h-4 ${color}`} />
               </div>
               <div className={`text-2xl font-black ${color}`}>{value}</div>
@@ -363,21 +363,21 @@ export default function AdminDashboard() {
         {/* Filters */}
         <div className="flex flex-col md:flex-row gap-3 mb-5">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search by name, email, campus..."
-              className="w-full bg-stone-900 border border-stone-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-stone-600 focus:outline-none focus:border-amber-500 text-sm"
+              className="w-full bg-white border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm"
             />
           </div>
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-stone-500" />
+            <Filter className="w-4 h-4 text-gray-400" />
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value as ApplicationStatus | 'all')}
-              className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500"
+              className="bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-blue-500"
             >
               <option value="all">All Statuses</option>
               {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
@@ -387,18 +387,18 @@ export default function AdminDashboard() {
           </div>
           <button
             onClick={fetchApplications}
-            className="px-4 py-2.5 bg-stone-800 hover:bg-stone-700 text-white text-sm rounded-lg transition-colors"
+            className="px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 text-sm rounded-lg transition-colors border border-gray-300"
           >
             Refresh
           </button>
         </div>
 
         {/* Table */}
-        <div className="bg-stone-900 border border-stone-800 rounded-2xl overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-stone-800">
+                <tr className="border-b border-gray-200">
                   {[
                     { key: 'full_name', label: 'Applicant' },
                     { key: null, label: 'Campus / Role' },
@@ -409,7 +409,7 @@ export default function AdminDashboard() {
                   ].map(({ key, label }, i) => (
                     <th
                       key={i}
-                      className={`px-5 py-3.5 text-left text-xs font-medium text-stone-500 uppercase tracking-wider ${key ? 'cursor-pointer hover:text-stone-300 select-none' : ''}`}
+                      className={`px-5 py-3.5 text-left text-xs font-medium text-gray-400 uppercase tracking-wider ${key ? 'cursor-pointer hover:text-gray-600 select-none' : ''}`}
                       onClick={key ? () => toggleSort(key as 'created_at' | 'full_name') : undefined}
                     >
                       <span className="flex items-center gap-1">
@@ -420,54 +420,54 @@ export default function AdminDashboard() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-800">
+              <tbody className="divide-y divide-gray-200">
                 {loading ? (
-                  <tr><td colSpan={6} className="px-5 py-12 text-center text-stone-500">Loading applications...</td></tr>
+                  <tr><td colSpan={6} className="px-5 py-12 text-center text-gray-400">Loading applications...</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={6} className="px-5 py-12 text-center text-stone-500">No applications found.</td></tr>
+                  <tr><td colSpan={6} className="px-5 py-12 text-center text-gray-400">No applications found.</td></tr>
                 ) : filtered.map(app => {
                   const buildCount = [app.build1_link, app.build2_design_link, app.build3_video_link].filter(Boolean).length
                   return (
-                    <tr key={app.id} className="hover:bg-stone-800/50 transition-colors">
+                    <tr key={app.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-4">
-                        <div className="font-medium text-white text-sm">{app.full_name}</div>
-                        <div className="text-stone-500 text-xs">{app.email}</div>
+                        <div className="font-medium text-gray-900 text-sm">{app.full_name}</div>
+                        <div className="text-gray-400 text-xs">{app.email}</div>
                       </td>
                       <td className="px-5 py-4">
-                        <div className="text-stone-300 text-sm">{app.campus || '—'}</div>
-                        <div className="text-stone-500 text-xs">{app.role_at_alpha || '—'}</div>
+                        <div className="text-gray-700 text-sm">{app.campus || '—'}</div>
+                        <div className="text-gray-400 text-xs">{app.role_at_alpha || '—'}</div>
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-1">
                           {[1,2,3].map(n => {
                             const link = n === 1 ? app.build1_link : n === 2 ? app.build2_design_link : app.build3_video_link
                             return (
-                              <span key={n} className={`w-5 h-5 rounded text-xs flex items-center justify-center font-bold ${link ? 'bg-green-800/60 text-green-300' : 'bg-stone-800 text-stone-600'}`}>
+                              <span key={n} className={`w-5 h-5 rounded text-xs flex items-center justify-center font-bold ${link ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
                                 {n}
                               </span>
                             )
                           })}
-                          <span className="text-xs text-stone-500 ml-1">{buildCount}/3</span>
+                          <span className="text-xs text-gray-400 ml-1">{buildCount}/3</span>
                         </div>
                       </td>
                       <td className="px-5 py-4">
                         <select
                           value={app.status}
                           onChange={e => handleStatusChange(app.id, e.target.value as ApplicationStatus)}
-                          className="bg-stone-800 border border-stone-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-amber-500"
+                          className="bg-white border border-gray-300 rounded px-2 py-1 text-xs text-gray-900 focus:outline-none focus:border-blue-500"
                         >
                           {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
                             <option key={key} value={key}>{cfg.label}</option>
                           ))}
                         </select>
                       </td>
-                      <td className="px-5 py-4 text-stone-400 text-xs whitespace-nowrap">
+                      <td className="px-5 py-4 text-gray-400 text-xs whitespace-nowrap">
                         {new Date(app.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </td>
                       <td className="px-5 py-4">
                         <button
                           onClick={() => setSelectedApp(app)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-white text-xs rounded-lg transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg transition-colors"
                         >
                           <Eye className="w-3 h-3" /> View
                         </button>
@@ -478,7 +478,7 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
-          <div className="px-5 py-3 border-t border-stone-800 text-xs text-stone-500">
+          <div className="px-5 py-3 border-t border-gray-200 text-xs text-gray-400">
             Showing {filtered.length} of {applications.length} applications
           </div>
         </div>
