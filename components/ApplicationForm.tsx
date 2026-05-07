@@ -2,7 +2,128 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CheckCircle, AlertCircle } from 'lucide-react'
+import { CheckCircle, AlertCircle, X, BookOpen, ChevronDown, ChevronRight } from 'lucide-react'
+
+// ── Worked Examples Modal ────────────────────────────────────────────────────
+
+const constraints = [
+  {
+    id: 'conflict', label: 'Conflict by Week 5', color: 'amber',
+    examples: [
+      { title: 'The Sunday Council', summary: 'Weekly structured circle where friction gets surfaced before it festers.', detail: `Every Sunday at 6pm, the cohort sits in a circle for 30 minutes. Each person gets 90 seconds to name one thing they appreciated about another cohort member that week, and one thing that's grating on them. Structured rules — start with appreciation, name a specific behavior (not a personality trait), no debating in the moment. Guide facilitates the first three weeks, then a rotating cohort member runs it. By week 5, friction gets surfaced in real-time before it festers into factions.` },
+      { title: 'The Repair Protocol', summary: 'A laminated 4-step conflict resolution process the whole cohort commits to in week 1.', detail: `Cohort agrees in week 1 to a written 4-step protocol for handling friction. When something happens, the protocol says you say "I need a Repair." Within 24 hours, the two students sit with a guide for 20 minutes using a specific 4-question template (what happened / how it landed / what I want / what I'll do differently). No avoidance, no triangulating through other cohort members. The protocol is laminated and lives on the wall of every common space all year.` },
+    ],
+  },
+  {
+    id: 'energy', label: 'Energy Drop at Mid-Rotation', color: 'green',
+    examples: [
+      { title: 'Friday Bring-Your-Best', summary: 'Rotating student-led recharge sessions that distribute ownership and spotlight.', detail: `Every Friday afternoon, one cohort member designs and leads a 30-minute recharge activity for the group — could be a game from their hometown, a skill they want to teach, a meditation, a dance, whatever. Rotates so every kid gets two slots per rotation. Solves energy AND distributes leadership ownership AND gives every kid a recurring moment in the spotlight.` },
+      { title: 'The Midpoint Reset Day', summary: "A structured retreat day built into the calendar at each rotation's exact midpoint.", detail: `Built into the calendar at the exact midpoint of each rotation (around week 4). Looks like a structured retreat day: morning is solo journaling against three specific prompts, afternoon is a cohort conversation where everyone names one behavior they want to recommit to and one they want to drop, evening is a shared meal with a gratitude rotation. Built-in reset valve before the energy crash actually compounds.` },
+    ],
+  },
+  {
+    id: 'cultural', label: 'Cultural Missteps', color: 'blue',
+    examples: [
+      { title: 'The What-We-Got-Wrong Debrief', summary: 'Friday evening sessions in the local language, co-facilitated by local guides.', detail: `Friday evenings in the local language (with the local guide co-facilitating). Each cohort member shares one cultural moment from the week where they felt unsure or knew they messed up. The local guide normalizes the mistake — "that's a normal thing to get wrong, here's why" — and teaches the next-level cultural understanding. Transforms shame into curriculum.` },
+      { title: 'The Cultural Compass', summary: 'A pre-arrival workshop covering 20 cultural norms through scenario role-play.', detail: `A 60-minute pre-arrival workshop the day before each rotation begins. Covers 20 specific cultural norms, then role-plays 10 hard scenarios, then each student writes down the specific moment they expect to mess up first. By naming it ahead, when it happens it's predicted, not catastrophic.` },
+    ],
+  },
+  {
+    id: 'homesick', label: 'Someone Wants to Go Home (Week 10)', color: 'rose',
+    examples: [
+      { title: 'Buddy-Up Pairs', summary: 'Peer accountability pairs with daily check-ins who rotate every rotation.', detail: `Every cohort member is paired with one specific peer they're responsible for. Daily 5-minute check-ins built into the schedule, weekly 30-minute deeper conversation on Sundays. Pairs rotate every rotation. So when someone starts to spiral, their buddy notices it the day it starts, and there's already a structure for that conversation. Distributes the emotional load.` },
+      { title: 'The Sunday Letter Home', summary: 'Weekly letters/voice memos home that channel homesickness into connection.', detail: `Every Sunday at 4pm, every cohort member writes a letter or records a voice memo to a parent, grandparent, sibling, or friend back home. Then each shares one sentence from theirs with the cohort. Channels homesickness into connection (and into a written record they'll have forever) rather than avoidance.` },
+    ],
+  },
+]
+
+const colorMap: Record<string, { badge: string; border: string; dot: string; title: string }> = {
+  amber: { badge: 'bg-amber-50 text-amber-700 border-amber-200', border: 'border-amber-200', dot: 'bg-amber-500', title: 'text-amber-700' },
+  green:  { badge: 'bg-green-50 text-green-700 border-green-200',  border: 'border-green-200',  dot: 'bg-green-500',  title: 'text-green-700'  },
+  blue:   { badge: 'bg-blue-50 text-blue-700 border-blue-200',     border: 'border-blue-200',   dot: 'bg-blue-500',   title: 'text-blue-700'   },
+  rose:   { badge: 'bg-rose-50 text-rose-700 border-rose-200',     border: 'border-rose-200',   dot: 'bg-rose-500',   title: 'text-rose-700'   },
+}
+
+function ExampleCard({ title, summary, detail, color }: { title: string; summary: string; detail: string; color: string }) {
+  const [open, setOpen] = useState(false)
+  const c = colorMap[color]
+  return (
+    <div className={`border ${c.border} rounded-lg bg-white overflow-hidden`}>
+      <button className="w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors" onClick={() => setOpen(!open)}>
+        <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${c.dot}`} />
+        <div className="flex-1 min-w-0">
+          <div className={`font-semibold text-sm ${c.title}`}>{title}</div>
+          <div className="text-xs text-gray-500 mt-0.5">{summary}</div>
+        </div>
+        {open ? <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" /> : <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />}
+      </button>
+      {open && <div className="px-4 pb-4 pt-1 border-t border-gray-100"><p className="text-gray-700 text-sm leading-relaxed">{detail}</p></div>}
+    </div>
+  )
+}
+
+function ConstraintSection({ constraint }: { constraint: typeof constraints[0] }) {
+  const [open, setOpen] = useState(false)
+  const c = colorMap[constraint.color]
+  return (
+    <div className="mb-3">
+      <button className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg border ${c.badge} text-left text-sm font-semibold transition-colors hover:opacity-90`} onClick={() => setOpen(!open)}>
+        {open ? <ChevronDown className="w-4 h-4 flex-shrink-0" /> : <ChevronRight className="w-4 h-4 flex-shrink-0" />}
+        {constraint.label}
+      </button>
+      {open && (
+        <div className="mt-2 space-y-2 pl-1">
+          {constraint.examples.map(ex => <ExampleCard key={ex.title} {...ex} color={constraint.color} />)}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ExamplesModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-2xl mx-4 my-10 bg-white rounded-2xl border border-gray-200 shadow-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div>
+            <h2 className="font-bold text-gray-900">Worked Examples — Build 2</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Click any constraint to see what a strong submission looks like</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-4">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="px-6 py-5 max-h-[75vh] overflow-y-auto">
+          {constraints.map(c => <ConstraintSection key={c.id} constraint={c} />)}
+          <div className="mt-5 rounded-xl border border-gray-200 overflow-hidden">
+            <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+              <h3 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Strong vs. Weak</h3>
+            </div>
+            <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+              {[
+                { label: 'Strong', color: 'green', items: ['A repeating structural feature, not a one-time event', 'Specifies sequence, timing, prompts, what the guide says', 'Names what happens when it goes sideways', 'Local community as co-facilitators, not scenery'] },
+                { label: 'Weak', color: 'rose', items: ['Vague principle ("we\'ll have honest conversations")', 'A one-time workshop that doesn\'t fit the cohort', 'Local community featured but not consulted', 'Design treats the community as a teaching prop'] },
+              ].map(({ label, color, items }) => (
+                <div key={label} className="p-4">
+                  <div className={`inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3 ${color === 'green' ? 'bg-green-100 text-green-700' : 'bg-rose-100 text-rose-700'}`}>{label}</div>
+                  <ul className="space-y-1.5">
+                    {items.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                        <span className={`mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${color === 'green' ? 'bg-green-500' : 'bg-rose-500'}`} />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 interface FormData {
   // Section 1
@@ -171,6 +292,7 @@ export default function ApplicationForm() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showExamples, setShowExamples] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
@@ -322,7 +444,9 @@ export default function ApplicationForm() {
                 </li>
               ))}
             </ul>
-            <p className="text-blue-500 text-xs mt-2">See the Examples tab for worked examples of what strong submissions look like.</p>
+            <button type="button" onClick={() => setShowExamples(true)} className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-500 text-xs font-medium mt-2 transition-colors">
+              <BookOpen className="w-3.5 h-3.5" /> See worked examples →
+            </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
             <Input label="Build 2 — Design Doc Link" name="build2_design_link" value={form.build2_design_link} onChange={handleChange} placeholder="Link to one-pager, plan, or visual flow" />
@@ -494,5 +618,7 @@ export default function ApplicationForm() {
         </button>
       </section>
     </form>
+
+    {showExamples && <ExamplesModal onClose={() => setShowExamples(false)} />}
   )
 }
