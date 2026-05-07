@@ -111,8 +111,16 @@ tbody td{padding:10px 12px;font-size:13px;vertical-align:middle}
   <header>
     <div class="logo-sm">AWS</div>
     <h1>Guide Applications — Admin</h1>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;margin-left:auto;margin-right:12px">
+      <span id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#78716c;flex-shrink:0"></span>
+      <span id="live-label" style="color:#78716c">Connecting…</span>
+    </div>
     <button class="logout-btn" id="logout-btn">Sign out</button>
   </header>
+  <div id="new-banner" style="display:none;align-items:center;justify-content:space-between;padding:10px 24px;background:rgba(74,222,128,.1);border-bottom:1px solid rgba(74,222,128,.3)">
+    <span id="new-count" style="font-size:13px;color:#86efac;font-weight:600"></span>
+    <button onclick="document.getElementById('new-banner').style.display='none'" style="font-size:11px;color:#4ade80;background:none;border:none;cursor:pointer">Dismiss</button>
+  </div>
 
   <div class="controls">
     <input type="text" id="search" placeholder="Search name, email, campus…" />
@@ -173,6 +181,7 @@ function tryLogin() {
     document.getElementById('login-screen').style.display = 'none'
     document.getElementById('dashboard').style.display = 'block'
     loadData()
+    startRealtime()
   } else {
     document.getElementById('login-err').style.display = 'block'
     pwInput.value = ''
@@ -180,11 +189,36 @@ function tryLogin() {
   }
 }
 
+let realtimeChannel = null
+
 document.getElementById('logout-btn').addEventListener('click', () => {
+  if (realtimeChannel) { supabase.removeChannel(realtimeChannel); realtimeChannel = null }
   document.getElementById('dashboard').style.display = 'none'
   document.getElementById('login-screen').style.display = 'flex'
   pwInput.value = ''
 })
+
+function startRealtime() {
+  const dot = document.getElementById('live-dot')
+  const lbl = document.getElementById('live-label')
+  realtimeChannel = supabase
+    .channel('guide_applications_live')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'guide_applications' }, (payload) => {
+      allRows.unshift(payload.new)
+      render()
+      const banner = document.getElementById('new-banner')
+      const cnt = parseInt(banner.dataset.count || '0') + 1
+      banner.dataset.count = cnt
+      banner.querySelector('#new-count').textContent = `${cnt} new application${cnt > 1 ? 's' : ''} received`
+      banner.style.display = 'flex'
+    })
+    .subscribe((status) => {
+      const live = status === 'SUBSCRIBED'
+      dot.style.background = live ? '#4ade80' : '#78716c'
+      lbl.textContent = live ? 'Live' : 'Connecting…'
+      lbl.style.color = live ? '#4ade80' : '#78716c'
+    })
+}
 
 // ── Data ──
 async function loadData() {
