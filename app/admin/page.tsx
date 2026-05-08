@@ -521,7 +521,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="w-full max-w-sm">
           <div className="flex justify-center mb-8">
-            <img src="/Alpha_World_School_Logo.png" alt="Alpha World School" className="h-12 w-auto object-contain"
+            <img src="/alphahigh.png" alt="Alpha World School" className="h-12 w-auto object-contain"
               onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
           </div>
           <form onSubmit={handleLogin} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-sm">
@@ -549,7 +549,7 @@ export default function AdminDashboard() {
       <header className="border-b border-gray-200 bg-white sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/Alpha_World_School_Logo.png" alt="Alpha World School" className="h-9 w-auto object-contain"
+            <img src="/alphahigh.png" alt="Alpha World School" className="h-9 w-auto object-contain"
               onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
             <div>
               <span className="text-gray-900 font-bold text-sm">Alpha World School</span>
