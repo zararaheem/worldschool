@@ -5,16 +5,16 @@ import { supabase, GuideApplication, ApplicationStatus } from '@/lib/supabase'
 import {
   Users, Search, ChevronDown, ChevronUp, Eye, X,
   CheckCircle, Clock, XCircle, TrendingUp, Award, Filter,
-  ExternalLink, Star, MessageSquare, Download, RefreshCw
+  ExternalLink, MessageSquare, Download, RefreshCw
 } from 'lucide-react'
 
 const STATUS_CONFIG: Record<ApplicationStatus, { label: string; color: string; bg: string; border: string; dot: string }> = {
-  draft:        { label: 'Draft',        color: 'text-gray-500',   bg: 'bg-gray-50',    border: 'border-gray-200',  dot: 'bg-gray-400' },
-  submitted:    { label: 'Submitted',    color: 'text-blue-700',   bg: 'bg-blue-50',    border: 'border-blue-200',  dot: 'bg-blue-500' },
-  under_review: { label: 'Under Review', color: 'text-amber-700',  bg: 'bg-amber-50',   border: 'border-amber-200', dot: 'bg-amber-500' },
-  advancing:    { label: 'Advancing',    color: 'text-green-700',  bg: 'bg-green-50',   border: 'border-green-200', dot: 'bg-green-500' },
-  rejected:     { label: 'Rejected',     color: 'text-red-700',    bg: 'bg-red-50',     border: 'border-red-200',   dot: 'bg-red-500' },
-  accepted:     { label: 'Accepted',     color: 'text-emerald-700',bg: 'bg-emerald-50', border: 'border-emerald-200',dot: 'bg-emerald-500' },
+  draft:        { label: 'Draft',        color: 'text-gray-500',    bg: 'bg-gray-50',     border: 'border-gray-200',   dot: 'bg-gray-400' },
+  submitted:    { label: 'Submitted',    color: 'text-blue-700',    bg: 'bg-blue-50',     border: 'border-blue-200',   dot: 'bg-blue-500' },
+  under_review: { label: 'Under Review', color: 'text-amber-700',   bg: 'bg-amber-50',    border: 'border-amber-200',  dot: 'bg-amber-500' },
+  advancing:    { label: 'Advancing',    color: 'text-green-700',   bg: 'bg-green-50',    border: 'border-green-200',  dot: 'bg-green-500' },
+  rejected:     { label: 'Rejected',     color: 'text-red-700',     bg: 'bg-red-50',      border: 'border-red-200',    dot: 'bg-red-500' },
+  accepted:     { label: 'Accepted',     color: 'text-emerald-700', bg: 'bg-emerald-50',  border: 'border-emerald-200',dot: 'bg-emerald-500' },
 }
 
 function StatusBadge({ status }: { status: ApplicationStatus }) {
@@ -34,8 +34,6 @@ function BuildPip({ filled, label }: { filled: boolean; label: string }) {
     </span>
   )
 }
-
-// ─── Detail Modal ─────────────────────────────────────────────────────
 
 function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
   app: GuideApplication
@@ -63,22 +61,6 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
       </div>
     ) : null
 
-  const LinkField = ({ label, value }: { label: string; value: string | null | undefined }) =>
-    value ? (
-      <div>
-        <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">{label}</div>
-        <a href={value} target="_blank" rel="noopener noreferrer"
-          className="text-sm text-blue-600 hover:text-blue-500 break-all flex items-center gap-1">
-          {value} <ExternalLink className="w-3 h-3 flex-shrink-0" />
-        </a>
-      </div>
-    ) : (
-      <div>
-        <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">{label}</div>
-        <span className="text-sm text-gray-300 italic">Not submitted</span>
-      </div>
-    )
-
   const ackTexts = [
     'This is a job, not a vacation.',
     'Primary 24/7 caretaker for 5–7 students.',
@@ -97,7 +79,6 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 w-full max-w-3xl mx-4 my-8 bg-white rounded-2xl border border-gray-200 shadow-2xl">
-        {/* Header */}
         <div className="flex items-start justify-between px-6 py-5 border-b border-gray-100 bg-gray-50 rounded-t-2xl">
           <div>
             <h2 className="text-xl font-bold text-gray-900">{app.full_name || <span className="italic text-gray-400">Unnamed Draft</span>}</h2>
@@ -115,7 +96,6 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
         </div>
 
         <div className="px-6 py-5 space-y-8 max-h-[75vh] overflow-y-auto">
-
           {/* Admin Actions */}
           <div className="flex flex-wrap gap-4 items-start p-4 bg-amber-50 rounded-xl border border-amber-100">
             <div className="flex-1 min-w-48">
@@ -139,17 +119,14 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
                 rows={2}
                 className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 resize-none"
               />
-              <button
-                onClick={saveNotes}
-                disabled={saving}
-                className="mt-2 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50 self-start"
-              >
+              <button onClick={saveNotes} disabled={saving}
+                className="mt-2 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50 self-start">
                 {saving ? 'Saving…' : savedMsg ? '✓ Saved' : 'Save Notes'}
               </button>
             </div>
           </div>
 
-          {/* Builds — prominent */}
+          {/* Builds */}
           <div>
             <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 pb-2 border-b border-gray-100">Builds</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -233,14 +210,11 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: {
             </div>
             <Field label="Applicant Signature" value={app.applicant_name} />
           </div>
-
         </div>
       </div>
     </div>
   )
 }
-
-// ─── Admin Dashboard ──────────────────────────────────────────────────
 
 export default function AdminDashboard() {
   const [authed, setAuthed] = useState(false)
@@ -258,17 +232,12 @@ export default function AdminDashboard() {
 
   const fetchApplications = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('guide_applications')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const { data } = await supabase.from('guide_applications').select('*').order('created_at', { ascending: false })
     setApplications(data as GuideApplication[] || [])
     setLoading(false)
   }, [])
 
-  useEffect(() => {
-    if (authed) fetchApplications()
-  }, [authed, fetchApplications])
+  useEffect(() => { if (authed) fetchApplications() }, [authed, fetchApplications])
 
   useEffect(() => {
     if (!authed) return
@@ -278,8 +247,7 @@ export default function AdminDashboard() {
         (payload) => {
           setApplications(prev => [payload.new as GuideApplication, ...prev])
           setNewCount(c => c + 1)
-        }
-      )
+        })
       .subscribe((status) => setLiveConnected(status === 'SUBSCRIBED'))
     return () => { supabase.removeChannel(channel) }
   }, [authed])
@@ -315,8 +283,7 @@ export default function AdminDashboard() {
       return matchSearch && matchStatus
     })
     .sort((a, b) => {
-      const av = a[sortField] || ''
-      const bv = b[sortField] || ''
+      const av = a[sortField] || ''; const bv = b[sortField] || ''
       return sortDir === 'asc' ? (av < bv ? -1 : 1) : (av > bv ? -1 : 1)
     })
 
@@ -329,18 +296,12 @@ export default function AdminDashboard() {
     accepted: applications.filter(a => a.status === 'accepted').length,
   }
 
-  // Export CSV
   const exportCSV = () => {
     const headers = ['Name', 'Email', 'Campus', 'Role', 'Status', 'Builds Completed', 'Languages', 'Submitted']
     const rows = filtered.map(a => [
-      a.full_name || '',
-      a.email || '',
-      a.campus || '',
-      a.role_at_alpha || '',
-      a.status || '',
+      a.full_name || '', a.email || '', a.campus || '', a.role_at_alpha || '', a.status || '',
       [a.build1_link, a.build2_design_link, a.build2_video_link, a.build3_video_link].filter(Boolean).length,
-      a.languages_spoken || '',
-      new Date(a.created_at).toLocaleDateString(),
+      a.languages_spoken || '', new Date(a.created_at).toLocaleDateString(),
     ])
     const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
@@ -355,18 +316,17 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="w-full max-w-sm">
           <div className="flex items-center gap-3 mb-8 justify-center">
-            <img src="/Alpha_World_School_Logo.png" alt="Alpha World School" className="h-10 w-auto object-contain" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            <img src="/Alpha_World_School_Logo.png" alt="Alpha World School" className="h-12 w-auto object-contain"
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
           </div>
           <form onSubmit={handleLogin} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-sm">
             <h1 className="text-lg font-bold text-gray-900 text-center">Admin Dashboard</h1>
             <p className="text-center text-sm text-gray-400">Guide Applications 2026–27</p>
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1.5">Password</label>
-              <input
-                type="password" value={password} onChange={e => setPassword(e.target.value)}
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)}
                 className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm"
-                placeholder="Enter admin password" autoFocus
-              />
+                placeholder="Enter admin password" autoFocus />
             </div>
             {authError && <p className="text-rose-600 text-sm">{authError}</p>}
             <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors text-sm">
@@ -380,11 +340,11 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="border-b border-gray-200 bg-white/95 sticky top-0 z-40 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/Alpha_World_School_Logo.png" alt="Alpha World School" className="h-8 w-auto object-contain" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            <img src="/Alpha_World_School_Logo.png" alt="Alpha World School" className="h-9 w-auto object-contain"
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
             <div>
               <span className="text-gray-900 font-bold text-sm">Alpha World School</span>
               <span className="text-gray-400 text-xs ml-2">Admin · Guide Applications 2026–27</span>
@@ -401,8 +361,6 @@ export default function AdminDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-
-        {/* New applications banner */}
         {newCount > 0 && (
           <div className="mb-5 flex items-center justify-between px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-sm">
             <span className="text-green-700 font-medium">🎉 {newCount} new application{newCount > 1 ? 's' : ''} received since you opened this page</span>
@@ -410,7 +368,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Stats */}
         <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
           {[
             { label: 'Submitted', value: stats.total, icon: Users, color: 'text-gray-900', click: () => setStatusFilter('all') },
@@ -430,22 +387,17 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Filters + actions */}
         <div className="flex flex-col md:flex-row gap-3 mb-5">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text" value={search} onChange={e => setSearch(e.target.value)}
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search by name, email, campus..."
-              className="w-full bg-white border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm"
-            />
+              className="w-full bg-white border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm" />
           </div>
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-400" />
-            <select
-              value={statusFilter} onChange={e => setStatusFilter(e.target.value as ApplicationStatus | 'all')}
-              className="bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-blue-500"
-            >
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as ApplicationStatus | 'all')}
+              className="bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-blue-500">
               <option value="all">All Statuses</option>
               {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
                 <option key={key} value={key}>{cfg.label}</option>
@@ -460,7 +412,6 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {/* Table */}
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -476,8 +427,7 @@ export default function AdminDashboard() {
                   ].map(({ key, label }, i) => (
                     <th key={i}
                       className={`px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider ${key ? 'cursor-pointer hover:text-gray-600 select-none' : ''}`}
-                      onClick={key ? () => toggleSort(key as typeof sortField) : undefined}
-                    >
+                      onClick={key ? () => toggleSort(key as typeof sortField) : undefined}>
                       <span className="flex items-center gap-1">
                         {label}
                         {key === sortField && (sortDir === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)}
@@ -512,7 +462,6 @@ export default function AdminDashboard() {
                       <td className="px-5 py-4">
                         <div className="text-gray-700 text-sm">{app.campus || '—'}</div>
                         <div className="text-gray-400 text-xs">{app.role_at_alpha || '—'}</div>
-                        <div className="text-gray-300 text-xs">{app.years_at_alpha ? `${app.years_at_alpha} at Alpha` : ''}</div>
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-1">
@@ -534,10 +483,8 @@ export default function AdminDashboard() {
                         <div className="text-gray-300">{new Date(app.created_at).getFullYear()}</div>
                       </td>
                       <td className="px-5 py-4">
-                        <button
-                          onClick={() => setSelectedApp(app)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg transition-colors font-medium"
-                        >
+                        <button onClick={() => setSelectedApp(app)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg transition-colors font-medium">
                           <Eye className="w-3 h-3" /> View
                         </button>
                       </td>
@@ -556,7 +503,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Detail Modal */}
       {selectedApp && (
         <DetailModal
           app={selectedApp}
