@@ -5,10 +5,10 @@ function getAuth() {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
   const key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
   if (!email || !key) throw new Error('Missing Google service account credentials.')
-  return new google.auth.JWT(email, undefined, key, [
-    'https://www.googleapis.com/auth/drive',
-    'https://www.googleapis.com/auth/spreadsheets',
-  ])
+  const jwt = new google.auth.JWT()
+  jwt.fromJSON({ type: 'service_account', client_email: email, private_key: key })
+  jwt.scopes = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
+  return jwt
 }
 
 export async function uploadFileToDrive(

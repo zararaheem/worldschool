@@ -440,19 +440,16 @@ function FocusAreaSelector({ value, onChange, lm }: { value: string; onChange: (
   )
 }
 
-const CONSTRAINTS = [
-  { id: 'conflict',  label: 'Conflict by Week 5 — design for that',              color: 'amber'   },
-  { id: 'energy',   label: 'Energy drops at mid-rotation — design for that',      color: 'emerald' },
-  { id: 'cultural', label: 'Cultural missteps happen — design for that',          color: 'blue'    },
-  { id: 'homesick', label: 'Someone wants to go home by Week 10 — design for that', color: 'rose' },
-  { id: 'conflict',  label: 'Conflict by Week 5',              color: 'amber'   },
-  { id: 'energy',   label: 'Energy drop at mid-rotation',      color: 'emerald' },
-  { id: 'cultural', label: 'Cultural missteps',                color: 'blue'    },
-  { id: 'homesick', label: 'Someone wants to go home (Wk 10)', color: 'rose'    },
+const CONSTRAINTS: { id: string; label: string; color: ConstraintColor }[] = [
+  { id: 'conflict',  label: 'Conflict by Week 5 — design for that',                 color: 'amber'   },
+  { id: 'energy',   label: 'Energy drops at mid-rotation — design for that',         color: 'emerald' },
+  { id: 'cultural', label: 'Cultural missteps happen — design for that',             color: 'blue'    },
+  { id: 'homesick', label: 'Someone wants to go home by Week 10 — design for that',  color: 'rose'    },
 ]
-const DOT    = { amber: 'bg-amber-400',   emerald: 'bg-emerald-400', blue: 'bg-blue-400',   rose: 'bg-rose-400' }
-const SEL_BG = { amber: 'bg-amber-400/12 border-amber-400/40', emerald: 'bg-emerald-400/12 border-emerald-400/40', blue: 'bg-blue-400/12 border-blue-400/40', rose: 'bg-rose-400/12 border-rose-400/40' }
-const SEL_TX = { amber: 'text-amber-300', emerald: 'text-emerald-300', blue: 'text-blue-300', rose: 'text-rose-300' }
+type ConstraintColor = 'amber' | 'emerald' | 'blue' | 'rose'
+const DOT: Record<ConstraintColor, string>    = { amber: 'bg-amber-400',   emerald: 'bg-emerald-400', blue: 'bg-blue-400',   rose: 'bg-rose-400' }
+const SEL_BG: Record<ConstraintColor, string> = { amber: 'bg-amber-400/12 border-amber-400/40', emerald: 'bg-emerald-400/12 border-emerald-400/40', blue: 'bg-blue-400/12 border-blue-400/40', rose: 'bg-rose-400/12 border-rose-400/40' }
+const SEL_TX: Record<ConstraintColor, string> = { amber: 'text-amber-300', emerald: 'text-emerald-300', blue: 'text-blue-300', rose: 'text-rose-300' }
 
 function ConstraintSelector({ value, onChange, lm }: { value: string; onChange: (v: string) => void; lm?: boolean }) {
   return (
@@ -935,13 +932,6 @@ export default function ApplicationForm() {
               <Textarea label="Prior International Travel" name="prior_international_travel"
                 value={form.prior_international_travel} onChange={handleChange}
                 placeholder="Countries, length of stay, and purpose…" rows={3} lm={lm} />
-              <YesNoField label="Developing-World Living Experience"
-                hint="Have you spent 2+ weeks living in a developing-world setting?"
-              <YesNoField label="Prior International Travel"
-                ynValue={form.prior_international_travel_yn} detailValue={form.prior_international_travel}
-                onYnChange={v => handleFieldChange('prior_international_travel_yn', v)}
-                onDetailChange={v => handleFieldChange('prior_international_travel', v)}
-                yesPrompt="List countries, length of stay, and purpose…" lm={lm} />
               <YesNoField label="Developing-World Living Experience" hint="Have you spent 2+ weeks living in a developing-world setting?"
                 ynValue={form.developing_world_experience_yn} detailValue={form.developing_world_experience}
                 onYnChange={v => handleFieldChange('developing_world_experience_yn', v)}
@@ -1005,29 +995,6 @@ export default function ApplicationForm() {
                   hint="One-pager, plan, or visual flow — Drive, Notion, or PDF" lm={lm} />
                 <VideoInput label="3-Minute Walkthrough Video — paste link or upload" name="build2_video_link" value={form.build2_video_link} onValueChange={handleFieldChange}
                   hint="Walk us through it in the voice you'd actually use — Loom, YouTube, Drive, or upload" lm={lm} />
-              <BuildCard number="1" title="The Workshop Sprint" filled={Boolean(form.build1_link)} lm={lm}
-                meta={[['Testing', 'Life skills design, AI fluency, taste'], ['Time', '2 hours max'], ['Deliverable', 'Slides / Notion / one-pager']]}>
-                <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>Design and produce a real <strong className={lm ? 'text-blue-800' : 'text-white/70'}>90-minute kickoff workshop</strong> for your cohort — anchored in one of the Kenya team's focus areas. Not a lecture. A first 90 minutes of real work that produces something the community uses.</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {['Food','Water','Empowerment','Education','Healthcare','Culture & Conservation','Community'].map(f => (
-                    <span key={f} className="px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-xs font-bold">{f}</span>
-                  ))}
-                </div>
-                <VideoInput label="Build 1 — Paste link or upload" name="build1_link" value={form.build1_link} onValueChange={handleFieldChange}
-                  hint="Google Drive, Notion, Slides, PDF, or file upload" lm={lm} />
-              </BuildCard>
-
-              <BuildCard number="2" title="The Cohort Experience" filled={Boolean(form.build2_design_link && form.build2_video_link)} lm={lm}
-                meta={[['Testing', 'Design instinct, cultural humility, resilience'], ['Time', '1.5–2 hours'], ['Deliverable', 'Design doc + 3-min video']]}>
-                <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>Design something that <strong className={lm ? 'text-blue-800' : 'text-white/70'}>prevents a cohort from breaking</strong>. By week 30 they'll be tired, homesick, and far from home. Strong cohorts don't avoid that — they're built to survive it.</p>
-                <ConstraintSelector value={form.build2_constraint} onChange={v => handleFieldChange('build2_constraint', v)} lm={lm} />
-                <div className="rounded-lg bg-amber-500/8 border border-amber-400/15 px-3 py-2">
-                  <p className="text-xs text-amber-300/80"><strong>Cultural humility is not optional.</strong> If your design involves the local community, tell us how you'll center their leadership — not feature them as a backdrop.</p>
-                </div>
-                <VideoInput label="Design Doc — paste link or upload" name="build2_design_link" value={form.build2_design_link} onValueChange={handleFieldChange}
-                  hint="One-pager, plan, visual — Drive, Notion, or PDF" lm={lm} />
-                <VideoInput label="3-Minute Video — paste link or upload" name="build2_video_link" value={form.build2_video_link} onValueChange={handleFieldChange}
-                  hint="Loom, YouTube, Google Drive, or upload" lm={lm} />
               </BuildCard>
 
               <BuildCard number="3" title="The Video" filled={Boolean(form.build3_video_link)} lm={lm}
@@ -1061,9 +1028,6 @@ export default function ApplicationForm() {
                   This filters for actual conversational fluency, which we value more than self-reported proficiency. Optional, but it helps.
                 </p>
                 <VideoInput label="Language Video — ≤60 seconds, in the language (optional)" name="build4_language_link" value={form.build4_language_link} onValueChange={handleFieldChange} lm={lm} />
-              <BuildCard number="4" title="Language Tape" optional filled={Boolean(form.build4_language_link)} lm={lm}>
-                <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>If you speak Swahili, Spanish, or any language relevant to Kenya or Ecuador — talk to us in it. Anything natural. ≤60 seconds.</p>
-                <VideoInput label="Language Video (optional)" name="build4_language_link" value={form.build4_language_link} onValueChange={handleFieldChange} lm={lm} />
               </BuildCard>
             </div>
           )}
@@ -1086,13 +1050,6 @@ export default function ApplicationForm() {
                   { label: 'Build 3 — The Video',                 value: form.build3_video_link,   required: isReq('build3_video_link'),   sub: null },
                   { label: 'Build 4 — Language Tape (optional)',  value: form.build4_language_link, required: false,                       sub: null },
                 ].map(({ label, value, required, sub }) => (
-                  { label: 'Build 1 — Workshop Sprint',           value: form.build1_link,        required: isReq('build1_link') },
-                  { label: 'Build 2 — Cohort Experience (design)',value: form.build2_design_link,  required: isReq('build2_design_link') },
-                  { label: 'Build 2 — Cohort Experience (video)', value: form.build2_video_link,   required: isReq('build2_video_link') },
-                  { label: 'Build 2 — Design constraint chosen',  value: form.build2_constraint,   required: isReq('build2_constraint') },
-                  { label: 'Build 3 — The Video',                 value: form.build3_video_link,   required: isReq('build3_video_link') },
-                  { label: 'Build 4 — Language Tape',             value: form.build4_language_link, required: false },
-                ].map(({ label, value, required }) => (
                   <div key={label} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border ${value ? lm ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-500/8 border-emerald-500/15' : required ? 'bg-rose-500/8 border-rose-500/15' : lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.02] border-white/8'}`}>
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black border ${value ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' : required ? 'bg-rose-500/20 border-rose-400/30 text-rose-400' : lm ? 'border-blue-200 text-blue-300' : 'border-white/15 text-white/25'}`}>
                       {value ? '✓' : required ? '!' : '–'}
@@ -1101,7 +1058,6 @@ export default function ApplicationForm() {
                       <div className={`text-xs font-bold uppercase tracking-wide ${value ? 'text-emerald-400' : required ? 'text-rose-300' : lm ? 'text-blue-300' : 'text-white/20'}`}>{label}</div>
                       {value
                         ? <div className={`text-xs truncate mt-0.5 ${lm ? 'text-blue-400' : 'text-white/20'}`}>{sub || value}</div>
-                        ? <div className={`text-xs truncate mt-0.5 ${lm ? 'text-blue-400' : 'text-white/20'}`}>{value}</div>
                         : <div className={`text-xs mt-0.5 ${required ? 'text-rose-400/60' : lm ? 'text-blue-300' : 'text-white/15'}`}>{required ? 'Missing — go back and add' : 'Optional'}</div>
                       }
                     </div>
