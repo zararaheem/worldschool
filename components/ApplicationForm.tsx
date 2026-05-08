@@ -101,7 +101,7 @@ function HeaderLogo({ onClick, lightMode }: { onClick?: () => void; lightMode: b
   return (
     <button onClick={onClick} className="flex items-center gap-3 group">
       <img src="/alphahigh.png" alt="Alpha World School"
-          className="h-7 w-auto object-contain"
+          className={`h-7 w-auto object-contain ${lightMode ? '[filter:brightness(0)_saturate(100%)_invert(27%)_sepia(80%)_saturate(600%)_hue-rotate(195deg)_brightness(90%)]' : ''}`}
           onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
       <div className="leading-tight text-left">
         <div className={`font-black uppercase tracking-wider text-xs ${lightMode ? 'text-gray-900' : 'text-white'}`}>Alpha World</div>
@@ -779,7 +779,7 @@ export default function ApplicationForm() {
         <nav className={`flex items-center justify-between px-6 py-4 border-b ${border}`}>
           <div className="flex items-center gap-3">
             <img src="/alphahigh.png" alt="Alpha World School"
-              className="h-7 w-auto object-contain"
+              className={`h-7 w-auto object-contain ${lm ? '[filter:brightness(0)_saturate(100%)_invert(27%)_sepia(80%)_saturate(600%)_hue-rotate(195deg)_brightness(90%)]' : ''}`}
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
             <div className="leading-tight">
               <div className={`font-black uppercase tracking-wider text-xs ${lm ? 'text-blue-900' : 'text-white'}`}>Alpha World</div>
@@ -950,7 +950,7 @@ export default function ApplicationForm() {
         <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
           <button onClick={() => setPhase('landing')} className="flex items-center gap-3">
             <img src="/alphahigh.png" alt="Alpha World School"
-              className="h-7 w-auto object-contain"
+              className={`h-7 w-auto object-contain ${lm ? '[filter:brightness(0)_saturate(100%)_invert(27%)_sepia(80%)_saturate(600%)_hue-rotate(195deg)_brightness(90%)]' : ''}`}
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
             <div className="leading-tight text-left">
               <div className={`font-black uppercase tracking-wider text-xs ${lm ? 'text-blue-900' : 'text-white'}`}>Alpha World</div>
