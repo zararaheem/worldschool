@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 
 const STATUS_CONFIG: Record<ApplicationStatus, { label: string; color: string; bg: string; border: string }> = {
+  draft: { label: 'Draft', color: 'text-gray-500', bg: 'bg-gray-50', border: 'border-gray-200' },
   submitted: { label: 'Submitted', color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200' },
   under_review: { label: 'Under Review', color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200' },
   advancing: { label: 'Advancing', color: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200' },
@@ -263,7 +264,8 @@ export default function AdminDashboard() {
   })
 
   const stats = {
-    total: applications.length,
+    total: applications.filter(a => a.status !== 'draft').length,
+    drafts: applications.filter(a => a.status === 'draft').length,
     submitted: applications.filter(a => a.status === 'submitted').length,
     under_review: applications.filter(a => a.status === 'under_review').length,
     advancing: applications.filter(a => a.status === 'advancing').length,
@@ -342,10 +344,10 @@ export default function AdminDashboard() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-8">
           {[
-            { label: 'Total', value: stats.total, icon: Users, color: 'text-gray-900' },
-            { label: 'Submitted', value: stats.submitted, icon: Clock, color: 'text-blue-600' },
+            { label: 'Submitted', value: stats.total, icon: Users, color: 'text-gray-900' },
+            { label: 'Drafts', value: stats.drafts, icon: Clock, color: 'text-gray-400' },
             { label: 'Under Review', value: stats.under_review, icon: Eye, color: 'text-amber-600' },
             { label: 'Advancing', value: stats.advancing, icon: TrendingUp, color: 'text-green-600' },
             { label: 'Accepted', value: stats.accepted, icon: Award, color: 'text-emerald-600' },
@@ -430,8 +432,11 @@ export default function AdminDashboard() {
                   return (
                     <tr key={app.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-4">
-                        <div className="font-medium text-gray-900 text-sm">{app.full_name}</div>
-                        <div className="text-gray-400 text-xs">{app.email}</div>
+                        <div className="font-medium text-gray-900 text-sm">{app.full_name || <span className="text-gray-300 italic">Unnamed draft</span>}</div>
+                        <div className="text-gray-400 text-xs">{app.email || '—'}</div>
+                        {app.status === 'draft' && app.draft_step && (
+                          <div className="text-xs text-gray-400 mt-0.5">Section {app.draft_step} of 5</div>
+                        )}
                       </td>
                       <td className="px-5 py-4">
                         <div className="text-gray-700 text-sm">{app.campus || '—'}</div>
