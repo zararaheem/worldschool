@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CheckCircle, AlertCircle, ChevronDown, ChevronRight, ArrowRight, ArrowLeft, Users, Globe, Calendar, MapPin } from 'lucide-react'
+import { CheckCircle, AlertCircle, ChevronDown, ChevronRight, ArrowRight, ArrowLeft, Users, Globe, Calendar } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -45,6 +45,34 @@ const STEPS = [
   { id: 4, label: 'References',       desc: '2 references + endorsement' },
   { id: 5, label: 'Sign & Submit',    desc: 'Acknowledgments & signature' },
 ]
+
+// ─── KV Storage API Helper ────────────────────────────────────────────────────
+
+async function saveToKV(key: string, data: FormData) {
+  try {
+    const response = await fetch('/api/kv-save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, data, timestamp: new Date().toISOString() })
+    })
+    return response.ok
+  } catch (error) {
+    console.error('KV save failed:', error)
+    return false
+  }
+}
+
+async function loadFromKV(key: string): Promise<FormData | null> {
+  try {
+    const response = await fetch(`/api/kv-load?key=${key}`)
+    if (!response.ok) return null
+    const data = await response.json()
+    return data.data || null
+  } catch (error) {
+    console.error('KV load failed:', error)
+    return null
+  }
+}
 
 // ─── Field components ────────────────────────────────────────────────────────
 
@@ -243,12 +271,48 @@ export default function ApplicationForm() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [lastSaved, setLastSaved] = useState<string>('')
 
   const totalSteps = STEPS.length
 
+  // ─── Auto-save to KV ───
+  useEffect(() => {
+    const saveTimer = setTimeout(async () => {
+      const kvKey = `app_draft_${form.full_name || 'unnamed'}_${new Date().toISOString().split('T')[0]}`
+      const saved = await saveToKV(kvKey, form)
+      if (saved) {
+        setLastSaved(new Date().toLocaleTimeString())
+      }
+    }, 1000) // Save 1 second after last change
+
+    return () => clearTimeout(saveTimer)
+  }, [form])
+
+  // ─── Load draft on mount ───
+  useEffect(() => {
+    const loadDraft = async () => {
+      const draftKey = localStorage.getItem('currentDraftKey')
+      if (draftKey) {
+        const savedData = await loadFromKV(draftKey)
+        if (savedData) {
+          setForm(savedData)
+        }
+      }
+    }
+    loadDraft()
+  }, [])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
-    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value }))
+    setForm(prev => {
+      const updated = { ...prev, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value }
+      // Save draft key for recovery
+      if (updated.full_name) {
+        const draftKey = `app_draft_${updated.full_name}_${new Date().toISOString().split('T')[0]}`
+        localStorage.setItem('currentDraftKey', draftKey)
+      }
+      return updated
+    })
   }
 
   const allAcksChecked = [1,2,3,4,5,6,7,8].every(n => form[`ack_${n}` as keyof FormData])
@@ -258,8 +322,12 @@ export default function ApplicationForm() {
     setSubmitting(true); setError(null)
     const { error: dbError } = await supabase.from('guide_applications').insert([form])
     if (dbError) { setError('Something went wrong. Please try again or email apply@alphaworldschool.com.'); setSubmitting(false); return }
+    // Clear draft on successful submission
+    localStorage.removeItem('currentDraftKey')
     setSubmitted(true); setSubmitting(false)
   }
+
+  const progress = (step / totalSteps) * 100
 
   // ── Success ──
   if (submitted) {
@@ -360,10 +428,16 @@ export default function ApplicationForm() {
       <header className="border-b border-white/8 sticky top-0 z-40 bg-[#0a1628]/95 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Logo size="sm" />
-          <span className="text-xs text-white/25 font-medium uppercase tracking-wider">Section {step} of {totalSteps}</span>
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-white/25 font-medium uppercase tracking-wider">Section {step} of {totalSteps}</span>
+            {lastSaved && <span className="text-xs text-emerald-400 font-medium">✓ Saved {lastSaved}</span>}
+          </div>
         </div>
-        <div className="h-0.5 bg-white/5">
-          <div className="h-full bg-blue-400 transition-all duration-500" style={{ width: `${(step / totalSteps) * 100}%` }} />
+        <div className="h-1 bg-white/5">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-400 to-blue-500 transition-all duration-500 shadow-lg shadow-blue-500/50"
+            style={{ width: `${progress}%` }} 
+          />
         </div>
       </header>
 
