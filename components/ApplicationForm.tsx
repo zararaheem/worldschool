@@ -111,8 +111,8 @@ function LandingLogo() {
 
 function HeaderLogo({ onClick, lightMode }: { onClick?: () => void; lightMode: boolean }) {
   return (
-    <button onClick={onClick} className="flex items-center gap-3">
-      <div className={`rounded-xl p-1.5 ${lightMode ? 'bg-blue-600' : 'bg-white/10'}`}>
+    <button onClick={onClick} className="flex items-center gap-3 group">
+      <div className="bg-blue-600 rounded-xl p-1.5 group-hover:bg-blue-500 transition-colors">
         <img src="/alphahigh.png" alt="Alpha World School"
           className="h-7 w-auto object-contain"
           onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
@@ -443,6 +443,8 @@ export default function ApplicationForm() {
   const [gateForm, setGateForm]     = useState({ name: '', email: '' })
   const [gateLoading, setGateLoading] = useState(false)
   const [gateError, setGateError]   = useState<string | null>(null)
+  const [resumeUrl, setResumeUrl]   = useState<string | null>(null)
+  const [copied, setCopied]         = useState(false)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const totalSteps = STEPS.length
 
@@ -460,17 +462,39 @@ export default function ApplicationForm() {
       })
   }, [])
 
-  // Check for existing draft on load (to show resume banner)
+  // Check for ?token= URL param (magic resume link) or existing localStorage draft
   useEffect(() => {
-    const id = localStorage.getItem(DRAFT_KEY)
-    if (!id) return
-    supabase.from('guide_applications').select('draft_step, email, full_name').eq('id', id).eq('status', 'draft').single()
-      .then(({ data }) => {
-        if (!data) return
-        setHasDraft(true)
-        if (data.draft_step) setStep(data.draft_step)
-        if (data.email) setGateForm(g => ({ ...g, email: data.email, name: data.full_name || g.name }))
-      })
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('token')
+
+    const loadById = (id: string) => {
+      supabase.from('guide_applications').select('*').eq('id', id).eq('status', 'draft').single()
+        .then(({ data }) => {
+          if (!data) return
+          localStorage.setItem(DRAFT_KEY, data.id)
+          const { id: _id, created_at: _ca, updated_at: _ua, status: _s, admin_notes: _an, draft_step, ...fields } = data
+          setForm(f => ({ ...f, ...fields }))
+          if (draft_step) setStep(draft_step)
+          if (data.email) setGateForm({ name: data.full_name || '', email: data.email })
+          setHasDraft(true)
+          // Token in URL = auto-resume, skip gate
+          if (token) setPhase('form')
+        })
+    }
+
+    if (token) {
+      loadById(token)
+    } else {
+      const id = localStorage.getItem(DRAFT_KEY)
+      if (!id) return
+      supabase.from('guide_applications').select('draft_step, email, full_name').eq('id', id).eq('status', 'draft').single()
+        .then(({ data }) => {
+          if (!data) return
+          setHasDraft(true)
+          if (data.draft_step) setStep(data.draft_step)
+          if (data.email) setGateForm(g => ({ ...g, email: data.email, name: data.full_name || g.name }))
+        })
+    }
   }, [])
 
   const isReq = (field: string) => Boolean(requiredFields[field])
@@ -515,15 +539,19 @@ export default function ApplicationForm() {
       .eq('status', 'draft')
       .maybeSingle()
 
+    let draftId: string
     if (data) {
       localStorage.setItem(DRAFT_KEY, data.id)
+      draftId = data.id
       const { id: _id, created_at: _ca, updated_at: _ua, status: _s, admin_notes: _an, draft_step, ...fields } = data
       setForm(f => ({ ...f, ...fields }))
       if (draft_step) setStep(draft_step)
       setHasDraft(true)
     } else {
+      draftId = getDraftId()
       setForm(f => ({ ...f, full_name: gateForm.name.trim(), email: gateForm.email.trim() }))
     }
+    setResumeUrl(`${window.location.origin}${window.location.pathname}?token=${draftId}`)
     setGateLoading(false)
     setPhase('form')
   }
@@ -579,7 +607,7 @@ export default function ApplicationForm() {
       <div className={`min-h-screen ${bg} flex flex-col`}>
         <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
           <div className="flex items-center gap-3">
-            <div className={`rounded-xl p-1.5 ${lm ? 'bg-blue-600' : 'bg-white/10'}`}>
+            <div className="bg-blue-600 rounded-xl p-1.5">
               <img src="/alphahigh.png" alt="Alpha World School"
                 className="h-7 w-auto object-contain"
                 onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
@@ -691,7 +719,7 @@ export default function ApplicationForm() {
       <div className={`min-h-screen ${bg} flex flex-col`}>
         <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
           <button onClick={() => setPhase('landing')} className="flex items-center gap-3">
-            <div className={`rounded-xl p-1.5 ${lm ? 'bg-blue-600' : 'bg-white/10'}`}>
+            <div className="bg-blue-600 rounded-xl p-1.5">
               <img src="/alphahigh.png" alt="Alpha World School"
                 className="h-7 w-auto object-contain"
                 onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
@@ -763,8 +791,8 @@ export default function ApplicationForm() {
             {saveState === 'saving' && <span className={`text-xs animate-pulse ${lm ? 'text-blue-300' : 'text-white/30'}`}>Saving…</span>}
             {saveState === 'saved'  && <span className="text-xs text-emerald-500">Saved ✓</span>}
             {/* Section pill */}
-            <span className={`hidden sm:inline text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full border ${lm ? 'bg-blue-100 border-blue-200 text-blue-600' : 'bg-blue-500/15 border-blue-400/20 text-blue-300'}`}>
-              {step} / {totalSteps}
+            <span className={`hidden sm:inline text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full border ${lm ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-blue-500 border-blue-400 text-white'}`}>
+              Section {step} / {totalSteps}
             </span>
             <button onClick={() => setLightMode(m => !m)}
               className={`p-1.5 rounded-full border transition-all ${lm ? 'border-blue-200 text-blue-400' : 'border-white/15 text-white/30'}`}>
@@ -807,6 +835,24 @@ export default function ApplicationForm() {
         </aside>
 
         <div className="flex-1 min-w-0">
+          {/* Resume link banner */}
+          {resumeUrl && (
+            <div className={`mb-5 flex items-center gap-3 px-4 py-3 rounded-xl border ${lm ? 'bg-blue-50 border-blue-200' : 'bg-blue-500/10 border-blue-400/20'}`}>
+              <div className="flex-1 min-w-0">
+                <p className={`text-xs font-bold uppercase tracking-wider mb-0.5 ${lm ? 'text-blue-700' : 'text-blue-300'}`}>Your resume link</p>
+                <p className={`text-xs truncate ${lm ? 'text-blue-500' : 'text-white/30'}`}>{resumeUrl}</p>
+              </div>
+              <button
+                onClick={() => { navigator.clipboard.writeText(resumeUrl); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border transition-all ${lm ? 'border-blue-300 text-blue-600 hover:bg-blue-100' : 'border-blue-400/30 text-blue-300 hover:bg-blue-500/15'}`}>
+                {copied ? '✓ Copied' : 'Copy'}
+              </button>
+              <button onClick={() => setResumeUrl(null)} className={`flex-shrink-0 ${lm ? 'text-blue-300' : 'text-white/20'} hover:opacity-60`}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
           {/* Mobile step dots */}
           <div className="flex md:hidden items-center gap-1.5 mb-6 overflow-x-auto pb-1">
             {STEPS.map((s, i) => (
