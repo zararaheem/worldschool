@@ -9,9 +9,9 @@ function Logo() {
   return (
     <div className="flex items-center gap-3">
       <img
-        src="/Alpha_World_School_Logo.png"
+        src="/alphahigh.png"
         alt="Alpha World School"
-        className="h-10 w-auto object-contain brightness-0 invert"
+        className="h-10 w-auto object-contain"
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
       />
       <div className="leading-tight">

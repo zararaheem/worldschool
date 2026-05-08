@@ -94,8 +94,8 @@ function Logo({ size = 'md', onClick }: { size?: 'sm' | 'md'; onClick?: () => vo
   const t = size === 'sm' ? 'text-xs' : 'text-sm'
   return (
     <button onClick={onClick} className="flex items-center gap-3">
-      <img src="/Alpha_World_School_Logo.png" alt="Alpha World School"
-        className={`${h} w-auto object-contain brightness-0 invert`}
+      <img src="/alphahigh.png" alt="Alpha World School"
+        className={`${h} w-auto object-contain`}
         onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
       <div className="leading-tight text-left">
         <div className={`font-black text-white uppercase tracking-wider ${t}`}>Alpha World</div>
