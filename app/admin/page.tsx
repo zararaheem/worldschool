@@ -57,8 +57,8 @@ const STATUS_CONFIG = {
   accepted:     { label: 'Accepted',     color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200',dot: 'bg-emerald-500' },
 }
 
-function StatusBadge({ status }) {
-  const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.draft
+function StatusBadge({ status }: { status: string }) {
+  const cfg = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.draft
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${cfg.bg} ${cfg.color} ${cfg.border}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
@@ -67,7 +67,7 @@ function StatusBadge({ status }) {
   )
 }
 
-function BuildPip({ filled, label }) {
+function BuildPip({ filled, label }: { filled: boolean; label: string }) {
   return (
     <span title={label} className={`inline-flex w-5 h-5 rounded items-center justify-center text-xs font-bold ${filled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
       {filled ? '✓' : '–'}
@@ -143,7 +143,8 @@ function FieldConfigEditor({ config, onSave }: { config: FieldConfig; onSave: (c
 
 // ─── Nudge Composer ───────────────────────────────────────────────────
 
-function RefereeNudgeComposer({ app, refNum, onClose }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function RefereeNudgeComposer({ app, refNum, onClose }: { app: any; refNum: number; onClose: () => void }) {
   const refName  = refNum === 1 ? app.reference1_name  : app.reference2_name
   const refEmail = refNum === 1 ? app.reference1_email : app.reference2_email
   const refRole  = refNum === 1 ? app.reference1_role  : app.reference2_role
@@ -176,10 +177,10 @@ function RefereeNudgeComposer({ app, refNum, onClose }) {
   const [tKey, setTKey]     = useState('endorsement')
   const [subject, setSubject] = useState(templates.endorsement.subject)
   const [body, setBody]     = useState(templates.endorsement.body)
-  const [copied, setCopied] = useState(null)
+  const [copied, setCopied] = useState<string | null>(null)
 
-  const switchT = (k) => { setTKey(k); setSubject(templates[k].subject); setBody(templates[k].body) }
-  const copy = (type) => {
+  const switchT = (k: string) => { setTKey(k); setSubject(templates[k as keyof typeof templates].subject); setBody(templates[k as keyof typeof templates].body) }
+  const copy = (type: string) => {
     const text = type === 'all' ? `To: ${refEmail}\nSubject: ${subject}\n\n${body}` : type === 'subject' ? subject : body
     navigator.clipboard.writeText(text).then(() => { setCopied(type); setTimeout(() => setCopied(null), 2000) })
   }
@@ -207,7 +208,7 @@ function RefereeNudgeComposer({ app, refNum, onClose }) {
             {Object.keys(templates).map(k => (
               <button key={k} onClick={() => switchT(k)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${tKey === k ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'}`}>
-                {templates[k].label}
+                {templates[k as keyof typeof templates].label}
               </button>
             ))}
           </div>
@@ -255,18 +256,19 @@ function RefereeNudgeComposer({ app, refNum, onClose }) {
 
 // ─── Detail Modal ─────────────────────────────────────────────────────
 
-function DetailModal({ app, onClose, onStatusChange, onNotesChange }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function DetailModal({ app, onClose, onStatusChange, onNotesChange }: { app: any; onClose: () => void; onStatusChange: (id: string, status: string) => void; onNotesChange: (id: string, notes: string) => void }) {
   const [notes, setNotes]       = useState(app.admin_notes || '')
   const [saving, setSaving]     = useState(false)
   const [savedMsg, setSavedMsg] = useState(false)
-  const [nudgeRef, setNudgeRef] = useState(null)
+  const [nudgeRef, setNudgeRef] = useState<number | null>(null)
 
   const saveNotes = async () => {
     setSaving(true); await onNotesChange(app.id, notes); setSaving(false)
     setSavedMsg(true); setTimeout(() => setSavedMsg(false), 2000)
   }
 
-  const F = ({ label, value }) => value ? (
+  const F = ({ label, value }: { label: string; value: string | null | undefined }) => value ? (
     <div>
       <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">{label}</div>
       <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{value}</div>
@@ -430,11 +432,11 @@ export default function AdminDashboard() {
   const [adminEmail, setAdminEmail]     = useState('')
   const [authError, setAuthError]       = useState('')
   const [tab, setTab]                   = useState<'applications' | 'settings'>('applications')
-  const [applications, setApplications] = useState([])
+  const [applications, setApplications] = useState<any[]>([])
   const [loading, setLoading]           = useState(false)
   const [search, setSearch]             = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [selectedApp, setSelectedApp]   = useState(null)
+  const [selectedApp, setSelectedApp]   = useState<any>(null)
   const [sortField, setSortField]       = useState('created_at')
   const [sortDir, setSortDir]           = useState('desc')
   const [newCount, setNewCount]         = useState(0)
@@ -482,7 +484,7 @@ export default function AdminDashboard() {
     return () => { supabase.removeChannel(ch) }
   }, [authed])
 
-  const handleLogin = (e) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
     const email = adminEmail.toLowerCase().trim()
     if (ADMIN_EMAILS.includes(email)) {
@@ -494,18 +496,18 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleStatusChange = async (id, status) => {
+  const handleStatusChange = async (id: string, status: string) => {
     await supabase.from('guide_applications').update({ status }).eq('id', id)
     setApplications(prev => prev.map(a => a.id === id ? { ...a, status } : a))
-    if (selectedApp?.id === id) setSelectedApp(prev => prev ? { ...prev, status } : null)
+    if (selectedApp?.id === id) setSelectedApp((prev: any) => prev ? { ...prev, status } : null)
   }
 
-  const handleNotesChange = async (id, admin_notes) => {
+  const handleNotesChange = async (id: string, admin_notes: string) => {
     await supabase.from('guide_applications').update({ admin_notes }).eq('id', id)
     setApplications(prev => prev.map(a => a.id === id ? { ...a, admin_notes } : a))
   }
 
-  const toggleSort = (field) => {
+  const toggleSort = (field: string) => {
     if (sortField === field) setSortDir(p => p === 'asc' ? 'desc' : 'asc')
     else { setSortField(field); setSortDir('asc') }
   }
