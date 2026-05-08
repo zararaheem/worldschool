@@ -276,12 +276,31 @@ function VideoInput({ label, name, value, onValueChange, hint, lm }: {
     if (file.size > 500 * 1024 * 1024) { setUploadErr('File too large. Max 500 MB.'); return }
     setUploading(true); setUploadErr(null)
     const ext = file.name.split('.').pop()
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-    const { data, error } = await supabase.storage.from('video-submissions').upload(path, file, { upsert: true })
-    if (error) { setUploadErr('Upload failed — try pasting a link instead.'); setUploading(false); return }
-    const { data: urlData } = supabase.storage.from('video-submissions').getPublicUrl(data.path)
-    setFileName(file.name)
-    onValueChange(name, urlData.publicUrl)
+
+    // Build Drive filename: LastName_FirstName_BuildX.ext
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(DRAFT_KEY) : null
+    const rawName = (typeof window !== 'undefined' && (document.querySelector('[name="full_name"]') as HTMLInputElement)?.value) || 'Applicant'
+    const parts = rawName.trim().split(' ')
+    const namePart = parts.length > 1 ? `${parts[parts.length - 1]}_${parts[0]}` : parts[0]
+    const buildTag = name === 'build1_link' ? 'Build1' : name === 'build2_design_link' ? 'Build2Design' : name === 'build2_video_link' ? 'Build2Video' : name === 'build3_video_link' ? 'Build3' : 'Build4'
+    const driveName = `${namePart}_${buildTag}.${ext}`
+
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('fileName', driveName)
+
+    const res = await fetch('/api/upload-drive', { method: 'POST', body: fd })
+    if (res.ok) {
+      const { url } = await res.json()
+      setFileName(driveName); onValueChange(name, url)
+    } else {
+      // Fallback: upload to Supabase Storage
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { data, error } = await supabase.storage.from('video-submissions').upload(path, file, { upsert: true })
+      if (error) { setUploadErr('Upload failed — try pasting a link instead.'); setUploading(false); return }
+      const { data: urlData } = supabase.storage.from('video-submissions').getPublicUrl(data.path)
+      setFileName(file.name); onValueChange(name, urlData.publicUrl)
+    }
     setUploading(false)
   }
 
@@ -839,21 +858,18 @@ export default function ApplicationForm() {
           <HeaderLogo lightMode={lm}
             onClick={() => { returnedToLanding.current = true; saveDraft(form, step); setPhase('landing') }} />
           <div className="flex items-center gap-3">
-            {saveState === 'saving' && <span className={`text-xs animate-pulse ${lm ? 'text-blue-300' : 'text-white/30'}`}>Saving…</span>}
-            {saveState === 'saved'  && <span className="text-xs text-emerald-500">Saved ✓</span>}
-            {/* Section pill */}
-            <span className={`hidden sm:inline text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full border ${lm ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-blue-500 border-blue-400 text-white'}`}>
+            {saveState === 'saving' && <span className={`text-xs animate-pulse ${lm ? 'text-blue-300' : 'text-white/50'}`}>Saving…</span>}
+            {saveState === 'saved'  && <span className="text-xs text-emerald-400">Saved ✓</span>}
+            <span className={`text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full border ${lm ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-blue-500 border-blue-400 text-white'}`}>
               Section {step} / {totalSteps}
-            <span className={`hidden sm:inline text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full border ${lm ? 'bg-blue-100 border-blue-200 text-blue-600' : 'bg-blue-500/15 border-blue-400/20 text-blue-300'}`}>
-              {step} / {totalSteps}
             </span>
             <button onClick={() => setLightMode(m => !m)}
-              className={`p-1.5 rounded-full border transition-all ${lm ? 'border-blue-200 text-blue-400' : 'border-white/15 text-white/30'}`}>
+              className={`p-1.5 rounded-full border transition-all ${lm ? 'border-blue-200 text-blue-500 hover:bg-blue-50' : 'border-white/30 text-white/60 hover:border-white/50 hover:text-white'}`}>
               {lm ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
             </button>
             <button
               onClick={() => { returnedToLanding.current = true; saveDraft(form, step); setPhase('landing') }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full border transition-all ${lm ? 'border-blue-200 text-blue-400 hover:bg-blue-50' : 'border-white/10 text-white/40 hover:text-white hover:border-white/25'}`}>
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full border transition-all ${lm ? 'border-blue-300 text-blue-600 hover:bg-blue-50' : 'border-white/30 text-white/70 hover:text-white hover:border-white/60 hover:bg-white/5'}`}>
               <ArrowLeft className="w-3 h-3" /> Save &amp; Exit
             </button>
           </div>
@@ -873,14 +889,14 @@ export default function ApplicationForm() {
             return (
               <button key={s.id} onClick={() => goStep(s.id)}
                 className={`flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-all cursor-pointer ${
-                  active ? lm ? 'bg-blue-100 border border-blue-300' : 'bg-blue-500/12 border border-blue-400/20' : lm ? 'hover:bg-blue-50' : 'hover:bg-white/[0.04]'
+                  active ? lm ? 'bg-blue-100 border border-blue-300' : 'bg-blue-500/30 border border-blue-400/50' : lm ? 'hover:bg-blue-50' : 'hover:bg-white/[0.06]'
                 }`}>
                 <span className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 border transition-all ${
-                  active ? 'bg-blue-500 border-blue-400 text-white' : done ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' : lm ? 'border-blue-200 text-blue-300' : 'border-white/12 text-white/20'
+                  active ? 'bg-blue-500 border-blue-400 text-white' : done ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' : lm ? 'border-blue-200 text-blue-300' : 'border-white/20 text-white/35'
                 }`}>{done ? '✓' : s.id}</span>
                 <div>
-                  <div className={`text-xs font-bold uppercase tracking-wide ${active ? lm ? 'text-blue-700' : 'text-blue-300' : done ? lm ? 'text-blue-500' : 'text-white/50' : lm ? 'text-blue-300' : 'text-white/20'}`}>{s.label}</div>
-                  <div className={`text-xs mt-0.5 ${active ? lm ? 'text-blue-500' : 'text-white/30' : lm ? 'text-blue-200' : 'text-white/15'}`}>{s.desc}</div>
+                  <div className={`text-xs font-bold uppercase tracking-wide ${active ? lm ? 'text-blue-700' : 'text-blue-200' : done ? lm ? 'text-blue-500' : 'text-white/60' : lm ? 'text-blue-300' : 'text-white/40'}`}>{s.label}</div>
+                  <div className={`text-xs mt-0.5 ${active ? lm ? 'text-blue-500' : 'text-white/50' : lm ? 'text-blue-200' : 'text-white/25'}`}>{s.desc}</div>
                 </div>
               </button>
             )
