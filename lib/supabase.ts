@@ -5,7 +5,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-export type ApplicationStatus = 'submitted' | 'under_review' | 'advancing' | 'rejected' | 'accepted'
+export type ApplicationStatus = 'draft' | 'submitted' | 'under_review' | 'advancing' | 'rejected' | 'accepted'
 
 export interface GuideApplication {
   id: string
@@ -55,4 +55,5 @@ export interface GuideApplication {
   applicant_name: string
   status: ApplicationStatus
   admin_notes: string
+  draft_step: number
 }
