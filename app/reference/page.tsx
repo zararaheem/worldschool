@@ -169,11 +169,10 @@ function ReferenceFormContent() {
 
       <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-10">
         <div className="mb-8">
-          <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Reference {refNumber} of 2</p>
           <h1 className="text-3xl font-black text-white uppercase tracking-tight mb-3">Reference Form</h1>
           <div className="rounded-xl bg-white/[0.04] border border-white/10 px-4 py-3">
             <p className="text-white/50 text-sm leading-relaxed">
-              <span className="text-white/70 font-bold">{applicantName}</span> has applied to be a Guide for Alpha World School&apos;s inaugural 2026–2027 cohort — a 38-week program across Kenya, Ecuador, and the United States. They have listed you as an internal Alpha reference.
+              <span className="text-white/70 font-bold">{applicantName}</span>{' '}has applied to be a Guide for Alpha World School&apos;s inaugural 2026–2027 cohort — a 38-week program across Kenya, Ecuador, and the United States. They have listed you as an internal Alpha reference.
             </p>
           </div>
         </div>
