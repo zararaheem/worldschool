@@ -518,8 +518,8 @@ export default function ApplicationForm() {
     const params = new URLSearchParams(window.location.search)
     const token = params.get('token')
 
-    const loadById = (id: string) => {
-      supabase.from('guide_applications').select('*').eq('id', id).eq('status', 'draft').single()
+    if (token) {
+      supabase.from('guide_applications').select('*').eq('id', token).eq('status', 'draft').single()
         .then(({ data }) => {
           if (!data) return
           localStorage.setItem(DRAFT_KEY, data.id)
@@ -528,13 +528,8 @@ export default function ApplicationForm() {
           if (draft_step) setStep(draft_step)
           if (data.email) setGateForm({ name: data.full_name || '', email: data.email })
           setHasDraft(true)
-          // Token in URL = auto-resume, skip gate
-          if (token) setPhase('form')
+          setPhase('form')
         })
-    }
-
-    if (token) {
-      loadById(token)
     } else {
       const id = localStorage.getItem(DRAFT_KEY)
       if (!id) return
@@ -546,17 +541,6 @@ export default function ApplicationForm() {
           if (data.email) setGateForm(g => ({ ...g, email: data.email, name: data.full_name || g.name }))
         })
     }
-  // Check for existing draft on load (to show resume banner)
-  useEffect(() => {
-    const id = localStorage.getItem(DRAFT_KEY)
-    if (!id) return
-    supabase.from('guide_applications').select('draft_step, email, full_name').eq('id', id).eq('status', 'draft').single()
-      .then(({ data }) => {
-        if (!data) return
-        setHasDraft(true)
-        if (data.draft_step) setStep(data.draft_step)
-        if (data.email) setGateForm(g => ({ ...g, email: data.email, name: data.full_name || g.name }))
-      })
   }, [])
 
   const isReq = (field: string) => Boolean(requiredFields[field])
@@ -605,8 +589,6 @@ export default function ApplicationForm() {
     if (data) {
       localStorage.setItem(DRAFT_KEY, data.id)
       draftId = data.id
-    if (data) {
-      localStorage.setItem(DRAFT_KEY, data.id)
       const { id: _id, created_at: _ca, updated_at: _ua, status: _s, admin_notes: _an, draft_step, ...fields } = data
       setForm(f => ({ ...f, ...fields }))
       if (draft_step) setStep(draft_step)
@@ -616,8 +598,6 @@ export default function ApplicationForm() {
       setForm(f => ({ ...f, full_name: gateForm.name.trim(), email: gateForm.email.trim() }))
     }
     setResumeUrl(`${window.location.origin}${window.location.pathname}?token=${draftId}`)
-      setForm(f => ({ ...f, full_name: gateForm.name.trim(), email: gateForm.email.trim() }))
-    }
     setGateLoading(false)
     setPhase('form')
   }
@@ -674,7 +654,6 @@ export default function ApplicationForm() {
         <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
           <div className="flex items-center gap-3">
             <div className="bg-blue-600 rounded-xl p-1.5">
-            <div className={`rounded-xl p-1.5 ${lm ? 'bg-blue-600' : 'bg-white/10'}`}>
               <img src="/alphahigh.png" alt="Alpha World School"
                 className="h-7 w-auto object-contain"
                 onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
@@ -787,7 +766,6 @@ export default function ApplicationForm() {
         <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
           <button onClick={() => setPhase('landing')} className="flex items-center gap-3">
             <div className="bg-blue-600 rounded-xl p-1.5">
-            <div className={`rounded-xl p-1.5 ${lm ? 'bg-blue-600' : 'bg-white/10'}`}>
               <img src="/alphahigh.png" alt="Alpha World School"
                 className="h-7 w-auto object-contain"
                 onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
