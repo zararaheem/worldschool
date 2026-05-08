@@ -832,7 +832,7 @@ export default function ApplicationForm() {
             <img
               src="/awslogo.png"
               alt="Alpha World School"
-              className={`h-16 w-auto object-contain mx-auto ${lm ? '[mix-blend-mode:multiply]' : '[mix-blend-mode:screen]'}`}
+              className={`h-16 w-auto object-contain mx-auto ${lm ? '[mix-blend-mode:multiply]' : '[mix-blend-mode:screen] [filter:invert(1)_hue-rotate(180deg)]'}`}
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
             <p className={`text-xs font-bold uppercase tracking-[0.25em] mt-1 ${lm ? 'text-blue-400' : 'text-white/35'}`}>Alpha World School</p>
