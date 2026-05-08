@@ -572,8 +572,9 @@ export default function ApplicationForm() {
   const [gateForm, setGateForm]     = useState({ name: '', email: '' })
   const [gateLoading, setGateLoading] = useState(false)
   const [gateError, setGateError]   = useState<string | null>(null)
-  const [resumeUrl, setResumeUrl]   = useState<string | null>(null)
-  const [copied, setCopied]         = useState(false)
+  const [resumeEmail, setResumeEmail] = useState('')
+  const [resumeLoading, setResumeLoading] = useState(false)
+  const [resumeError, setResumeError]   = useState<string | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const totalSteps = STEPS.length
 
@@ -675,8 +676,32 @@ export default function ApplicationForm() {
       draftId = getDraftId()
       setForm(f => ({ ...f, full_name: gateForm.name.trim(), email: gateForm.email.trim() }))
     }
-    setResumeUrl(`${window.location.origin}${window.location.pathname}?token=${draftId}`)
     setGateLoading(false)
+    setPhase('form')
+  }
+
+  const handleEmailResume = async () => {
+    const email = resumeEmail.trim().toLowerCase()
+    if (!email) return
+    setResumeLoading(true); setResumeError(null)
+    const { data } = await supabase
+      .from('guide_applications')
+      .select('*')
+      .eq('email', email)
+      .eq('status', 'draft')
+      .maybeSingle()
+    if (!data) {
+      setResumeLoading(false)
+      setResumeError('No saved draft found for that email.')
+      return
+    }
+    localStorage.setItem(DRAFT_KEY, data.id)
+    const { id: _id, created_at: _ca, updated_at: _ua, status: _s, admin_notes: _an, draft_step, ...fields } = data
+    setForm(f => ({ ...f, ...fields }))
+    if (draft_step) setStep(draft_step)
+    if (data.full_name) setGateForm({ name: data.full_name, email })
+    setHasDraft(true)
+    setResumeLoading(false)
     setPhase('form')
   }
 
@@ -743,6 +768,31 @@ export default function ApplicationForm() {
           </button>
         </nav>
 
+        {/* Draft saved — top banner */}
+        {hasDraft && (
+          <div className={`border-b ${border} px-6 py-3 flex items-center justify-between gap-4 ${lm ? 'bg-emerald-50' : 'bg-emerald-500/10'}`}>
+            <div className="flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+              <div>
+                <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Draft saved</span>
+                <span className={`text-xs ml-2 ${lm ? 'text-blue-400' : 'text-white/30'}`}>Section {step} of {totalSteps} — continue where you left off</span>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-shrink-0">
+              <button
+                onClick={() => { returnedToLanding.current = false; setPhase('gate') }}
+                className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-black text-emerald-600 uppercase tracking-wider border border-emerald-300 hover:bg-emerald-100 rounded-full transition-colors">
+                Continue <ArrowRight className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => { localStorage.removeItem(DRAFT_KEY); setHasDraft(false); setForm(initialForm); setStep(1); setGateForm({ name: '', email: '' }) }}
+                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider border rounded-full transition-colors ${lm ? 'border-blue-200 text-blue-400 hover:bg-blue-50' : 'border-white/15 text-white/25 hover:border-white/30'}`}>
+                Start Over
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className={`flex-1 flex flex-col items-center justify-center px-6 py-14 text-center`}>
           <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">Inaugural Cohort · 2026–2027</p>
           <h1 className={`text-4xl md:text-5xl font-black uppercase tracking-tight leading-none mb-8 ${lm ? 'text-blue-700' : 'text-blue-400'}`}>
@@ -768,42 +818,37 @@ export default function ApplicationForm() {
             ))}
           </div>
 
-          {hasDraft && (
-            <div className={`w-full max-w-sm mb-6 px-4 py-3 rounded-xl border flex items-center justify-between gap-3 ${lm ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-500/10 border-emerald-400/20'}`}>
-              <div>
-                <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Draft saved</p>
-                <p className={`text-xs mt-0.5 ${lm ? 'text-blue-500' : 'text-white/30'}`}>Section {step} of {totalSteps} — continue where you left off</p>
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <button
-                  onClick={() => { returnedToLanding.current = false; setPhase('gate') }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black text-emerald-600 uppercase tracking-wider border border-emerald-300 hover:bg-emerald-100 rounded-full transition-colors">
-                  Resume <ArrowRight className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem(DRAFT_KEY)
-                    setHasDraft(false)
-                    setForm(initialForm)
-                    setStep(1)
-                    setGateForm({ name: '', email: '' })
-                  }}
-                  className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider border rounded-full transition-colors ${lm ? 'border-blue-200 text-blue-400 hover:bg-blue-50' : 'border-white/15 text-white/25 hover:border-white/30'}`}>
-                  Start Over
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-3 mb-10">
             <button onClick={() => setPhase('gate')}
               className="flex items-center gap-2 px-8 py-3.5 bg-blue-500 hover:bg-blue-400 text-white font-black uppercase tracking-wider text-sm rounded-full transition-colors shadow-lg shadow-blue-500/20">
-              {hasDraft ? 'Continue Application' : 'Start Application'} <ArrowRight className="w-4 h-4" />
+              Start Application <ArrowRight className="w-4 h-4" />
             </button>
             <a href="https://world.alpha.school" target="_blank" rel="noopener noreferrer"
               className={`flex items-center gap-2 px-8 py-3.5 font-bold uppercase tracking-wider text-sm rounded-full border transition-colors ${lm ? 'border-blue-200 text-blue-400 hover:border-blue-400 hover:text-blue-600' : 'border-white/15 text-white/45 hover:text-white hover:border-white/30'}`}>
               Explore the Program <ExternalLink className="w-3.5 h-3.5" />
             </a>
+          </div>
+
+          {/* Email resume */}
+          <div className={`w-full max-w-sm rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.03] border-white/8'}`}>
+            <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${lm ? 'text-blue-500' : 'text-white/30'}`}>Already started? Resume with your email</p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={resumeEmail}
+                onChange={e => { setResumeEmail(e.target.value); setResumeError(null) }}
+                onKeyDown={e => e.key === 'Enter' && handleEmailResume()}
+                placeholder="you@alpha.school"
+                className={`flex-1 rounded-xl px-4 py-2.5 text-sm border focus:outline-none focus:border-blue-400/60 focus:ring-1 focus:ring-blue-400/30 transition-all ${lm ? 'bg-white border-blue-200 text-blue-900 placeholder-blue-300' : 'bg-white/5 border-white/10 text-white placeholder-white/20'}`}
+              />
+              <button
+                onClick={handleEmailResume}
+                disabled={resumeLoading}
+                className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-colors">
+                {resumeLoading ? '…' : <><ArrowRight className="w-3.5 h-3.5" /></>}
+              </button>
+            </div>
+            {resumeError && <p className="text-rose-400 text-xs mt-2">{resumeError}</p>}
           </div>
         </div>
 
@@ -938,24 +983,6 @@ export default function ApplicationForm() {
         </aside>
 
         <div className="flex-1 min-w-0">
-          {/* Resume link banner */}
-          {resumeUrl && (
-            <div className={`mb-5 flex items-center gap-3 px-4 py-3 rounded-xl border ${lm ? 'bg-blue-50 border-blue-200' : 'bg-blue-500/10 border-blue-400/20'}`}>
-              <div className="flex-1 min-w-0">
-                <p className={`text-xs font-bold uppercase tracking-wider mb-0.5 ${lm ? 'text-blue-700' : 'text-blue-300'}`}>Your resume link</p>
-                <p className={`text-xs truncate ${lm ? 'text-blue-500' : 'text-white/30'}`}>{resumeUrl}</p>
-              </div>
-              <button
-                onClick={() => { navigator.clipboard.writeText(resumeUrl); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border transition-all ${lm ? 'border-blue-300 text-blue-600 hover:bg-blue-100' : 'border-blue-400/30 text-blue-300 hover:bg-blue-500/15'}`}>
-                {copied ? '✓ Copied' : 'Copy'}
-              </button>
-              <button onClick={() => setResumeUrl(null)} className={`flex-shrink-0 ${lm ? 'text-blue-300' : 'text-white/20'} hover:opacity-60`}>
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-
           {/* Mobile step dots */}
           <div className="flex md:hidden items-center gap-1.5 mb-6 overflow-x-auto pb-1">
             {STEPS.map((s, i) => (
