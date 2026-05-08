@@ -859,7 +859,7 @@ export default function ApplicationForm() {
 
             <LandingAccordion title="What the top 10% of Guides do differently" lm={lm}>
               <div className="space-y-2">
-                <p className={`text-xs mb-3 ${lm ? 'text-gray-500' : 'text-white/35'}`}>If you read this list and think &ldquo;that&rsquo;s me&rdquo; — keep going.</p>
+                <p className={`text-sm mb-3 ${lm ? 'text-gray-500' : 'text-white/35'}`}>If you read this list and think &ldquo;that&rsquo;s me&rdquo; — keep going.</p>
                 {[
                   'They anticipate problems before they happen',
                   'They never wait to be told what to do',
