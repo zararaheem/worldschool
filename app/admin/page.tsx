@@ -148,7 +148,14 @@ function RefereeNudgeComposer({ app, refNum, onClose }) {
   const refEmail = refNum === 1 ? app.reference1_email : app.reference2_email
   const refRole  = refNum === 1 ? app.reference1_role  : app.reference2_role
 
+  const refFormUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/reference?ref=${refNum}&applicant=${encodeURIComponent(app.full_name || '')}&email=${encodeURIComponent(app.email || '')}`
+
   const templates = {
+    endorsement: {
+      label: '⭐ Endorsement request',
+      subject: `Endorsement request — ${app.full_name || 'Guide applicant'} · Alpha World School 2026–27`,
+      body: `Hi ${refName || '[Name]'},\n\n${app.full_name || 'One of our guides'} has applied to be a Guide for Alpha World School's inaugural 2026–2027 cohort — a 38-week program across Kenya, Ecuador, and the United States — and has listed you as a reference.\n\nAs their ${refRole || 'manager / Head of School'}, we'd like to hear directly from you. Please complete the short endorsement form at the link below — it takes about 5 minutes:\n\n${refFormUrl}\n\nThis is a demanding 24/7 role. Your honest assessment matters to us.\n\nThank you,\nAlpha World School Team\napply@alphaworldschool.com`,
+    },
     initial: {
       label: 'Initial outreach',
       subject: `Reference request — ${app.full_name || 'Guide applicant'} · Alpha World School 2026–27`,
@@ -166,9 +173,9 @@ function RefereeNudgeComposer({ app, refNum, onClose }) {
     },
   }
 
-  const [tKey, setTKey]     = useState('initial')
-  const [subject, setSubject] = useState(templates.initial.subject)
-  const [body, setBody]     = useState(templates.initial.body)
+  const [tKey, setTKey]     = useState('endorsement')
+  const [subject, setSubject] = useState(templates.endorsement.subject)
+  const [body, setBody]     = useState(templates.endorsement.body)
   const [copied, setCopied] = useState(null)
 
   const switchT = (k) => { setTKey(k); setSubject(templates[k].subject); setBody(templates[k].body) }
@@ -410,11 +417,17 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }) {
   )
 }
 
+const ADMIN_EMAILS = [
+  'tasha.arnold@alpha.school',
+  'emily.lopez@alpha.school',
+  'zara.raheem@alpha.school',
+]
+
 // ─── Main Dashboard ───────────────────────────────────────────────────
 
 export default function AdminDashboard() {
   const [authed, setAuthed]             = useState(false)
-  const [password, setPassword]         = useState('')
+  const [adminEmail, setAdminEmail]     = useState('')
   const [authError, setAuthError]       = useState('')
   const [tab, setTab]                   = useState<'applications' | 'settings'>('applications')
   const [applications, setApplications] = useState([])
@@ -445,6 +458,15 @@ export default function AdminDashboard() {
     setFieldConfig(config)
   }
 
+  // Persist auth across refreshes within the session
+  useEffect(() => {
+    const saved = sessionStorage.getItem('admin_email')
+    if (saved && ADMIN_EMAILS.includes(saved)) {
+      setAdminEmail(saved)
+      setAuthed(true)
+    }
+  }, [])
+
   useEffect(() => {
     if (!authed) return
     fetchApplications()
@@ -462,8 +484,14 @@ export default function AdminDashboard() {
 
   const handleLogin = (e) => {
     e.preventDefault()
-    if (password === 'aws-2026') { setAuthed(true); setAuthError('') }
-    else setAuthError('Incorrect password.')
+    const email = adminEmail.toLowerCase().trim()
+    if (ADMIN_EMAILS.includes(email)) {
+      sessionStorage.setItem('admin_email', email)
+      setAuthed(true)
+      setAuthError('')
+    } else {
+      setAuthError('This email is not authorized for admin access.')
+    }
   }
 
   const handleStatusChange = async (id, status) => {
@@ -521,6 +549,10 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="w-full max-w-sm">
           <div className="flex justify-center mb-8">
+            <div className="bg-[#08111f] rounded-xl p-3">
+              <img src="/alphahigh.png" alt="Alpha World School" className="h-10 w-auto object-contain"
+                onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
+            </div>
             <img src="/alphahigh.png" alt="Alpha World School" className="h-12 w-auto object-contain"
               onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
           </div>
@@ -530,9 +562,10 @@ export default function AdminDashboard() {
               <p className="text-sm text-gray-400 mt-1">Guide Applications 2026–27</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1.5">Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} autoFocus placeholder="Enter admin password"
+              <label className="block text-sm font-medium text-gray-600 mb-1.5">Your Alpha Email</label>
+              <input type="email" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} autoFocus placeholder="you@alpha.school"
                 className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm" />
+              <p className="text-xs text-gray-400 mt-1.5">Access is restricted to authorised Alpha staff.</p>
             </div>
             {authError && <p className="text-rose-600 text-sm">{authError}</p>}
             <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-colors text-sm">
@@ -549,6 +582,10 @@ export default function AdminDashboard() {
       <header className="border-b border-gray-200 bg-white sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <div className="bg-[#08111f] rounded-lg p-1.5">
+              <img src="/alphahigh.png" alt="Alpha World School" className="h-7 w-auto object-contain"
+                onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
+            </div>
             <img src="/alphahigh.png" alt="Alpha World School" className="h-9 w-auto object-contain"
               onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
             <div>
@@ -573,6 +610,10 @@ export default function AdminDashboard() {
               </button>
             </div>
             <a href="/" className="text-gray-400 hover:text-gray-700 text-xs">← View Form</a>
+            <button onClick={() => { sessionStorage.removeItem('admin_email'); setAuthed(false); setAdminEmail('') }}
+              className="text-gray-400 hover:text-gray-700 text-xs border border-gray-200 px-3 py-1.5 rounded-lg">
+              Sign out
+            </button>
           </div>
         </div>
       </header>

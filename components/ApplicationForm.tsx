@@ -30,6 +30,7 @@ interface FormData {
   build1_link: string; build2_design_link: string; build2_video_link: string
   build3_video_link: string; build4_language_link: string
   build2_constraint: string
+  build1_focus_area: string
   reference1_name: string; reference1_role: string; reference1_phone: string; reference1_email: string
   reference2_name: string; reference2_role: string; reference2_phone: string; reference2_email: string
   manager_endorsement_status: string; manager_endorsement_text: string
@@ -49,6 +50,7 @@ const initialForm: FormData = {
   emergency_contact: '',
   build1_link: '', build2_design_link: '', build2_video_link: '', build3_video_link: '', build4_language_link: '',
   build2_constraint: '',
+  build1_focus_area: '',
   reference1_name: '', reference1_role: '', reference1_phone: '', reference1_email: '',
   reference2_name: '', reference2_role: '', reference2_phone: '', reference2_email: '',
   manager_endorsement_status: '', manager_endorsement_text: '', endorser_name: '', endorser_role: '',
@@ -111,6 +113,8 @@ function LandingLogo() {
 
 function HeaderLogo({ onClick, lightMode }: { onClick?: () => void; lightMode: boolean }) {
   return (
+    <button onClick={onClick} className="flex items-center gap-3 group">
+      <div className="bg-blue-600 rounded-xl p-1.5 group-hover:bg-blue-500 transition-colors">
     <button onClick={onClick} className="flex items-center gap-3">
       <div className={`rounded-xl p-1.5 ${lightMode ? 'bg-blue-600' : 'bg-white/10'}`}>
         <img src="/alphahigh.png" alt="Alpha World School"
@@ -318,6 +322,7 @@ function VideoInput({ label, name, value, onValueChange, hint, lm }: {
           <div className={`flex items-start gap-2 px-3 py-2 rounded-lg border ${lm ? 'bg-blue-50 border-blue-200' : 'bg-blue-500/8 border-blue-400/15'}`}>
             <Info className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
             <p className={`text-xs ${lm ? 'text-blue-600' : 'text-blue-300/70'}`}>
+              Upload your file to the <strong>shared Drive folder linked in your invitation email</strong>, then paste the link here. File naming: <strong>LastName_FirstName_Build#.mp4</strong> (or .pdf, .mov, etc.)
               For Google Drive: set sharing to <strong>Anyone with the link</strong> and share it with <strong>apply@alphaworldschool.com</strong>
             </p>
           </div>
@@ -393,7 +398,36 @@ function BuildCard({ number, title, meta, optional, filled, children, lm }: {
   )
 }
 
+const FOCUS_AREAS = ['Food', 'Water', 'Empowerment', 'Education', 'Healthcare', 'Culture & Conservation', 'Community']
+
+function FocusAreaSelector({ value, onChange, lm }: { value: string; onChange: (v: string) => void; lm?: boolean }) {
+  return (
+    <div className="space-y-2">
+      <p className={`text-sm ${lm ? 'text-blue-500' : 'text-white/40'}`}>Pick one focus area for your workshop:</p>
+      <div className="flex flex-wrap gap-2">
+        {FOCUS_AREAS.map(f => {
+          const sel = value === f
+          return (
+            <button key={f} type="button" onClick={() => onChange(f)}
+              className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${
+                sel
+                  ? 'bg-blue-500/20 border-blue-400/40 text-blue-300'
+                  : lm ? 'border-blue-200 text-blue-400 hover:border-blue-400' : 'border-white/10 text-white/30 hover:border-white/25'
+              }`}>
+              {f}{sel && ' ✓'}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 const CONSTRAINTS = [
+  { id: 'conflict',  label: 'Conflict by Week 5 — design for that',              color: 'amber'   },
+  { id: 'energy',   label: 'Energy drops at mid-rotation — design for that',      color: 'emerald' },
+  { id: 'cultural', label: 'Cultural missteps happen — design for that',          color: 'blue'    },
+  { id: 'homesick', label: 'Someone wants to go home by Week 10 — design for that', color: 'rose' },
   { id: 'conflict',  label: 'Conflict by Week 5',              color: 'amber'   },
   { id: 'energy',   label: 'Energy drop at mid-rotation',      color: 'emerald' },
   { id: 'cultural', label: 'Cultural missteps',                color: 'blue'    },
@@ -443,6 +477,8 @@ export default function ApplicationForm() {
   const [gateForm, setGateForm]     = useState({ name: '', email: '' })
   const [gateLoading, setGateLoading] = useState(false)
   const [gateError, setGateError]   = useState<string | null>(null)
+  const [resumeUrl, setResumeUrl]   = useState<string | null>(null)
+  const [copied, setCopied]         = useState(false)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const totalSteps = STEPS.length
 
@@ -460,6 +496,39 @@ export default function ApplicationForm() {
       })
   }, [])
 
+  // Check for ?token= URL param (magic resume link) or existing localStorage draft
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('token')
+
+    const loadById = (id: string) => {
+      supabase.from('guide_applications').select('*').eq('id', id).eq('status', 'draft').single()
+        .then(({ data }) => {
+          if (!data) return
+          localStorage.setItem(DRAFT_KEY, data.id)
+          const { id: _id, created_at: _ca, updated_at: _ua, status: _s, admin_notes: _an, draft_step, ...fields } = data
+          setForm(f => ({ ...f, ...fields }))
+          if (draft_step) setStep(draft_step)
+          if (data.email) setGateForm({ name: data.full_name || '', email: data.email })
+          setHasDraft(true)
+          // Token in URL = auto-resume, skip gate
+          if (token) setPhase('form')
+        })
+    }
+
+    if (token) {
+      loadById(token)
+    } else {
+      const id = localStorage.getItem(DRAFT_KEY)
+      if (!id) return
+      supabase.from('guide_applications').select('draft_step, email, full_name').eq('id', id).eq('status', 'draft').single()
+        .then(({ data }) => {
+          if (!data) return
+          setHasDraft(true)
+          if (data.draft_step) setStep(data.draft_step)
+          if (data.email) setGateForm(g => ({ ...g, email: data.email, name: data.full_name || g.name }))
+        })
+    }
   // Check for existing draft on load (to show resume banner)
   useEffect(() => {
     const id = localStorage.getItem(DRAFT_KEY)
@@ -515,6 +584,10 @@ export default function ApplicationForm() {
       .eq('status', 'draft')
       .maybeSingle()
 
+    let draftId: string
+    if (data) {
+      localStorage.setItem(DRAFT_KEY, data.id)
+      draftId = data.id
     if (data) {
       localStorage.setItem(DRAFT_KEY, data.id)
       const { id: _id, created_at: _ca, updated_at: _ua, status: _s, admin_notes: _an, draft_step, ...fields } = data
@@ -522,6 +595,10 @@ export default function ApplicationForm() {
       if (draft_step) setStep(draft_step)
       setHasDraft(true)
     } else {
+      draftId = getDraftId()
+      setForm(f => ({ ...f, full_name: gateForm.name.trim(), email: gateForm.email.trim() }))
+    }
+    setResumeUrl(`${window.location.origin}${window.location.pathname}?token=${draftId}`)
       setForm(f => ({ ...f, full_name: gateForm.name.trim(), email: gateForm.email.trim() }))
     }
     setGateLoading(false)
@@ -579,6 +656,7 @@ export default function ApplicationForm() {
       <div className={`min-h-screen ${bg} flex flex-col`}>
         <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
           <div className="flex items-center gap-3">
+            <div className="bg-blue-600 rounded-xl p-1.5">
             <div className={`rounded-xl p-1.5 ${lm ? 'bg-blue-600' : 'bg-white/10'}`}>
               <img src="/alphahigh.png" alt="Alpha World School"
                 className="h-7 w-auto object-contain"
@@ -691,6 +769,7 @@ export default function ApplicationForm() {
       <div className={`min-h-screen ${bg} flex flex-col`}>
         <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
           <button onClick={() => setPhase('landing')} className="flex items-center gap-3">
+            <div className="bg-blue-600 rounded-xl p-1.5">
             <div className={`rounded-xl p-1.5 ${lm ? 'bg-blue-600' : 'bg-white/10'}`}>
               <img src="/alphahigh.png" alt="Alpha World School"
                 className="h-7 w-auto object-contain"
@@ -763,6 +842,8 @@ export default function ApplicationForm() {
             {saveState === 'saving' && <span className={`text-xs animate-pulse ${lm ? 'text-blue-300' : 'text-white/30'}`}>Saving…</span>}
             {saveState === 'saved'  && <span className="text-xs text-emerald-500">Saved ✓</span>}
             {/* Section pill */}
+            <span className={`hidden sm:inline text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full border ${lm ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-blue-500 border-blue-400 text-white'}`}>
+              Section {step} / {totalSteps}
             <span className={`hidden sm:inline text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full border ${lm ? 'bg-blue-100 border-blue-200 text-blue-600' : 'bg-blue-500/15 border-blue-400/20 text-blue-300'}`}>
               {step} / {totalSteps}
             </span>
@@ -807,6 +888,24 @@ export default function ApplicationForm() {
         </aside>
 
         <div className="flex-1 min-w-0">
+          {/* Resume link banner */}
+          {resumeUrl && (
+            <div className={`mb-5 flex items-center gap-3 px-4 py-3 rounded-xl border ${lm ? 'bg-blue-50 border-blue-200' : 'bg-blue-500/10 border-blue-400/20'}`}>
+              <div className="flex-1 min-w-0">
+                <p className={`text-xs font-bold uppercase tracking-wider mb-0.5 ${lm ? 'text-blue-700' : 'text-blue-300'}`}>Your resume link</p>
+                <p className={`text-xs truncate ${lm ? 'text-blue-500' : 'text-white/30'}`}>{resumeUrl}</p>
+              </div>
+              <button
+                onClick={() => { navigator.clipboard.writeText(resumeUrl); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border transition-all ${lm ? 'border-blue-300 text-blue-600 hover:bg-blue-100' : 'border-blue-400/30 text-blue-300 hover:bg-blue-500/15'}`}>
+                {copied ? '✓ Copied' : 'Copy'}
+              </button>
+              <button onClick={() => setResumeUrl(null)} className={`flex-shrink-0 ${lm ? 'text-blue-300' : 'text-white/20'} hover:opacity-60`}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
           {/* Mobile step dots */}
           <div className="flex md:hidden items-center gap-1.5 mb-6 overflow-x-auto pb-1">
             {STEPS.map((s, i) => (
@@ -841,6 +940,11 @@ export default function ApplicationForm() {
                 <Input label="Dean of Parents / Head of School" name="head_of_school" value={form.head_of_school} onChange={handleChange} required={isReq('head_of_school')} placeholder="Head of School's name" lm={lm} />
               </div>
               <LanguagesSelect value={form.languages_spoken} onChange={v => handleFieldChange('languages_spoken', v)} lm={lm} />
+              <Textarea label="Prior International Travel" name="prior_international_travel"
+                value={form.prior_international_travel} onChange={handleChange}
+                placeholder="Countries, length of stay, and purpose…" rows={3} lm={lm} />
+              <YesNoField label="Developing-World Living Experience"
+                hint="Have you spent 2+ weeks living in a developing-world setting?"
               <YesNoField label="Prior International Travel"
                 ynValue={form.prior_international_travel_yn} detailValue={form.prior_international_travel}
                 onYnChange={v => handleFieldChange('prior_international_travel_yn', v)}
@@ -851,6 +955,14 @@ export default function ApplicationForm() {
                 onYnChange={v => handleFieldChange('developing_world_experience_yn', v)}
                 onDetailChange={v => handleFieldChange('developing_world_experience', v)}
                 yesPrompt="Where, how long, what you were doing, and what surprised you…" lm={lm} />
+              <Textarea label="Health Considerations" name="health_considerations"
+                value={form.health_considerations} onChange={handleChange}
+                hint="Any current health considerations relevant to extended travel. Kept confidential, used only for planning."
+                placeholder="Describe any relevant considerations, or write N/A…" rows={3} lm={lm} />
+              <Textarea label="Personal or Family Obligations" name="family_obligations"
+                value={form.family_obligations} onChange={handleChange}
+                hint="Partner, children, caregiving responsibilities relevant to a 38-week commitment. Please be specific so we can plan with you, not around you."
+                placeholder="Describe any relevant obligations, or write N/A…" rows={3} lm={lm} />
               <YesNoField label="Health Considerations" hint="Any current health considerations relevant to 38 weeks of international travel?"
                 ynValue={form.health_considerations_yn} detailValue={form.health_considerations}
                 onYnChange={v => handleFieldChange('health_considerations_yn', v)}
@@ -875,6 +987,32 @@ export default function ApplicationForm() {
                 <p className={`text-sm mt-1.5 ${lm ? 'text-blue-400' : 'text-white/35'}`}>Three required, one optional. Paste a link or upload a file directly.</p>
               </div>
 
+              <BuildCard number="1" title="The Workshop Sprint" filled={Boolean(form.build1_link && form.build1_focus_area)} lm={lm}
+                meta={[['Testing', 'Life skills design, project orientation, AI fluency, taste'], ['Time', '2 hours max'], ['Deliverable', 'The workshop artifact (slides / Notion / one-pager)']]}>
+                <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>
+                  Design and produce a real <strong className={lm ? 'text-blue-800' : 'text-white/70'}>90-minute kickoff workshop</strong> for your cohort of 5–7 students — anchored in one of the international development focus areas we're working in with the Kenya team. Pick ONE area. The workshop should launch a real project in that area — something the cohort will continue building over the rotation, with a real output that lives past the workshop. <strong className={lm ? 'text-blue-700' : 'text-white/60'}>This isn't a lecture. It's the first 90 minutes of work that produces something the community actually uses.</strong>
+                </p>
+                <FocusAreaSelector value={form.build1_focus_area} onChange={v => handleFieldChange('build1_focus_area', v)} lm={lm} />
+                <VideoInput label="Workshop Artifact — paste link or upload" name="build1_link" value={form.build1_link} onValueChange={handleFieldChange}
+                  hint="Slides, Notion page, one-pager, or whatever you'd actually use on the day" lm={lm} />
+              </BuildCard>
+
+              <BuildCard number="2" title="The Cohort Experience" filled={Boolean(form.build2_design_link && form.build2_video_link && form.build2_constraint)} lm={lm}
+                meta={[['Testing', 'Anticipating breaking points, design instinct, cultural humility, cohort resilience'], ['Time', '1.5–2 hours'], ['Deliverable', 'Design doc + 3-min video']]}>
+                <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>
+                  Design something that <strong className={lm ? 'text-blue-800' : 'text-white/70'}>prevents a cohort from breaking</strong>. By week 30, the cohort will be tired, homesick, and far from home. The strongest cohorts don't avoid these moments — they're built to survive them. The greatest cohort experiences anticipate the failure modes and design for them before they happen. That's your job: build the experience, ritual, or structure that holds this cohort together when the year gets hard.
+                </p>
+                <ConstraintSelector value={form.build2_constraint} onChange={v => handleFieldChange('build2_constraint', v)} lm={lm} />
+                <p className={`text-xs leading-relaxed ${lm ? 'text-blue-500' : 'text-white/35'}`}>
+                  Your design could be a repeating ritual, a milestone tradition, a built-in reset mechanism, an integration with the local community — whatever actually addresses the failure mode you chose. Show how it runs in practice: sequence, prompts, materials, what the guide says, what the students do, what happens when it goes sideways. <strong className={lm ? 'text-blue-700' : 'text-white/55'}>How do you know this ritual is working by week 15?</strong>
+                </p>
+                <div className="rounded-lg bg-amber-500/8 border border-amber-400/15 px-3 py-2">
+                  <p className="text-xs text-amber-300/80"><strong>Cultural humility is not optional.</strong> If your design involves the local community, tell us how you'll center their leadership — not feature them as a backdrop.</p>
+                </div>
+                <VideoInput label="Experience Design — paste link or upload" name="build2_design_link" value={form.build2_design_link} onValueChange={handleFieldChange}
+                  hint="One-pager, plan, or visual flow — Drive, Notion, or PDF" lm={lm} />
+                <VideoInput label="3-Minute Walkthrough Video — paste link or upload" name="build2_video_link" value={form.build2_video_link} onValueChange={handleFieldChange}
+                  hint="Walk us through it in the voice you'd actually use — Loom, YouTube, Drive, or upload" lm={lm} />
               <BuildCard number="1" title="The Workshop Sprint" filled={Boolean(form.build1_link)} lm={lm}
                 meta={[['Testing', 'Life skills design, AI fluency, taste'], ['Time', '2 hours max'], ['Deliverable', 'Slides / Notion / one-pager']]}>
                 <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>Design and produce a real <strong className={lm ? 'text-blue-800' : 'text-white/70'}>90-minute kickoff workshop</strong> for your cohort — anchored in one of the Kenya team's focus areas. Not a lecture. A first 90 minutes of real work that produces something the community uses.</p>
@@ -902,11 +1040,14 @@ export default function ApplicationForm() {
 
               <BuildCard number="3" title="The Video" filled={Boolean(form.build3_video_link)} lm={lm}
                 meta={[['Testing', 'Self-awareness, honesty, mindset'], ['Time', '20 minutes'], ['Deliverable', '90 sec – 2 min video']]}>
+                <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>
+                  Talk to us. 90 seconds to 2 minutes. <strong className={lm ? 'text-blue-700' : 'text-white/65'}>Phone-quality is fine. Don't script. Don't read.</strong> We are looking for a clear-eyed picture of the job — not a pitch. The candidates who get it will sound different from the candidates who don't.
+                </p>
                 <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>Talk to us. 90 seconds to 2 minutes. <strong className={lm ? 'text-blue-700' : 'text-white/65'}>Phone-quality is fine. Don't script. Don't read.</strong></p>
                 <div className="space-y-1.5">
                   {[
                     'What are you most excited about for this year?',
-                    'What do you understand your role to be on this trip? Not what you hope — what you actually believe it is.',
+                    "What do you understand your role to be on this trip? Be specific — not what you hope it will be, what you actually believe it is.",
                   ].map((q, i) => (
                     <div key={i} className={`flex items-start gap-2 px-3 py-2.5 rounded-lg border ${lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.03] border-white/8'}`}>
                       <span className="text-blue-400 font-bold text-xs flex-shrink-0 mt-0.5">{'①②'[i]}</span>
@@ -914,10 +1055,20 @@ export default function ApplicationForm() {
                     </div>
                   ))}
                 </div>
+                <p className={`text-xs ${lm ? 'text-blue-400' : 'text-white/25'}`}>Most of the 20 minutes is taking 3 takes and picking the most honest one.</p>
                 <VideoInput label="Your Video — paste link or upload" name="build3_video_link" value={form.build3_video_link} onValueChange={handleFieldChange}
                   hint="Loom, YouTube, Google Drive, or upload directly" lm={lm} />
               </BuildCard>
 
+              <BuildCard number="4" title="Language Tape" optional filled={Boolean(form.build4_language_link)} lm={lm}
+                meta={[['Testing', 'Real fluency in non-English language'], ['Time', '5 minutes'], ['Deliverable', '≤60-second video in the language']]}>
+                <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>
+                  If you speak a language other than English — especially Swahili, Spanish, or any language likely to come up in Kenya or Ecuador — talk to us in it. Tell us about your morning, your last vacation, your favorite food. Anything natural.
+                </p>
+                <p className={`text-xs ${lm ? 'text-blue-400' : 'text-white/30'}`}>
+                  This filters for actual conversational fluency, which we value more than self-reported proficiency. Optional, but it helps.
+                </p>
+                <VideoInput label="Language Video — ≤60 seconds, in the language (optional)" name="build4_language_link" value={form.build4_language_link} onValueChange={handleFieldChange} lm={lm} />
               <BuildCard number="4" title="Language Tape" optional filled={Boolean(form.build4_language_link)} lm={lm}>
                 <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>If you speak Swahili, Spanish, or any language relevant to Kenya or Ecuador — talk to us in it. Anything natural. ≤60 seconds.</p>
                 <VideoInput label="Language Video (optional)" name="build4_language_link" value={form.build4_language_link} onValueChange={handleFieldChange} lm={lm} />
@@ -935,6 +1086,14 @@ export default function ApplicationForm() {
               </div>
               <div className="space-y-2.5">
                 {[
+                  { label: 'Build 1 — Workshop Sprint',           value: form.build1_link,        required: isReq('build1_link'),         sub: form.build1_focus_area ? `Focus area: ${form.build1_focus_area}` : 'Focus area not selected' },
+                  { label: 'Build 1 — Focus area selected',       value: form.build1_focus_area,  required: isReq('build1_link'),         sub: null },
+                  { label: 'Build 2 — Cohort Experience (design)',value: form.build2_design_link,  required: isReq('build2_design_link'),  sub: null },
+                  { label: 'Build 2 — Cohort Experience (video)', value: form.build2_video_link,   required: isReq('build2_video_link'),   sub: null },
+                  { label: 'Build 2 — Design constraint chosen',  value: form.build2_constraint,   required: isReq('build2_constraint'),  sub: null },
+                  { label: 'Build 3 — The Video',                 value: form.build3_video_link,   required: isReq('build3_video_link'),   sub: null },
+                  { label: 'Build 4 — Language Tape (optional)',  value: form.build4_language_link, required: false,                       sub: null },
+                ].map(({ label, value, required, sub }) => (
                   { label: 'Build 1 — Workshop Sprint',           value: form.build1_link,        required: isReq('build1_link') },
                   { label: 'Build 2 — Cohort Experience (design)',value: form.build2_design_link,  required: isReq('build2_design_link') },
                   { label: 'Build 2 — Cohort Experience (video)', value: form.build2_video_link,   required: isReq('build2_video_link') },
@@ -949,6 +1108,7 @@ export default function ApplicationForm() {
                     <div className="flex-1 min-w-0">
                       <div className={`text-xs font-bold uppercase tracking-wide ${value ? 'text-emerald-400' : required ? 'text-rose-300' : lm ? 'text-blue-300' : 'text-white/20'}`}>{label}</div>
                       {value
+                        ? <div className={`text-xs truncate mt-0.5 ${lm ? 'text-blue-400' : 'text-white/20'}`}>{sub || value}</div>
                         ? <div className={`text-xs truncate mt-0.5 ${lm ? 'text-blue-400' : 'text-white/20'}`}>{value}</div>
                         : <div className={`text-xs mt-0.5 ${required ? 'text-rose-400/60' : lm ? 'text-blue-300' : 'text-white/15'}`}>{required ? 'Missing — go back and add' : 'Optional'}</div>
                       }
