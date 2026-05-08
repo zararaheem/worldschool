@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CheckCircle, AlertCircle, ChevronDown, ChevronRight, ArrowRight, ArrowLeft } from 'lucide-react'
+import { CheckCircle, AlertCircle, ChevronDown, ChevronRight, ArrowRight, ArrowLeft, Users, Globe, Calendar, MapPin } from 'lucide-react'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────
 
 interface FormData {
   full_name: string; email: string; phone: string; role_at_alpha: string
@@ -46,7 +46,7 @@ const STEPS = [
   { id: 5, label: 'Sign & Submit',    desc: 'Acknowledgments & signature' },
 ]
 
-// ─── Field components ─────────────────────────────────────────────────────────
+// ─── Field components ────────────────────────────────────────────────────────
 
 function Input({ label, name, value, onChange, required, placeholder, type = 'text', hint }: {
   label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -60,7 +60,7 @@ function Input({ label, name, value, onChange, required, placeholder, type = 'te
       {hint && <p className="text-xs text-white/30 mb-1.5">{hint}</p>}
       <input
         type={type} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
-        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/20 transition-all text-sm"
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/20 transition-all"
       />
     </div>
   )
@@ -78,7 +78,7 @@ function Textarea({ label, name, value, onChange, required, placeholder, rows = 
       {hint && <p className="text-xs text-white/30 mb-1.5">{hint}</p>}
       <textarea
         name={name} value={value} onChange={onChange} required={required} placeholder={placeholder} rows={rows}
-        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/20 transition-all resize-none text-sm"
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/20 transition-all"
       />
     </div>
   )
@@ -90,29 +90,29 @@ const constraints = [
   {
     id: 'conflict', label: 'Conflict by Week 5', color: 'amber' as const,
     examples: [
-      { title: 'The Sunday Council', detail: "Every Sunday at 6pm, the cohort sits in a circle for 30 minutes. Each person gets 90 seconds to name one thing they appreciated about another cohort member, and one thing that's grating on them. Guide facilitates the first three weeks, then a rotating cohort member runs it." },
-      { title: 'The Repair Protocol', detail: 'Cohort agrees in week 1 to a written 4-step protocol. When something happens, say "I need a Repair." Within 24 hours, sit with a guide for 20 minutes using a specific 4-question template. The protocol is laminated on every common space wall all year.' },
+      { title: 'The Sunday Council', detail: "Every Sunday at 6pm, the cohort sits in a circle for 30 minutes. Each person gets 90 seconds to name one thing they appreciated about another cohort member." },
+      { title: 'The Repair Protocol', detail: 'Cohort agrees in week 1 to a written 4-step protocol. When something happens, say "I need a Repair." Within 24 hours, sit with a guide for 20 minutes using the protocol.' },
     ],
   },
   {
     id: 'energy', label: 'Energy Drop at Mid-Rotation', color: 'emerald' as const,
     examples: [
-      { title: 'Friday Bring-Your-Best', detail: 'Every Friday afternoon, one cohort member leads a 30-minute recharge activity. Rotates so every kid gets two slots per rotation. Solves energy AND distributes leadership AND gives every kid a recurring spotlight moment.' },
-      { title: 'The Midpoint Reset Day', detail: 'Built into the calendar at the exact midpoint of each rotation. Morning: solo journaling. Afternoon: cohort names one behavior to recommit to and one to drop. Evening: shared meal with a gratitude rotation.' },
+      { title: 'Friday Bring-Your-Best', detail: 'Every Friday afternoon, one cohort member leads a 30-minute recharge activity. Rotates so every kid gets two slots per rotation.' },
+      { title: 'The Midpoint Reset Day', detail: 'Built into the calendar at the exact midpoint of each rotation. Morning: solo journaling. Afternoon: cohort names one behavior to recommit to.' },
     ],
   },
   {
     id: 'cultural', label: 'Cultural Missteps', color: 'blue' as const,
     examples: [
-      { title: 'The What-We-Got-Wrong Debrief', detail: "Friday evenings in the local language, co-facilitated by the local guide. Each cohort member shares one cultural moment where they messed up. The local guide normalizes and teaches the next-level understanding. Transforms shame into curriculum." },
-      { title: 'The Cultural Compass', detail: "A 60-minute pre-arrival workshop covering 20 specific cultural norms, then role-playing 10 hard scenarios. By naming the likely misstep ahead of time, when it happens it's predicted — not catastrophic." },
+      { title: 'The What-We-Got-Wrong Debrief', detail: "Friday evenings in the local language, co-facilitated by the local guide. Each cohort member shares one cultural moment where they learned." },
+      { title: 'The Cultural Compass', detail: "A 60-minute pre-arrival workshop covering 20 specific cultural norms, then role-playing 10 hard scenarios. By naming the likely misstep ahead of time, we build competence." },
     ],
   },
   {
     id: 'homesick', label: 'Someone Wants to Go Home (Week 10)', color: 'rose' as const,
     examples: [
-      { title: 'Buddy-Up Pairs', detail: "Every cohort member is paired with one peer they're responsible for. Daily 5-minute check-ins, weekly 30-minute deeper conversation on Sundays. Pairs rotate every rotation. When someone starts to spiral, their buddy notices it the day it starts." },
-      { title: 'The Sunday Letter Home', detail: 'Every Sunday at 4pm, every cohort member writes a letter or records a voice memo to someone back home. Then each shares one sentence with the cohort. Channels homesickness into connection rather than avoidance.' },
+      { title: 'Buddy-Up Pairs', detail: "Every cohort member is paired with one peer they're responsible for. Daily 5-minute check-ins, weekly 30-minute deeper conversation on Sundays." },
+      { title: 'The Sunday Letter Home', detail: 'Every Sunday at 4pm, every cohort member writes a letter or records a voice memo to someone back home. Then each shares one sentence with the cohort.' },
     ],
   },
 ]
@@ -166,7 +166,7 @@ function ExamplesInline() {
   )
 }
 
-// ─── Build card ───────────────────────────────────────────────────────────────
+// ─── Build card ──────────────────────────────────────────────────────────
 
 function BuildCard({ number, title, meta, optional, children }: {
   number: string; title: string; meta?: [string, string][]; optional?: boolean; children: React.ReactNode
@@ -197,7 +197,7 @@ function BuildCard({ number, title, meta, optional, children }: {
   )
 }
 
-// ─── Acknowledgments ──────────────────────────────────────────────────────────
+// ─── Acknowledgments ─────────────────────────────────────────────────────────
 
 const acknowledgments = [
   'I understand this is a job. It is not a vacation.',
@@ -210,24 +210,22 @@ const acknowledgments = [
   'My direct manager and Head of School are aware that I am applying.',
 ]
 
-// ─── Logo ─────────────────────────────────────────────────────────────────────
+// ─── Logo ────────────────────────────────────────────────────────────
 
 function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
-  const imgSize = size === 'lg' ? 'w-12 h-12' : size === 'sm' ? 'w-6 h-6' : 'w-8 h-8'
   const mainText = size === 'lg' ? 'text-lg' : size === 'sm' ? 'text-xs' : 'text-sm'
   const subText = size === 'lg' ? 'text-sm' : 'text-xs'
   return (
     <div className="flex items-center gap-2.5">
-      <img
-        src="https://world.alpha.school/logo.png"
-        alt="Alpha World School"
-        className={`${imgSize} object-contain`}
-        onError={(e) => {
-          const img = e.target as HTMLImageElement
-          img.src = 'https://world.alpha.school/favicon.ico'
-          img.onerror = () => { img.style.display = 'none' }
-        }}
-      />
+      <svg
+        width={size === 'lg' ? '48' : size === 'sm' ? '24' : '32'}
+        height={size === 'lg' ? '48' : size === 'sm' ? '24' : '32'}
+        viewBox="0 0 2793.08 1060.44"
+        className="object-contain"
+      >
+        <path d="M568.05,118.7l141.02-77.83-59.86,185.66,107.9,111.72,15.28,73.59,159.91,83.28,3.75,61.63-100.47,64.53-161.96-30.78-61.98,56.6,58.3,308.28-187.08-165.57,57.38,271.84-190.69-200.38-28.8-89.65-92.41,204.48-44.79-197.55,19.32-99.06-132.53,89.79,57.24-174.98,39.41-48.61-124.32,39.62,96.65-162.74,73.02-52.22-131.39,5.73,167.05-114.34,130.55-40.61,63.68-128.92L585.11-1.3l-17.05,120.28v-.28ZM238.83,352.69l158.21-40.68,182.76,31.63,62.27-11.82-257.84-94.88-128.92,40.12-116.75,80.02,100.26-4.39ZM558.15,367.27l-284.93,84.55-130.76,150.99-41.04,125.38,107.97-73.45,99.69-121.7,174.77-66.44,74.29-99.06v-.28ZM191.35,520.88l72.45-83.63,279.49-83-145.54-25.12-153.96,39.62-91.98,65.66-72.38,121.7,111.94-35.38v.14ZM363.99,628.85l90.5-49.53,22.64-91.98-157.93,59.72-96.3,117.6-22.15,113.7,32.9,145.26c44.44-97.71,88.38-195.85,130.33-294.77ZM453.93,598.71l-76.84,42.03-46.06,107.76,33.33,103.66,147.38,155.17-50.59-239.51-7.08-169.11h-.14ZM593.95,357.93l37.36,34.95,106.13,14.15-66.79-63.68-76.7,14.58ZM766.1,427.41l-142.29-18.61-44.65-41.75-82.43,110.17-22.5,91.98,182.34-94.88,214.11,81.44-16.84-49.53,26.18-19.32-113.92-59.29v-.21ZM668.53,572.46l109.81-33.89-120.71-45.92-187.36,97.22,7.08,158.63,191.18-176.04ZM875.49,575.78l-77.83-25.75-94.03,29.08,128.63,24.48,43.23-27.81ZM916.17,505.52l-19.67-10.26-22.93,16.98,17.97,53.21,27.17-17.48-2.55-42.45ZM680.27,75.89l-115.12,63.68-10.12,70.76,197.34,187.5-10.68-51.51-111.37-115.33,49.95-155.1ZM597.13,661.05l-115.19,106.13,162.74,144.06-47.27-249.98-.28-.21ZM638.24,312.86l-100.9-96.09,26.11-183.96-108.47,71.39-59.15,119.29,242.41,89.37Z" fill="white" fillRule="evenodd"/>
+        <path d="M1338.37,726.14h63.68l-142.5-227.76c-4.11-7.37-10.12-13.5-17.4-17.77-7.28-4.27-15.56-6.52-24-6.52s-16.72,2.25-24,6.52c-7.28,4.27-13.28,10.41-17.39,17.77l-143.14,227.76h63.26l35.02-56.6h170.66l35.8,56.6ZM1217.23,529.79l59.65,97.29h-119.29l59.65-97.29ZM1678,726.14v-47.05h-146.46c-34.67,0-44.08-11.18-44.08-39.76v-159.77h-54.62v161.96c0,62.19,21.23,84.91,94.03,84.91l151.13-.28ZM1896.84,655.38c71.96,0,92.56-16.27,92.56-75.21v-21.23c0-58.23-22.09-79.53-92.56-79.53h-197.41v246.73h54.91v-70.76h142.5ZM1934.42,578.26c0,26.04-9.34,32.9-38.28,32.9h-141.79v-84.27h141.01c29.64,0,38.99,7.57,38.99,34.39v16.98h.07ZM2335.89,726.14v-246.58h-54.63v100.47h-180.71v-100.47h-54.97v246.58h54.97v-98.35h180.71v98.35h54.63ZM2686.69,726.14h63.68l-142.5-227.76c-4.11-7.37-10.11-13.5-17.4-17.77-7.27-4.27-15.56-6.52-24-6.52s-16.71,2.25-24,6.52c-7.27,4.27-13.27,10.41-17.38,17.77l-143.14,227.76h63.25l35.02-56.6h170.66l35.8,56.6ZM2565.55,529.79l59.66,97.29h-119.3l59.64-97.29Z" fill="white" fillRule="evenodd"/>
+      </svg>
       <div className="leading-tight">
         <div className={`font-black text-white uppercase tracking-wider ${mainText}`}>Alpha World</div>
         <div className={`font-bold text-white/40 uppercase tracking-widest ${subText}`}>School</div>
@@ -236,7 +234,7 @@ function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   )
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Main component ─────────────────────────────────────────────────────────
 
 export default function ApplicationForm() {
   const [started, setStarted] = useState(false)
@@ -300,12 +298,26 @@ export default function ApplicationForm() {
           <p className="text-white/40 text-base md:text-lg max-w-lg mb-3 leading-relaxed">
             This is not a year off. This is the hardest job Alpha has ever asked anyone to do — and the most rewarding year of your career.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 mb-10 text-white/30 text-sm">
-            {['38 Weeks', '3 Continents', '20 Students', 'Kenya · Ecuador · USA'].map((s, i) => (
-              <span key={s} className="flex items-center gap-2">
-                {i > 0 && <span className="w-1 h-1 rounded-full bg-white/15" />}{s}
-              </span>
-            ))}
+
+          {/* Stats with icons */}
+          <div className="flex flex-wrap items-center justify-center gap-6 mb-10 w-full max-w-2xl">
+            <div className="flex flex-col items-center gap-2">
+              <Users className="w-8 h-8 text-blue-400" />
+              <span className="text-sm font-bold text-white">20 Students</span>
+              <span className="text-xs text-white/30">Selected</span>
+            </div>
+            <div className="w-px h-12 bg-white/10" />
+            <div className="flex flex-col items-center gap-2">
+              <Globe className="w-8 h-8 text-emerald-400" />
+              <span className="text-sm font-bold text-white">3 Continents</span>
+              <span className="text-xs text-white/30">Kenya · Ecuador · USA</span>
+            </div>
+            <div className="w-px h-12 bg-white/10" />
+            <div className="flex flex-col items-center gap-2">
+              <Calendar className="w-8 h-8 text-amber-400" />
+              <span className="text-sm font-bold text-white">1 School Year</span>
+              <span className="text-xs text-white/30">38 Weeks</span>
+            </div>
           </div>
 
           {/* Section preview */}
@@ -330,19 +342,11 @@ export default function ApplicationForm() {
               Apply Now <ArrowRight className="w-4 h-4" />
             </button>
             <a href="https://world.alpha.school" target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 px-8 py-3.5 text-white/45 hover:text-white font-bold uppercase tracking-wider text-sm rounded-full border border-white/15 hover:border-white/30 transition-colors">
+              className="flex items-center gap-2 px-8 py-3.5 text-white/45 hover:text-white font-bold uppercase tracking-wider text-sm rounded-full border border-white/15 hover:border-white/30 transition-colors"
+            >
               Explore the Program
             </a>
           </div>
-        </div>
-
-        <div className="border-t border-white/8 grid grid-cols-3">
-          {[['20', 'Students Selected'], ['3', 'Continents'], ['1', 'School Year']].map(([n, label]) => (
-            <div key={label} className="py-7 flex flex-col items-center gap-1 border-r last:border-r-0 border-white/8">
-              <span className="text-3xl font-black text-blue-400">{n}</span>
-              <span className="text-xs font-bold uppercase tracking-widest text-white/25">{label}</span>
-            </div>
-          ))}
         </div>
       </div>
     )
@@ -430,14 +434,14 @@ export default function ApplicationForm() {
                 <Input label="Role at Alpha" name="role_at_alpha" value={form.role_at_alpha} onChange={handleChange} required placeholder="e.g. Guide, Academic Coach" />
                 <Input label="Campus" name="campus" value={form.campus} onChange={handleChange} placeholder="e.g. Austin, NYC" />
                 <Input label="Years at Alpha" name="years_at_alpha" value={form.years_at_alpha} onChange={handleChange} placeholder="e.g. 2 years" />
-                <Input label="Direct Manager" name="direct_manager" value={form.direct_manager} onChange={handleChange} placeholder="Manager&apos;s name" />
-                <Input label="Head of School" name="head_of_school" value={form.head_of_school} onChange={handleChange} placeholder="Head of School&apos;s name" />
+                <Input label="Direct Manager" name="direct_manager" value={form.direct_manager} onChange={handleChange} placeholder="Manager's name" />
+                <Input label="Head of School" name="head_of_school" value={form.head_of_school} onChange={handleChange} placeholder="Head of School's name" />
               </div>
-              <Textarea label="Languages Spoken" name="languages_spoken" value={form.languages_spoken} onChange={handleChange} placeholder="English (native), Spanish (conversational)..." hint="Note proficiency level for each" />
-              <Textarea label="Prior International Travel" name="prior_international_travel" value={form.prior_international_travel} onChange={handleChange} placeholder="Kenya (3 weeks, community dev), Ecuador (1 month, teaching)..." hint="Countries, length of stay, purpose" rows={3} />
-              <Textarea label="Developing-World Living Experience" name="developing_world_experience" value={form.developing_world_experience} onChange={handleChange} placeholder="Yes — 6 weeks in rural Guatemala..." hint="2+ weeks in a developing-world setting? Describe" rows={3} />
-              <Textarea label="Health Considerations" name="health_considerations" value={form.health_considerations} onChange={handleChange} placeholder="Anything relevant to extended international travel..." rows={2} />
-              <Textarea label="Personal or Family Obligations" name="family_obligations" value={form.family_obligations} onChange={handleChange} placeholder="Partner, children, caregiving responsibilities..." hint="Relevant to a 38-week commitment" rows={2} />
+              <Textarea label="Languages Spoken" name="languages_spoken" value={form.languages_spoken} onChange={handleChange} placeholder="English (native), Spanish (conversational)..." />
+              <Textarea label="Prior International Travel" name="prior_international_travel" value={form.prior_international_travel} onChange={handleChange} placeholder="Kenya (3 weeks, community dev)..." />
+              <Textarea label="Developing-World Living Experience" name="developing_world_experience" value={form.developing_world_experience} onChange={handleChange} placeholder="Yes — 6 weeks in rural..." />
+              <Textarea label="Health Considerations" name="health_considerations" value={form.health_considerations} onChange={handleChange} placeholder="Anything relevant to extended international travel..." />
+              <Textarea label="Personal or Family Obligations" name="family_obligations" value={form.family_obligations} onChange={handleChange} placeholder="Partner, children, caregiving responsibilities..." />
               <Input label="Emergency Contact" name="emergency_contact" value={form.emergency_contact} onChange={handleChange} placeholder="Name, relationship, phone" />
             </div>
           )}
@@ -454,7 +458,7 @@ export default function ApplicationForm() {
               <BuildCard number="1" title="The Workshop Sprint"
                 meta={[['Testing', 'Life skills design, AI fluency'], ['Time', '2 hours max'], ['Deliverable', 'Slides / Notion / one-pager']]}>
                 <p className="text-white/45 text-sm leading-relaxed">
-                  Design a real 90-minute kickoff workshop for your cohort of 5–7 students — anchored in one of: <span className="text-white/70 font-medium">Food · Water · Empowerment · Education · Healthcare · Culture · Community</span>. Must launch a real project with an output the community actually uses.
+                  Design a real 90-minute kickoff workshop for your cohort of 5–7 students — anchored in one of: <span className="text-white/70 font-medium">Food · Water · Empowerment · Education</span>.
                 </p>
                 <Input label="Build 1 Link or File Name" name="build1_link" value={form.build1_link} onChange={handleChange} placeholder="https://docs.google.com/... or Smith_Jane_Build1.pdf" />
               </BuildCard>
@@ -473,24 +477,24 @@ export default function ApplicationForm() {
                 </div>
                 <ExamplesInline />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input label="Design Doc Link" name="build2_design_link" value={form.build2_design_link} onChange={handleChange} placeholder="One-pager, plan, or visual flow" />
-                  <Input label="3-Minute Video Link" name="build2_video_link" value={form.build2_video_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive" />
+                  <Input label="Design Doc Link" name="build2_design_link" value={form.build2_design_link} onChange={handleChange} placeholder="https://docs.google.com/document/..." />
+                  <Input label="3-Minute Video Link" name="build2_video_link" value={form.build2_video_link} onChange={handleChange} placeholder="https://youtube.com/... or Loom link" />
                 </div>
               </BuildCard>
 
               <BuildCard number="3" title="The Video"
                 meta={[['Testing', 'Self-awareness, honesty'], ['Time', '20 min'], ['Deliverable', '90 sec – 2 min video']]}>
                 <p className="text-white/45 text-sm leading-relaxed">
-                  Talk to us. Phone quality fine. Don&apos;t script. <span className="text-white/65">(1) What are you most excited about?</span> <span className="text-white/65">(2) What do you understand your role to be?</span>
+                  Talk to us. Phone quality fine. Don&apos;t script. <span className="text-white/65">(1) What are you most excited about?</span> <span className="text-white/65">(2) What do you understand about this job that others might not?</span>
                 </p>
-                <Input label="Video Link" name="build3_video_link" value={form.build3_video_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive" />
+                <Input label="Video Link" name="build3_video_link" value={form.build3_video_link} onChange={handleChange} placeholder="https://youtube.com/... or Loom link" />
               </BuildCard>
 
               <BuildCard number="4" title="Language Tape" optional>
                 <p className="text-white/45 text-sm leading-relaxed">
                   Speak a language other than English — especially Swahili, Spanish, or any language relevant to Kenya or Ecuador? Talk to us in it. Anything natural. ≤60 seconds.
                 </p>
-                <Input label="Language Video Link (optional)" name="build4_language_link" value={form.build4_language_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive" />
+                <Input label="Language Video Link (optional)" name="build4_language_link" value={form.build4_language_link} onChange={handleChange} placeholder="https://youtube.com/... or Loom link" />
               </BuildCard>
             </div>
           )}
@@ -512,18 +516,20 @@ export default function ApplicationForm() {
                   { label: 'Build 4 — Language Tape', value: form.build4_language_link, required: false },
                 ].map(({ label, value, required }) => (
                   <div key={label} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border ${value ? 'bg-emerald-500/8 border-emerald-500/15' : required ? 'bg-rose-500/8 border-rose-500/15' : 'bg-white/[0.02] border-white/8'}`}>
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black border ${value ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' : required ? 'border border-rose-400/30 text-rose-400' : 'border border-white/10 text-white/20'}`}>
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black border ${value ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' : required ? 'bg-rose-500/20 border-rose-400/30 text-rose-400' : 'border-white/15 text-white/25'}`}>
                       {value ? '✓' : required ? '!' : '–'}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className={`text-xs font-bold uppercase tracking-wide ${value ? 'text-emerald-300' : required ? 'text-rose-300' : 'text-white/20'}`}>{label}</div>
                       {value
-                        ? <div className="text-xs text-white/20 truncate mt-0.5">{value}</div>
+                        ? <div className="text-xs text-white/20 truncate mt-0.5"><a href={value} target="_blank" rel="noopener noreferrer" className="hover:text-blue-300 underline">{value}</a></div>
                         : <div className={`text-xs mt-0.5 ${required ? 'text-rose-400/60' : 'text-white/15'}`}>{required ? 'Missing — go back and add a link' : 'Optional'}</div>
                       }
                     </div>
                     {!value && required && (
-                      <button onClick={() => setStep(2)} className="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider border border-blue-400/20 px-3 py-1 rounded-full flex-shrink-0 transition-colors">Fix</button>
+                      <button onClick={() => setStep(2)} className="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider border border-blue-400/20 px-3 py-1 rounded-full flex-shrink-0">
+                        Fix
+                      </button>
                     )}
                   </div>
                 ))}
@@ -562,13 +568,13 @@ export default function ApplicationForm() {
                   <label className="block text-xs font-bold text-white/35 uppercase tracking-wider mb-2.5">Has this guide had your verbal support to apply?</label>
                   <div className="flex flex-wrap gap-2">
                     {['Yes', 'No', 'Conversation pending'].map(opt => (
-                      <label key={opt} className={`flex items-center gap-2 px-4 py-2 rounded-full border cursor-pointer text-xs font-bold uppercase tracking-wide transition-all ${form.manager_endorsement_status === opt ? 'border-blue-400/40 bg-blue-500/15 text-blue-300' : 'border-white/10 text-white/25 hover:border-white/20'}`}>
+                      <label key={opt} className={`flex items-center gap-2 px-4 py-2 rounded-full border cursor-pointer text-xs font-bold uppercase tracking-wide transition-all ${form.manager_endorsement_status === opt ? 'bg-blue-500/20 border-blue-400/30 text-blue-300' : 'border-white/15 text-white/25 hover:border-white/30'}`}>
                         <input type="radio" name="manager_endorsement_status" value={opt} checked={form.manager_endorsement_status === opt} onChange={handleChange} className="sr-only" />{opt}
                       </label>
                     ))}
                   </div>
                 </div>
-                <Textarea label="Endorsement Statement (150 words minimum)" name="manager_endorsement_text" value={form.manager_endorsement_text} onChange={handleChange} placeholder="Is this guide ready — physically, emotionally, and as a representative of Alpha? Why or why not?" rows={5} />
+                <Textarea label="Endorsement Statement (150 words minimum)" name="manager_endorsement_text" value={form.manager_endorsement_text} onChange={handleChange} placeholder="Is this guide ready for this commitment? Why?" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input label="Endorser Name" name="endorser_name" value={form.endorser_name} onChange={handleChange} />
                   <Input label="Endorser Role" name="endorser_role" value={form.endorser_role} onChange={handleChange} />
@@ -589,7 +595,7 @@ export default function ApplicationForm() {
                 {acknowledgments.map((text, i) => {
                   const key = `ack_${i + 1}` as keyof FormData
                   return (
-                    <label key={i} className={`flex items-start gap-3.5 p-4 rounded-xl border cursor-pointer transition-all ${form[key] ? 'border-blue-400/20 bg-blue-500/8' : 'border-white/8 bg-white/[0.02] hover:border-white/12'}`}>
+                    <label key={i} className={`flex items-start gap-3.5 p-4 rounded-xl border cursor-pointer transition-all ${form[key] ? 'border-blue-400/20 bg-blue-500/8' : 'border-white/8 bg-white/[0.02] hover:border-white/15'}`}>
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${form[key] ? 'bg-blue-500 border-blue-400' : 'border-white/20'}`}>
                         {form[key] && <span className="text-white text-xs font-black">✓</span>}
                       </div>
@@ -616,7 +622,7 @@ export default function ApplicationForm() {
           <div className="flex items-center justify-between mt-10 pt-5 border-t border-white/8">
             <button
               onClick={() => step === 1 ? setStarted(false) : setStep(s => s - 1)}
-              className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-white/25 hover:text-white/55 transition-colors rounded-full border border-transparent hover:border-white/8"
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-white/25 hover:text-white/55 transition-colors rounded-full border border-transparent hover:border-white/15"
             >
               <ArrowLeft className="w-4 h-4" /> {step === 1 ? 'Home' : 'Back'}
             </button>
