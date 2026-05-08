@@ -834,23 +834,38 @@ export default function AdminDashboard() {
                             </div>
                           </td>
                           <td className="px-5 py-4">
-                            <select
-                              value={app.status}
-                              onChange={e => { e.stopPropagation(); handleStatusChange(app.id, e.target.value) }}
-                              onClick={e => e.stopPropagation()}
-                              className={`text-xs font-medium rounded-full px-2.5 py-1 border cursor-pointer focus:outline-none ${
-                                STATUS_CONFIG[app.status as keyof typeof STATUS_CONFIG]
-                                  ? `${STATUS_CONFIG[app.status as keyof typeof STATUS_CONFIG].bg} ${STATUS_CONFIG[app.status as keyof typeof STATUS_CONFIG].color} ${STATUS_CONFIG[app.status as keyof typeof STATUS_CONFIG].border}`
-                                  : 'bg-gray-50 text-gray-500 border-gray-200'
-                              }`}>
-                              {Object.entries(STATUS_CONFIG).map(([k,cfg]) => <option key={k} value={k}>{cfg.label}</option>)}
-                            </select>
-                            {app.admin_notes && (
-                              <div className="flex items-center gap-1 mt-1" title={app.admin_notes}>
-                                <MessageSquare className="w-3 h-3 text-gray-300" />
-                                <span className="text-xs text-gray-400 truncate max-w-24">{app.admin_notes}</span>
-                              </div>
-                            )}
+                            {(() => {
+                              const NEXT: Record<string, { label: string; value: string; cls: string }[]> = {
+                                submitted:    [{ label: '→ Under Review', value: 'under_review', cls: 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' }],
+                                under_review: [
+                                  { label: '→ Advancing',  value: 'advancing', cls: 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100' },
+                                  { label: '→ Reject',     value: 'rejected',  cls: 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100' },
+                                ],
+                                advancing:    [
+                                  { label: '→ Accept',     value: 'accepted',  cls: 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' },
+                                  { label: '→ Reject',     value: 'rejected',  cls: 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100' },
+                                ],
+                              }
+                              const actions = NEXT[app.status] || []
+                              return (
+                                <div className="space-y-1.5">
+                                  <StatusBadge status={app.status} />
+                                  {actions.map(a => (
+                                    <button key={a.value}
+                                      onClick={e => { e.stopPropagation(); handleStatusChange(app.id, a.value) }}
+                                      className={`block w-full text-left px-2.5 py-1 rounded-lg border text-xs font-semibold transition-colors ${a.cls}`}>
+                                      {a.label}
+                                    </button>
+                                  ))}
+                                  {app.admin_notes && (
+                                    <div className="flex items-center gap-1 mt-1" title={app.admin_notes}>
+                                      <MessageSquare className="w-3 h-3 text-gray-300" />
+                                      <span className="text-xs text-gray-400 truncate max-w-24">{app.admin_notes}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            })()}
                           </td>
                           <td className="px-5 py-4 text-gray-400 text-xs whitespace-nowrap">
                             {new Date(app.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}

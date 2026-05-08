@@ -104,7 +104,7 @@ function HeaderLogo({ onClick, lightMode }: { onClick?: () => void; lightMode: b
           className="h-7 w-auto object-contain"
           onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
       <div className="leading-tight text-left">
-        <div className={`font-black uppercase tracking-wider text-xs ${lightMode ? 'text-blue-900' : 'text-white'}`}>Alpha World</div>
+        <div className={`font-black uppercase tracking-wider text-xs ${lightMode ? 'text-gray-900' : 'text-white'}`}>Alpha World</div>
         <div className={`text-xs font-bold uppercase tracking-widest ${lightMode ? 'text-blue-400' : 'text-white/40'}`}>School</div>
       </div>
     </button>
@@ -117,10 +117,10 @@ function Input({ label, name, value, onChange, required, placeholder, type = 'te
 }) {
   return (
     <div>
-      <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${lm ? 'text-blue-700' : 'text-white/50'}`}>
+      <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${lm ? 'text-gray-700' : 'text-white/50'}`}>
         {label}{required && <span className="text-blue-400 ml-1">*</span>}
       </label>
-      {hint && <p className={`text-xs mb-1.5 ${lm ? 'text-blue-400' : 'text-white/30'}`}>{hint}</p>}
+      {hint && <p className={`text-xs mb-1.5 ${lm ? 'text-gray-500' : 'text-white/30'}`}>{hint}</p>}
       <input type={type} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
         className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:border-blue-400/60 focus:ring-1 focus:ring-blue-400/30 transition-all text-sm ${
           lm ? 'bg-blue-50 border-blue-200 text-blue-900 placeholder-blue-300' : 'bg-white/5 border-white/10 text-white placeholder-white/20'
@@ -135,10 +135,10 @@ function Textarea({ label, name, value, onChange, required, placeholder, rows = 
 }) {
   return (
     <div>
-      <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${lm ? 'text-blue-700' : 'text-white/50'}`}>
+      <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${lm ? 'text-gray-700' : 'text-white/50'}`}>
         {label}{required && <span className="text-blue-400 ml-1">*</span>}
       </label>
-      {hint && <p className={`text-xs mb-1.5 ${lm ? 'text-blue-400' : 'text-white/30'}`}>{hint}</p>}
+      {hint && <p className={`text-xs mb-1.5 ${lm ? 'text-gray-500' : 'text-white/30'}`}>{hint}</p>}
       <textarea name={name} value={value} onChange={onChange} required={required} placeholder={placeholder} rows={rows}
         className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:border-blue-400/60 focus:ring-1 focus:ring-blue-400/30 transition-all resize-none text-sm ${
           lm ? 'bg-blue-50 border-blue-200 text-blue-900 placeholder-blue-300' : 'bg-white/5 border-white/10 text-white placeholder-white/20'
@@ -153,8 +153,8 @@ function YesNoField({ label, hint, ynValue, detailValue, onYnChange, onDetailCha
 }) {
   return (
     <div className="space-y-2">
-      <label className={`block text-xs font-bold uppercase tracking-wider ${lm ? 'text-blue-700' : 'text-white/50'}`}>{label}</label>
-      {hint && <p className={`text-xs ${lm ? 'text-blue-400' : 'text-white/30'}`}>{hint}</p>}
+      <label className={`block text-xs font-bold uppercase tracking-wider ${lm ? 'text-gray-700' : 'text-white/50'}`}>{label}</label>
+      {hint && <p className={`text-xs ${lm ? 'text-gray-500' : 'text-white/30'}`}>{hint}</p>}
       <div className="flex gap-2">
         {['Yes', 'No'].map(opt => (
           <button key={opt} type="button" onClick={() => onYnChange(opt)}
@@ -197,10 +197,10 @@ function LanguagesSelect({ value, onChange, lm }: { value: string; onChange: (v:
 
   return (
     <div className="space-y-2">
-      <label className={`block text-xs font-bold uppercase tracking-wider ${lm ? 'text-blue-700' : 'text-white/50'}`}>
+      <label className={`block text-xs font-bold uppercase tracking-wider ${lm ? 'text-gray-700' : 'text-white/50'}`}>
         Languages Spoken
       </label>
-      <p className={`text-xs ${lm ? 'text-blue-400' : 'text-white/30'}`}>Select all that apply</p>
+      <p className={`text-xs ${lm ? 'text-gray-500' : 'text-white/30'}`}>Select all that apply</p>
       <div className="flex flex-wrap gap-2">
         {LANGUAGES.map(lang => {
           const sel = selected.includes(lang)
@@ -233,7 +233,7 @@ function LanguagesSelect({ value, onChange, lm }: { value: string; onChange: (v:
           }`}>Add</button>
       </div>
       {selected.length > 0 && (
-        <p className={`text-xs ${lm ? 'text-blue-500' : 'text-white/30'}`}>
+        <p className={`text-xs ${lm ? 'text-gray-600' : 'text-white/30'}`}>
           Selected: {selected.join(' · ')}
         </p>
       )}
@@ -296,8 +296,8 @@ function VideoInput({ label, name, value, onValueChange, hint, lm }: {
 
   return (
     <div>
-      <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${lm ? 'text-blue-700' : 'text-white/50'}`}>{label}</label>
-      {hint && <p className={`text-xs mb-2 ${lm ? 'text-blue-400' : 'text-white/30'}`}>{hint}</p>}
+      <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${lm ? 'text-gray-700' : 'text-white/50'}`}>{label}</label>
+      {hint && <p className={`text-xs mb-2 ${lm ? 'text-gray-500' : 'text-white/30'}`}>{hint}</p>}
       <div className="flex gap-1 mb-3">
         <button type="button" onClick={() => setMode('link')} className={tabCls('link')}>
           <Link2 className="w-3 h-3" />Paste link
@@ -317,12 +317,12 @@ function VideoInput({ label, name, value, onValueChange, hint, lm }: {
               }`} />
             {value && <button type="button" onClick={clear} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50"><X className="w-4 h-4" /></button>}
           </div>
-          <p className={`text-xs ${lm ? 'text-blue-400' : 'text-white/20'}`}>
+          <p className={`text-xs ${lm ? 'text-gray-500' : 'text-white/20'}`}>
             Google Drive · YouTube · Loom · Dropbox · Vimeo · Notion
           </p>
           <div className={`flex items-start gap-2 px-3 py-2 rounded-lg border ${lm ? 'bg-blue-50 border-blue-200' : 'bg-blue-500/8 border-blue-400/15'}`}>
             <Info className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
-            <p className={`text-xs ${lm ? 'text-blue-600' : 'text-blue-300/70'}`}>
+            <p className={`text-xs ${lm ? 'text-gray-700' : 'text-blue-300/70'}`}>
               Upload your file to the <strong>shared Drive folder linked in your invitation email</strong>, then paste the link here. File naming: <strong>LastName_FirstName_Build#.mp4</strong> (or .pdf, .mov, etc.)
               For Google Drive: set sharing to <strong>Anyone with the link</strong> and share it with <strong>apply@alphaworldschool.com</strong>
             </p>
@@ -346,8 +346,8 @@ function VideoInput({ label, name, value, onValueChange, hint, lm }: {
               {uploading
                 ? <><div className="w-6 h-6 border-2 border-blue-400/50 border-t-blue-400 rounded-full animate-spin" /><span className="text-xs text-blue-300">Uploading…</span></>
                 : <><Upload className={`w-6 h-6 ${lm ? 'text-blue-300' : 'text-white/25'}`} />
-                   <span className={`text-sm font-medium ${lm ? 'text-blue-500' : 'text-white/40'}`}>Click to select file</span>
-                   <span className={`text-xs ${lm ? 'text-blue-400' : 'text-white/20'}`}>Video, PDF, PPTX · up to 500 MB</span></>
+                   <span className={`text-sm font-medium ${lm ? 'text-gray-600' : 'text-white/40'}`}>Click to select file</span>
+                   <span className={`text-xs ${lm ? 'text-gray-500' : 'text-white/20'}`}>Video, PDF, PPTX · up to 500 MB</span></>
               }
             </label>
           )}
@@ -386,8 +386,8 @@ function BuildCard({ number, title, meta, optional, filled, children, lm }: {
             <div className={`grid grid-cols-3 border-t ${lm ? 'border-blue-100' : 'border-white/8'}`}>
               {meta.map(([k, v]) => (
                 <div key={k} className={`px-4 py-2.5 border-r last:border-r-0 ${lm ? 'border-blue-100' : 'border-white/8'}`}>
-                  <div className={`text-xs uppercase tracking-wider mb-0.5 ${lm ? 'text-blue-400' : 'text-white/25'}`}>{k}</div>
-                  <div className={`text-xs ${lm ? 'text-blue-600' : 'text-white/50'}`}>{v}</div>
+                  <div className={`text-xs uppercase tracking-wider mb-0.5 ${lm ? 'text-gray-500' : 'text-white/25'}`}>{k}</div>
+                  <div className={`text-xs ${lm ? 'text-gray-700' : 'text-white/50'}`}>{v}</div>
                 </div>
               ))}
             </div>
@@ -412,7 +412,7 @@ const FOCUS_AREAS: { label: string; desc: string }[] = [
 function FocusAreaSelector({ value, onChange, lm }: { value: string; onChange: (v: string) => void; lm?: boolean }) {
   return (
     <div className="space-y-2">
-      <p className={`text-sm font-semibold ${lm ? 'text-blue-700' : 'text-white/60'}`}>Choose one focus area for your workshop — this anchors your Build 1 project:</p>
+      <p className={`text-sm font-semibold ${lm ? 'text-gray-800' : 'text-white/60'}`}>Choose one focus area for your workshop — this anchors your Build 1 project:</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {FOCUS_AREAS.map(f => {
           const sel = value === f.label
@@ -424,7 +424,7 @@ function FocusAreaSelector({ value, onChange, lm }: { value: string; onChange: (
                   : lm ? 'bg-white border-blue-200 text-blue-700 hover:border-blue-400 hover:bg-blue-50' : 'bg-white/[0.04] border-white/10 text-white/60 hover:border-blue-400/40 hover:bg-white/[0.07]'
               }`}>
               <span className={`text-xs font-black uppercase tracking-wide ${sel ? lm ? 'text-white' : 'text-blue-200' : ''}`}>{f.label}{sel && ' ✓'}</span>
-              <span className={`text-xs mt-0.5 ${sel ? lm ? 'text-blue-100' : 'text-white/50' : lm ? 'text-blue-400' : 'text-white/25'}`}>{f.desc}</span>
+              <span className={`text-xs mt-0.5 ${sel ? lm ? 'text-blue-100' : 'text-white/50' : lm ? 'text-gray-500' : 'text-white/25'}`}>{f.desc}</span>
             </button>
           )
         })}
@@ -447,7 +447,7 @@ const SEL_TX: Record<ConstraintColor, string> = { amber: 'text-amber-300', emera
 function ConstraintSelector({ value, onChange, lm }: { value: string; onChange: (v: string) => void; lm?: boolean }) {
   return (
     <div className="space-y-2">
-      <p className={`text-sm ${lm ? 'text-blue-500' : 'text-white/40'}`}>Pick one design constraint and build for it:</p>
+      <p className={`text-sm ${lm ? 'text-gray-600' : 'text-white/40'}`}>Pick one design constraint and build for it:</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {CONSTRAINTS.map(c => {
           const sel = value === c.id
@@ -457,11 +457,35 @@ function ConstraintSelector({ value, onChange, lm }: { value: string; onChange: 
                 sel ? SEL_BG[c.color] : lm ? 'border-blue-200 bg-blue-50 hover:border-blue-300' : 'border-white/8 bg-white/[0.02] hover:border-white/15'
               }`}>
               <span className={`w-2 h-2 rounded-full flex-shrink-0 ${DOT[c.color]}`} />
-              <span className={`text-xs font-bold ${sel ? SEL_TX[c.color] : lm ? 'text-blue-600' : 'text-white/50'}`}>{c.label}{sel && ' ✓'}</span>
+              <span className={`text-xs font-bold ${sel ? SEL_TX[c.color] : lm ? 'text-gray-700' : 'text-white/50'}`}>{c.label}{sel && ' ✓'}</span>
             </button>
           )
         })}
       </div>
+    </div>
+  )
+}
+
+// ─── Landing accordion ────────────────────────────────────────────────
+
+function LandingAccordion({ title, children, lm }: { title: string; children: React.ReactNode; lm?: boolean }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className={`rounded-xl border overflow-hidden transition-all ${lm ? 'border-blue-200 bg-blue-50' : 'border-white/10 bg-white/[0.03]'}`}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className={`w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors ${lm ? 'hover:bg-blue-100' : 'hover:bg-white/[0.04]'}`}>
+        <span className={`text-xs font-black uppercase tracking-widest ${lm ? 'text-blue-700' : 'text-blue-300'}`}>{title}</span>
+        {open
+          ? <ChevronDown className={`w-4 h-4 flex-shrink-0 ${lm ? 'text-blue-400' : 'text-white/30'}`} />
+          : <ChevronRight className={`w-4 h-4 flex-shrink-0 ${lm ? 'text-blue-400' : 'text-white/30'}`} />}
+      </button>
+      {open && (
+        <div className={`px-5 pb-5 pt-1 border-t ${lm ? 'border-blue-100' : 'border-white/8'}`}>
+          {children}
+        </div>
+      )}
     </div>
   )
 }
@@ -508,14 +532,14 @@ function Build2Card({ form, handleFieldChange, lm, isReq }: {
 
       {tab === 'brief' && (
         <div className="space-y-4">
-          <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>
+          <p className={`text-sm leading-relaxed ${lm ? 'text-gray-700' : 'text-white/45'}`}>
             Design something that <strong className={lm ? 'text-blue-800' : 'text-white/70'}>prevents a cohort from breaking</strong>. By week 30, the cohort will be tired, homesick, and far from home. The strongest cohorts don't avoid these moments — they're built to survive them. That's your job: build the experience, ritual, or structure that holds this cohort together when the year gets hard.
           </p>
           <div className={`rounded-lg px-3 py-2 border ${lm ? 'bg-blue-50 border-blue-200' : 'bg-white/[0.03] border-white/8'}`}>
-            <p className={`text-xs ${lm ? 'text-blue-500' : 'text-white/35'}`}>AI use is expected. Use Claude, ChatGPT, Cursor, or whatever you reach for. We're evaluating your design instinct and taste.</p>
+            <p className={`text-xs ${lm ? 'text-gray-600' : 'text-white/35'}`}>AI use is expected. Use Claude, ChatGPT, Cursor, or whatever you reach for. We're evaluating your design instinct and taste.</p>
           </div>
           <ConstraintSelector value={form.build2_constraint} onChange={v => handleFieldChange('build2_constraint', v)} lm={lm} />
-          <p className={`text-xs leading-relaxed ${lm ? 'text-blue-500' : 'text-white/35'}`}>
+          <p className={`text-xs leading-relaxed ${lm ? 'text-gray-600' : 'text-white/35'}`}>
             Show how it runs in practice: sequence, prompts, materials, what the guide says, what students do, what happens when it goes sideways. <strong className={lm ? 'text-blue-700' : 'text-white/55'}>How do you know it's working by week 15?</strong>
           </p>
           <div className="rounded-lg bg-amber-500/8 border border-amber-400/15 px-3 py-2">
@@ -530,7 +554,7 @@ function Build2Card({ form, handleFieldChange, lm, isReq }: {
 
       {tab === 'examples' && (
         <div className="space-y-4">
-          <p className={`text-xs ${lm ? 'text-blue-500' : 'text-white/35'}`}>These are illustrative examples — not a template. Your submission should be your own design.</p>
+          <p className={`text-xs ${lm ? 'text-gray-600' : 'text-white/35'}`}>These are illustrative examples — not a template. Your submission should be your own design.</p>
           {BUILD2_EXAMPLES.map((ex, i) => (
             <div key={i} className={`rounded-xl border-2 overflow-hidden ${lm ? 'border-amber-300 bg-amber-50' : 'border-amber-400/40 bg-amber-400/5'}`}>
               <div className={`px-4 py-2 flex items-center gap-2 ${lm ? 'bg-amber-100 border-b border-amber-200' : 'bg-amber-400/10 border-b border-amber-400/20'}`}>
@@ -572,8 +596,9 @@ export default function ApplicationForm() {
   const [gateForm, setGateForm]     = useState({ name: '', email: '' })
   const [gateLoading, setGateLoading] = useState(false)
   const [gateError, setGateError]   = useState<string | null>(null)
-  const [resumeUrl, setResumeUrl]   = useState<string | null>(null)
-  const [copied, setCopied]         = useState(false)
+  const [resumeEmail, setResumeEmail] = useState('')
+  const [resumeLoading, setResumeLoading] = useState(false)
+  const [resumeError, setResumeError]   = useState<string | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const totalSteps = STEPS.length
 
@@ -675,8 +700,32 @@ export default function ApplicationForm() {
       draftId = getDraftId()
       setForm(f => ({ ...f, full_name: gateForm.name.trim(), email: gateForm.email.trim() }))
     }
-    setResumeUrl(`${window.location.origin}${window.location.pathname}?token=${draftId}`)
     setGateLoading(false)
+    setPhase('form')
+  }
+
+  const handleEmailResume = async () => {
+    const email = resumeEmail.trim().toLowerCase()
+    if (!email) return
+    setResumeLoading(true); setResumeError(null)
+    const { data } = await supabase
+      .from('guide_applications')
+      .select('*')
+      .eq('email', email)
+      .eq('status', 'draft')
+      .maybeSingle()
+    if (!data) {
+      setResumeLoading(false)
+      setResumeError('No saved draft found for that email.')
+      return
+    }
+    localStorage.setItem(DRAFT_KEY, data.id)
+    const { id: _id, created_at: _ca, updated_at: _ua, status: _s, admin_notes: _an, draft_step, ...fields } = data
+    setForm(f => ({ ...f, ...fields }))
+    if (draft_step) setStep(draft_step)
+    if (data.full_name) setGateForm({ name: data.full_name, email })
+    setHasDraft(true)
+    setResumeLoading(false)
     setPhase('form')
   }
 
@@ -717,7 +766,7 @@ export default function ApplicationForm() {
             <CheckCircle className="w-8 h-8 text-emerald-400" />
           </div>
           <h2 className={`text-2xl font-black uppercase tracking-tight mb-3 ${lm ? 'text-blue-900' : 'text-white'}`}>Thank you for your application.</h2>
-          <p className={`text-sm leading-relaxed ${lm ? 'text-blue-500' : 'text-white/40'}`}>We&apos;ve received everything and will be in touch. In the meantime, feel free to reach out to the team with any questions.</p>
+          <p className={`text-sm leading-relaxed ${lm ? 'text-gray-600' : 'text-white/40'}`}>We&apos;ve received everything and will be in touch. In the meantime, feel free to reach out to the team with any questions.</p>
         </div>
       </div>
     )
@@ -727,7 +776,7 @@ export default function ApplicationForm() {
   if (phase === 'landing') {
     return (
       <div className={`min-h-screen ${bg} flex flex-col`}>
-        <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
+        <nav className={`flex items-center justify-between px-6 py-4 border-b ${border}`}>
           <div className="flex items-center gap-3">
             <img src="/alphahigh.png" alt="Alpha World School"
               className="h-7 w-auto object-contain"
@@ -737,11 +786,45 @@ export default function ApplicationForm() {
               <div className={`text-xs font-bold uppercase tracking-widest ${lm ? 'text-blue-400' : 'text-white/40'}`}>School</div>
             </div>
           </div>
-          <button onClick={() => setLightMode(m => !m)}
-            className={`p-2 rounded-full border transition-all ${lm ? 'border-blue-200 text-blue-500 hover:bg-blue-50' : 'border-white/15 text-white/40 hover:border-white/30'}`}>
-            {lm ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-          </button>
+          <div className="flex items-center gap-5">
+            <div className="hidden sm:flex items-center gap-4">
+              {['38 Weeks', '3 Continents', '20 Students'].map((s, i) => (
+                <span key={s} className={`flex items-center gap-2 text-xs ${lm ? 'text-gray-500' : 'text-white/30'}`}>
+                  {i > 0 && <span className={`w-1 h-1 rounded-full ${lm ? 'bg-blue-200' : 'bg-white/15'}`} />}{s}
+                </span>
+              ))}
+            </div>
+            <button onClick={() => setLightMode(m => !m)}
+              className={`p-2 rounded-full border transition-all ${lm ? 'border-blue-200 text-blue-500 hover:bg-blue-50' : 'border-white/15 text-white/40 hover:border-white/30'}`}>
+              {lm ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
+          </div>
         </nav>
+
+        {/* Draft saved — top banner */}
+        {hasDraft && (
+          <div className={`border-b ${border} px-6 py-3 flex items-center justify-between gap-4 ${lm ? 'bg-emerald-50' : 'bg-emerald-500/10'}`}>
+            <div className="flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+              <div>
+                <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Draft saved</span>
+                <span className={`text-xs ml-2 ${lm ? 'text-gray-500' : 'text-white/30'}`}>Section {step} of {totalSteps} — continue where you left off</span>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-shrink-0">
+              <button
+                onClick={() => { returnedToLanding.current = false; setPhase('gate') }}
+                className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-black text-emerald-600 uppercase tracking-wider border border-emerald-300 hover:bg-emerald-100 rounded-full transition-colors">
+                Continue <ArrowRight className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => { localStorage.removeItem(DRAFT_KEY); setHasDraft(false); setForm(initialForm); setStep(1); setGateForm({ name: '', email: '' }) }}
+                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider border rounded-full transition-colors ${lm ? 'border-blue-200 text-blue-400 hover:bg-blue-50' : 'border-white/15 text-white/25 hover:border-white/30'}`}>
+                Start Over
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className={`flex-1 flex flex-col items-center justify-center px-6 py-14 text-center`}>
           <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">Inaugural Cohort · 2026–2027</p>
@@ -749,72 +832,83 @@ export default function ApplicationForm() {
             Guide<br/>Application
           </h1>
 
-          {/* Intro text */}
-          <div className={`max-w-xl text-left space-y-3 mb-10 rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100 text-blue-800' : 'bg-white/[0.03] border-white/8 text-white/55'}`}>
-            <p className={`text-sm leading-relaxed ${lm ? 'text-blue-700' : 'text-white/60'}`}>
-              This is the inaugural year of Alpha World School. Twenty Alpha students will travel through Kenya, Ecuador, and the United States across 38 weeks — building schools, learning languages, running rigorous academics, and living in communities most of them have never imagined. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>We need guides who can lead them through it.</strong>
-            </p>
-            <p className={`text-sm leading-relaxed ${lm ? 'text-blue-700' : 'text-white/60'}`}>
-              This is not a year off. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>This is a full-time job — arguably the hardest one Alpha has ever asked anyone to do.</strong> You will be a 24/7 chaperone, coach, and culture-keeper for a cohort of teenagers, far from home, the calm voice at 3 AM, the person who walks a homesick kid through the week. You will also have the most rewarding year of your career — seeing students transform, speaking languages you never thought you would, eating with families on three continents. You will come home different.
-            </p>
-            <p className={`text-sm font-semibold ${lm ? 'text-blue-900' : 'text-white/75'}`}>Both of these things are true.</p>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 mb-8 text-sm">
-            {['38 Weeks', '3 Continents', '20 Students', 'Kenya · Ecuador · USA'].map((s, i) => (
-              <span key={s} className={`flex items-center gap-2 ${lm ? 'text-blue-400' : 'text-white/30'}`}>
-                {i > 0 && <span className={`w-1 h-1 rounded-full ${lm ? 'bg-blue-200' : 'bg-white/15'}`} />}{s}
-              </span>
-            ))}
-          </div>
-
-          {hasDraft && (
-            <div className={`w-full max-w-sm mb-6 px-4 py-3 rounded-xl border flex items-center justify-between gap-3 ${lm ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-500/10 border-emerald-400/20'}`}>
-              <div>
-                <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Draft saved</p>
-                <p className={`text-xs mt-0.5 ${lm ? 'text-blue-500' : 'text-white/30'}`}>Section {step} of {totalSteps} — continue where you left off</p>
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <button
-                  onClick={() => { returnedToLanding.current = false; setPhase('gate') }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black text-emerald-600 uppercase tracking-wider border border-emerald-300 hover:bg-emerald-100 rounded-full transition-colors">
-                  Resume <ArrowRight className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem(DRAFT_KEY)
-                    setHasDraft(false)
-                    setForm(initialForm)
-                    setStep(1)
-                    setGateForm({ name: '', email: '' })
-                  }}
-                  className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider border rounded-full transition-colors ${lm ? 'border-blue-200 text-blue-400 hover:bg-blue-50' : 'border-white/15 text-white/25 hover:border-white/30'}`}>
-                  Start Over
-                </button>
-              </div>
+          {/* Intro text + accordions */}
+          <div className="w-full max-w-xl space-y-2 mb-10 text-left">
+            <div className={`rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.03] border-white/8'}`}>
+              <p className={`text-sm leading-relaxed ${lm ? 'text-gray-800' : 'text-white/60'}`}>
+                This is the inaugural year of Alpha World School. Twenty Alpha students will travel through Kenya, Ecuador, and the United States across 38 weeks — building schools, learning languages, running rigorous academics, and living in communities most of them have never imagined. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>We need guides who can lead them through it.</strong>
+              </p>
             </div>
-          )}
 
-          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <LandingAccordion title="What can you expect?" lm={lm}>
+              <div className={`text-sm leading-relaxed space-y-3 ${lm ? 'text-gray-700' : 'text-white/55'}`}>
+                <p>This is a full-time job — arguably the hardest one Alpha has ever asked anyone to do. You will be a 24/7 chaperone, coach, and culture-keeper for a cohort of teenagers in environments where the systems we rely on at home are not available. You will be far from your family for long stretches. You will be the calm voice when something goes wrong at 3 AM. You will be the person who tells a homesick kid they will make it through the week — and then you will be the one who actually walks them through that week. You will hold both students and yourself to the highest physical, emotional, and academic bar.</p>
+                <p>You will also have the most rewarding year of your career. You will see kids transform in front of you. You will speak languages you never thought you would. You will eat with families on three continents and remember their names for the rest of your life. You will come home different.</p>
+                <p className={`font-semibold ${lm ? 'text-blue-900' : 'text-white/75'}`}>Both of these things are true.</p>
+              </div>
+            </LandingAccordion>
+
+            <LandingAccordion title="What the top 10% of Guides do differently" lm={lm}>
+              <div className="space-y-2">
+                <p className={`text-xs mb-3 ${lm ? 'text-gray-500' : 'text-white/35'}`}>If you read this list and think &ldquo;that&rsquo;s me&rdquo; — keep going.</p>
+                {[
+                  'They anticipate problems before they happen',
+                  'They never wait to be told what to do',
+                  'They design moments kids remember 10 years later',
+                  'They stay calm when everyone else escalates',
+                  "They hold the bar even when it's uncomfortable",
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <span className="text-blue-400 font-black text-xs mt-0.5 flex-shrink-0">•</span>
+                    <span className={`text-sm ${lm ? 'text-gray-700' : 'text-white/55'}`}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </LandingAccordion>
+
+            <LandingAccordion title="How this application works" lm={lm}>
+              <div className={`text-sm leading-relaxed space-y-3 ${lm ? 'text-gray-700' : 'text-white/55'}`}>
+                <p>This packet has three required Builds and one optional one. Each produces a real artifact — a workshop, a cohort experience, a video. We are testing the two skills that matter most for this role: designing experiences that teach, and designing experiences that bond a cohort across an extraordinary year.</p>
+                <p><strong className={lm ? 'text-gray-900' : 'text-white/80'}>AI use is expected, not penalized.</strong> Use Claude, ChatGPT, Cursor, custom GPTs — whatever stack makes you fast. We assume our guides already operate this way.</p>
+                <p>Reading this and thinking &ldquo;yes, this is for me&rdquo; is the right starting point. Reading this and thinking &ldquo;I just want to travel&rdquo; is a sign to stop here. There is no penalty for opting out — we would much rather know now than seven weeks into Kenya.</p>
+              </div>
+            </LandingAccordion>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 mb-10">
             <button onClick={() => setPhase('gate')}
               className="flex items-center gap-2 px-8 py-3.5 bg-blue-500 hover:bg-blue-400 text-white font-black uppercase tracking-wider text-sm rounded-full transition-colors shadow-lg shadow-blue-500/20">
-              {hasDraft ? 'Continue Application' : 'Start Application'} <ArrowRight className="w-4 h-4" />
+              Start Application <ArrowRight className="w-4 h-4" />
             </button>
             <a href="https://world.alpha.school" target="_blank" rel="noopener noreferrer"
               className={`flex items-center gap-2 px-8 py-3.5 font-bold uppercase tracking-wider text-sm rounded-full border transition-colors ${lm ? 'border-blue-200 text-blue-400 hover:border-blue-400 hover:text-blue-600' : 'border-white/15 text-white/45 hover:text-white hover:border-white/30'}`}>
               Explore the Program <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
+
+          {/* Email resume */}
+          <div className={`w-full max-w-sm rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.03] border-white/8'}`}>
+            <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${lm ? 'text-gray-600' : 'text-white/30'}`}>Continue where you left off</p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={resumeEmail}
+                onChange={e => { setResumeEmail(e.target.value); setResumeError(null) }}
+                onKeyDown={e => e.key === 'Enter' && handleEmailResume()}
+                placeholder="you@alpha.school"
+                className={`flex-1 rounded-xl px-4 py-2.5 text-sm border focus:outline-none focus:border-blue-400/60 focus:ring-1 focus:ring-blue-400/30 transition-all ${lm ? 'bg-white border-blue-200 text-blue-900 placeholder-blue-300' : 'bg-white/5 border-white/10 text-white placeholder-white/20'}`}
+              />
+              <button
+                onClick={handleEmailResume}
+                disabled={resumeLoading}
+                className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-colors">
+                {resumeLoading ? '…' : <><ArrowRight className="w-3.5 h-3.5" /></>}
+              </button>
+            </div>
+            {resumeError && <p className="text-rose-400 text-xs mt-2">{resumeError}</p>}
+          </div>
         </div>
 
-        <div className={`border-t ${border} grid grid-cols-3`}>
-          {[['20', 'Students Selected'], ['3', 'Continents'], ['38', 'Weeks']].map(([n, lbl]) => (
-            <div key={lbl} className={`py-7 flex flex-col items-center gap-1 border-r last:border-r-0 ${border}`}>
-              <span className="text-3xl font-black text-blue-400">{n}</span>
-              <span className={`text-xs font-bold uppercase tracking-widest ${lm ? 'text-blue-400' : 'text-white/30'}`}>{lbl}</span>
-            </div>
-          ))}
-        </div>
       </div>
     )
   }
@@ -845,7 +939,7 @@ export default function ApplicationForm() {
             <h1 className={`text-3xl font-black uppercase tracking-tight mb-2 text-center ${lm ? 'text-blue-900' : 'text-white'}`}>
               Let&rsquo;s Get Started
             </h1>
-            <p className={`text-sm text-center mb-8 ${lm ? 'text-blue-500' : 'text-white/35'}`}>
+            <p className={`text-sm text-center mb-8 ${lm ? 'text-gray-600' : 'text-white/35'}`}>
               Enter your name and email to start or resume your application. Your progress saves automatically.
             </p>
 
@@ -938,24 +1032,6 @@ export default function ApplicationForm() {
         </aside>
 
         <div className="flex-1 min-w-0">
-          {/* Resume link banner */}
-          {resumeUrl && (
-            <div className={`mb-5 flex items-center gap-3 px-4 py-3 rounded-xl border ${lm ? 'bg-blue-50 border-blue-200' : 'bg-blue-500/10 border-blue-400/20'}`}>
-              <div className="flex-1 min-w-0">
-                <p className={`text-xs font-bold uppercase tracking-wider mb-0.5 ${lm ? 'text-blue-700' : 'text-blue-300'}`}>Your resume link</p>
-                <p className={`text-xs truncate ${lm ? 'text-blue-500' : 'text-white/30'}`}>{resumeUrl}</p>
-              </div>
-              <button
-                onClick={() => { navigator.clipboard.writeText(resumeUrl); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border transition-all ${lm ? 'border-blue-300 text-blue-600 hover:bg-blue-100' : 'border-blue-400/30 text-blue-300 hover:bg-blue-500/15'}`}>
-                {copied ? '✓ Copied' : 'Copy'}
-              </button>
-              <button onClick={() => setResumeUrl(null)} className={`flex-shrink-0 ${lm ? 'text-blue-300' : 'text-white/20'} hover:opacity-60`}>
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-
           {/* Mobile step dots */}
           <div className="flex md:hidden items-center gap-1.5 mb-6 overflow-x-auto pb-1">
             {STEPS.map((s, i) => (
@@ -977,7 +1053,7 @@ export default function ApplicationForm() {
               <div className="mb-7">
                 <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1.5">Section 1 of {totalSteps}</p>
                 <h1 className={`text-3xl font-black uppercase tracking-tight ${lm ? 'text-blue-900' : 'text-white'}`}>About You</h1>
-                <p className={`text-sm mt-1.5 ${lm ? 'text-blue-400' : 'text-white/35'}`}>Basic info. Write "N/A" if a field doesn't apply.</p>
+                <p className={`text-sm mt-1.5 ${lm ? 'text-gray-500' : 'text-white/35'}`}>Basic info. Write "N/A" if a field doesn't apply.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input label="Full Name" name="full_name" value={form.full_name} onChange={handleChange} required={isReq('full_name')} placeholder="Jane Smith" lm={lm} />
@@ -1027,16 +1103,16 @@ export default function ApplicationForm() {
               <div className="mb-7">
                 <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1.5">Section 2 of {totalSteps}</p>
                 <h1 className={`text-3xl font-black uppercase tracking-tight ${lm ? 'text-blue-900' : 'text-white'}`}>The Builds</h1>
-                <p className={`text-sm mt-1.5 ${lm ? 'text-blue-400' : 'text-white/35'}`}>Three required, one optional. Paste a link or upload a file directly.</p>
+                <p className={`text-sm mt-1.5 ${lm ? 'text-gray-500' : 'text-white/35'}`}>Three required, one optional. Paste a link or upload a file directly.</p>
               </div>
 
               <BuildCard number="1" title="The Workshop Sprint" filled={Boolean(form.build1_link && form.build1_focus_area)} lm={lm}
                 meta={[['Testing', 'Life skills design, AI use (Claude, ChatGPT, Cursor), project orientation'], ['Time', '2 hours max'], ['Deliverable', 'Workshop artifact (slides / Notion / one-pager)']]}>
-                <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>
-                  Design and produce a real <strong className={lm ? 'text-blue-800' : 'text-white/70'}>90-minute kickoff workshop</strong> for your cohort of 5–7 students — anchored in one of the international development focus areas we're working in with the Kenya team. Pick ONE area. The workshop should launch a real project in that area — something the cohort will continue building over the rotation, with a real output that lives past the workshop. <strong className={lm ? 'text-blue-700' : 'text-white/60'}>This isn't a lecture. It's the first 90 minutes of work that produces something the community actually uses.</strong>
+                <p className={`text-sm leading-relaxed ${lm ? 'text-gray-700' : 'text-white/45'}`}>
+                  Design and produce a real <strong className={lm ? 'text-blue-800' : 'text-white/70'}>90-minute kickoff workshop</strong> for your cohort of 5–7 students — anchored in one of the international development focus areas we're working in with the Kenya team. Pick ONE area. The workshop should launch a real project in that area — something the cohort will continue building over the rotation, with a real output that lives past the workshop. <strong className={lm ? 'text-gray-800' : 'text-white/60'}>This isn't a lecture. It's the first 90 minutes of work that produces something the community actually uses.</strong>
                 </p>
                 <div className={`rounded-lg px-3 py-2 border ${lm ? 'bg-blue-50 border-blue-200' : 'bg-white/[0.03] border-white/8'}`}>
-                  <p className={`text-xs ${lm ? 'text-blue-500' : 'text-white/35'}`}>AI use is expected and encouraged. Use Claude, ChatGPT, Cursor, or any tool — we're evaluating your judgment and taste, not whether you wrote it from scratch.</p>
+                  <p className={`text-xs ${lm ? 'text-gray-600' : 'text-white/35'}`}>AI use is expected and encouraged. Use Claude, ChatGPT, Cursor, or any tool — we're evaluating your judgment and taste, not whether you wrote it from scratch.</p>
                 </div>
                 <FocusAreaSelector value={form.build1_focus_area} onChange={v => handleFieldChange('build1_focus_area', v)} lm={lm} />
                 <VideoInput label="Workshop Artifact — paste link or upload" name="build1_link" value={form.build1_link} onValueChange={handleFieldChange}
@@ -1047,10 +1123,10 @@ export default function ApplicationForm() {
 
               <BuildCard number="3" title="The Video" filled={Boolean(form.build3_video_link)} lm={lm}
                 meta={[['Testing', 'Self-awareness, honesty, mindset'], ['Time', '20 minutes'], ['Deliverable', '90 sec – 2 min video']]}>
-                <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>
+                <p className={`text-sm leading-relaxed ${lm ? 'text-gray-700' : 'text-white/45'}`}>
                   Talk to us. 90 seconds to 2 minutes. <strong className={lm ? 'text-blue-700' : 'text-white/65'}>Phone-quality is fine. Don't script. Don't read.</strong> We are looking for a clear-eyed picture of the job — not a pitch. The candidates who get it will sound different from the candidates who don't.
                 </p>
-                <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>Talk to us. 90 seconds to 2 minutes. <strong className={lm ? 'text-blue-700' : 'text-white/65'}>Phone-quality is fine. Don't script. Don't read.</strong></p>
+                <p className={`text-sm leading-relaxed ${lm ? 'text-gray-700' : 'text-white/45'}`}>Talk to us. 90 seconds to 2 minutes. <strong className={lm ? 'text-blue-700' : 'text-white/65'}>Phone-quality is fine. Don't script. Don't read.</strong></p>
                 <div className="space-y-1.5">
                   {[
                     'What are you most excited about for this year?',
@@ -1058,21 +1134,21 @@ export default function ApplicationForm() {
                   ].map((q, i) => (
                     <div key={i} className={`flex items-start gap-2 px-3 py-2.5 rounded-lg border ${lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.03] border-white/8'}`}>
                       <span className="text-blue-400 font-bold text-xs flex-shrink-0 mt-0.5">{'①②'[i]}</span>
-                      <p className={`text-sm ${lm ? 'text-blue-600' : 'text-white/50'}`}>{q}</p>
+                      <p className={`text-sm ${lm ? 'text-gray-700' : 'text-white/50'}`}>{q}</p>
                     </div>
                   ))}
                 </div>
-                <p className={`text-xs ${lm ? 'text-blue-400' : 'text-white/25'}`}>Most of the 20 minutes is taking 3 takes and picking the most honest one.</p>
+                <p className={`text-xs ${lm ? 'text-gray-500' : 'text-white/25'}`}>Most of the 20 minutes is taking 3 takes and picking the most honest one.</p>
                 <VideoInput label="Your Video — paste link or upload" name="build3_video_link" value={form.build3_video_link} onValueChange={handleFieldChange}
                   hint="Loom or YouTube preferred. If using Google Drive, set sharing to 'Anyone at Alpha with the link can view'." lm={lm} />
               </BuildCard>
 
               <BuildCard number="4" title="Language Tape" optional filled={Boolean(form.build4_language_link)} lm={lm}
                 meta={[['Testing', 'Real fluency in non-English language'], ['Time', '5 minutes'], ['Deliverable', '≤60-second video in the language']]}>
-                <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>
+                <p className={`text-sm leading-relaxed ${lm ? 'text-gray-700' : 'text-white/45'}`}>
                   If you speak a language other than English — especially Swahili, Spanish, or any language likely to come up in Kenya or Ecuador — talk to us in it. Tell us about your morning, your last vacation, your favorite food. Anything natural.
                 </p>
-                <p className={`text-xs ${lm ? 'text-blue-400' : 'text-white/30'}`}>
+                <p className={`text-xs ${lm ? 'text-gray-500' : 'text-white/30'}`}>
                   This filters for actual conversational fluency, which we value more than self-reported proficiency. Optional, but it helps.
                 </p>
                 <VideoInput label="Language Video — ≤60 seconds, in the language (optional)" name="build4_language_link" value={form.build4_language_link} onValueChange={handleFieldChange} lm={lm} />
@@ -1086,7 +1162,7 @@ export default function ApplicationForm() {
               <div className="mb-7">
                 <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1.5">Section 3 of {totalSteps}</p>
                 <h1 className={`text-3xl font-black uppercase tracking-tight ${lm ? 'text-blue-900' : 'text-white'}`}>Submission Check</h1>
-                <p className={`text-sm mt-1.5 ${lm ? 'text-blue-400' : 'text-white/35'}`}>Confirm your builds are ready before continuing.</p>
+                <p className={`text-sm mt-1.5 ${lm ? 'text-gray-500' : 'text-white/35'}`}>Confirm your builds are ready before continuing.</p>
               </div>
               <div className="space-y-3">
                 {([
@@ -1137,7 +1213,7 @@ export default function ApplicationForm() {
                           lm ? 'border-blue-200 text-blue-300' : 'border-white/15 text-white/25'
                         }`}>{allDone ? '✓' : anyMissing ? '!' : build.num}</span>
                         <span className={`text-xs font-bold uppercase tracking-wide flex-1 ${
-                          allDone ? 'text-emerald-400' : anyMissing ? 'text-rose-300' : lm ? 'text-blue-700' : 'text-white/60'
+                          allDone ? 'text-emerald-400' : anyMissing ? 'text-rose-300' : lm ? 'text-gray-800' : 'text-white/60'
                         }`}>Build {build.num} — {build.title}{build.optional ? ' (optional)' : ''}</span>
                         {anyMissing && (
                           <button onClick={() => goStep(2)} className="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase border border-blue-400/20 px-3 py-1 rounded-full flex-shrink-0 transition-colors">Fix</button>
@@ -1147,8 +1223,8 @@ export default function ApplicationForm() {
                         {build.items.map(item => (
                           <div key={item.label} className="flex items-center gap-3 px-4 py-2">
                             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${item.value ? 'bg-emerald-400' : item.required ? 'bg-rose-400' : lm ? 'bg-blue-200' : 'bg-white/15'}`} />
-                            <span className={`text-xs flex-1 ${lm ? 'text-blue-500' : 'text-white/35'}`}>{item.label}</span>
-                            <span className={`text-xs truncate max-w-[180px] ${item.value ? lm ? 'text-blue-700' : 'text-white/50' : item.required ? 'text-rose-400/60' : lm ? 'text-blue-200' : 'text-white/15'}`}>
+                            <span className={`text-xs flex-1 ${lm ? 'text-gray-600' : 'text-white/35'}`}>{item.label}</span>
+                            <span className={`text-xs truncate max-w-[180px] ${item.value ? lm ? 'text-gray-700' : 'text-white/50' : item.required ? 'text-rose-400/60' : lm ? 'text-blue-200' : 'text-white/15'}`}>
                               {item.value ? (item.display.startsWith('http') ? '✓ Linked' : item.display) : item.required ? 'Missing' : 'Optional'}
                             </span>
                           </div>
@@ -1167,7 +1243,7 @@ export default function ApplicationForm() {
               <div className="mb-7">
                 <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1.5">Section 4 of {totalSteps}</p>
                 <h1 className={`text-3xl font-black uppercase tracking-tight ${lm ? 'text-blue-900' : 'text-white'}`}>References</h1>
-                <p className={`text-sm mt-1.5 ${lm ? 'text-blue-400' : 'text-white/35'}`}>Two internal Alpha references. One must be your direct manager or Dean of Parents / Head of School.</p>
+                <p className={`text-sm mt-1.5 ${lm ? 'text-gray-500' : 'text-white/35'}`}>Two internal Alpha references. One must be your direct manager or Dean of Parents / Head of School.</p>
               </div>
               <div className={`rounded-xl border px-4 py-3 ${lm ? 'bg-blue-50 border-blue-200' : 'bg-blue-500/8 border-blue-400/15'}`}>
                 <div className="flex items-start gap-2">
@@ -1180,7 +1256,7 @@ export default function ApplicationForm() {
                 { n: 2, label: 'Reference 2', nameF: 'reference2_name', roleF: 'reference2_role', phoneF: 'reference2_phone', emailF: 'reference2_email' },
               ] as const).map(({ n, label, nameF, roleF, phoneF, emailF }) => (
                 <div key={n} className={`rounded-xl border p-5 space-y-4 ${lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.03] border-white/8'}`}>
-                  <p className={`text-xs font-black uppercase tracking-widest ${lm ? 'text-blue-400' : 'text-white/25'}`}>{label}</p>
+                  <p className={`text-xs font-black uppercase tracking-widest ${lm ? 'text-gray-500' : 'text-white/25'}`}>{label}</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input label="Name" name={nameF} value={form[nameF]} onChange={handleChange} placeholder="Full name" lm={lm} />
                     <Input label="Role at Alpha" name={roleF} value={form[roleF]} onChange={handleChange} placeholder="e.g. Dean of Parents, Head of School" lm={lm} />
@@ -1198,7 +1274,7 @@ export default function ApplicationForm() {
               <div className="mb-7">
                 <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1.5">Section 5 of {totalSteps}</p>
                 <h1 className={`text-3xl font-black uppercase tracking-tight ${lm ? 'text-blue-900' : 'text-white'}`}>Acknowledge & Sign</h1>
-                <p className={`text-sm mt-1.5 ${lm ? 'text-blue-400' : 'text-white/35'}`}>Check each line. Each one is a real thing you are agreeing to.</p>
+                <p className={`text-sm mt-1.5 ${lm ? 'text-gray-500' : 'text-white/35'}`}>Check each line. Each one is a real thing you are agreeing to.</p>
               </div>
               <div className="space-y-2">
                 {acknowledgments.map((text, i) => {
@@ -1211,13 +1287,13 @@ export default function ApplicationForm() {
                         {form[key] && <span className="text-white text-xs font-black">✓</span>}
                       </div>
                       <input type="checkbox" name={key} checked={form[key] as boolean} onChange={handleChange} className="sr-only" />
-                      <span className={`text-sm leading-relaxed ${lm ? 'text-blue-700' : 'text-white/50'}`}>{text}</span>
+                      <span className={`text-sm leading-relaxed ${lm ? 'text-gray-700' : 'text-white/50'}`}>{text}</span>
                     </label>
                   )
                 })}
               </div>
               <div className={`border rounded-xl p-5 ${lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.03] border-white/8'}`}>
-                <p className={`text-sm mb-4 italic ${lm ? 'text-blue-400' : 'text-white/20'}`}>I am submitting this application of my own volition. I have read everything in this packet. I understand what I am signing up for.</p>
+                <p className={`text-sm mb-4 italic ${lm ? 'text-gray-500' : 'text-white/20'}`}>I am submitting this application of my own volition. I have read everything in this packet. I understand what I am signing up for.</p>
                 <Input label="Full Name (Signature)" name="applicant_name" value={form.applicant_name} onChange={handleChange} required placeholder="Type your full legal name" lm={lm} />
               </div>
               {error && (
