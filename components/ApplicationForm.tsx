@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { CheckCircle, AlertCircle, ChevronDown, ChevronRight, ArrowRight, ArrowLeft } from 'lucide-react'
 
@@ -238,6 +238,15 @@ function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
+const DRAFT_KEY = 'aws_guide_draft_id'
+
+function getDraftId(): string {
+  if (typeof window === 'undefined') return ''
+  let id = localStorage.getItem(DRAFT_KEY)
+  if (!id) { id = crypto.randomUUID(); localStorage.setItem(DRAFT_KEY, id) }
+  return id
+}
+
 export default function ApplicationForm() {
   const [started, setStarted] = useState(false)
   const [step, setStep] = useState(1)
@@ -245,12 +254,47 @@ export default function ApplicationForm() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const totalSteps = STEPS.length
 
+  // Load existing draft on mount
+  useEffect(() => {
+    const id = localStorage.getItem(DRAFT_KEY)
+    if (!id) return
+    supabase.from('guide_applications').select('*').eq('id', id).eq('status', 'draft').single()
+      .then(({ data }) => {
+        if (!data) return
+        const { id: _id, created_at: _ca, updated_at: _ua, status: _s, admin_notes: _an, draft_step, ...fields } = data
+        setForm(f => ({ ...f, ...fields }))
+        if (draft_step) setStep(draft_step)
+        setStarted(true)
+      })
+  }, [])
+
+  const saveDraft = useCallback((formData: FormData, currentStep: number) => {
+    const id = getDraftId()
+    setSaveState('saving')
+    supabase.from('guide_applications')
+      .upsert({ id, ...formData, status: 'draft', draft_step: currentStep }, { onConflict: 'id' })
+      .then(() => {
+        setSaveState('saved')
+        setTimeout(() => setSaveState('idle'), 2000)
+      })
+  }, [])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
-    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value }))
+    const updated = { ...form, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value }
+    setForm(updated)
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => saveDraft(updated, step), 1500)
+  }
+
+  const handleStepChange = (newStep: number) => {
+    setStep(newStep)
+    saveDraft(form, newStep)
   }
 
   const allAcksChecked = [1,2,3,4,5,6,7,8].every(n => form[`ack_${n}` as keyof FormData])
@@ -258,8 +302,11 @@ export default function ApplicationForm() {
   const handleSubmit = async () => {
     if (!allAcksChecked) { setError('Please check all acknowledgments before submitting.'); return }
     setSubmitting(true); setError(null)
-    const { error: dbError } = await supabase.from('guide_applications').insert([form])
+    const id = getDraftId()
+    const { error: dbError } = await supabase.from('guide_applications')
+      .upsert({ id, ...form, status: 'submitted', draft_step: totalSteps }, { onConflict: 'id' })
     if (dbError) { setError('Something went wrong. Please try again or email apply@alphaworldschool.com.'); setSubmitting(false); return }
+    localStorage.removeItem(DRAFT_KEY)
     setSubmitted(true); setSubmitting(false)
   }
 
@@ -356,7 +403,11 @@ export default function ApplicationForm() {
       <header className="border-b border-white/8 sticky top-0 z-40 bg-[#0a1628]/95 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Logo size="sm" />
-          <span className="text-xs text-white/25 font-medium uppercase tracking-wider">Section {step} of {totalSteps}</span>
+          <div className="flex items-center gap-4">
+            {saveState === 'saving' && <span className="text-xs text-white/25 animate-pulse">Saving…</span>}
+            {saveState === 'saved' && <span className="text-xs text-emerald-400/70">Draft saved</span>}
+            <span className="text-xs text-white/25 font-medium uppercase tracking-wider">Section {step} of {totalSteps}</span>
+          </div>
         </div>
         <div className="h-0.5 bg-white/5">
           <div className="h-full bg-blue-400 transition-all duration-500" style={{ width: `${(step / totalSteps) * 100}%` }} />
@@ -615,14 +666,14 @@ export default function ApplicationForm() {
           {/* Navigation */}
           <div className="flex items-center justify-between mt-10 pt-5 border-t border-white/8">
             <button
-              onClick={() => step === 1 ? setStarted(false) : setStep(s => s - 1)}
+              onClick={() => step === 1 ? setStarted(false) : handleStepChange(step - 1)}
               className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-white/25 hover:text-white/55 transition-colors rounded-full border border-transparent hover:border-white/8"
             >
               <ArrowLeft className="w-4 h-4" /> {step === 1 ? 'Home' : 'Back'}
             </button>
             {step < totalSteps ? (
               <button
-                onClick={() => setStep(s => s + 1)}
+                onClick={() => handleStepChange(step + 1)}
                 className="flex items-center gap-2 px-8 py-3 bg-white text-[#0a1628] font-black uppercase tracking-wider text-sm rounded-full hover:bg-white/90 transition-colors"
               >
                 Continue <ArrowRight className="w-4 h-4" />
