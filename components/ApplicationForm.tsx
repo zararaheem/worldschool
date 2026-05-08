@@ -452,9 +452,9 @@ export default function ApplicationForm() {
           </div>
         </div>
 
-        <div className="border-t border-white/8 grid grid-cols-3">
+        <div className="border-t border-white/8 px-6 py-8 flex flex-wrap justify-center gap-3">
           {[['20', 'Students Selected'], ['3', 'Continents'], ['1', 'School Year']].map(([n, label]) => (
-            <div key={label} className="py-6 flex flex-col items-center gap-1 border-r last:border-r-0 border-white/8">
+            <div key={label} className="flex flex-col items-center gap-1 px-8 py-4 rounded-2xl bg-white/[0.04] border border-white/10 min-w-[110px]">
               <span className="text-2xl font-black text-blue-400">{n}</span>
               <span className="text-xs font-bold uppercase tracking-widest text-white/25">{label}</span>
             </div>
