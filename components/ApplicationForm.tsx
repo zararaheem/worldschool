@@ -479,6 +479,15 @@ function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
 
 // ─── Main component ─────────────────────────────────────────────────────────
 
+const DRAFT_KEY = 'aws_guide_draft_id'
+
+function getDraftId(): string {
+  if (typeof window === 'undefined') return ''
+  let id = localStorage.getItem(DRAFT_KEY)
+  if (!id) { id = crypto.randomUUID(); localStorage.setItem(DRAFT_KEY, id) }
+  return id
+}
+
 export default function ApplicationForm() {
   const [started, setStarted] = useState(false)
   const [step, setStep] = useState(1)
@@ -488,6 +497,32 @@ export default function ApplicationForm() {
   const [error, setError] = useState<string | null>(null)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const totalSteps = STEPS.length
+
+  // Load existing draft on mount
+  useEffect(() => {
+    const id = localStorage.getItem(DRAFT_KEY)
+    if (!id) return
+    supabase.from('guide_applications').select('*').eq('id', id).eq('status', 'draft').single()
+      .then(({ data }) => {
+        if (!data) return
+        const { id: _id, created_at: _ca, updated_at: _ua, status: _s, admin_notes: _an, draft_step, ...fields } = data
+        setForm(f => ({ ...f, ...fields }))
+        if (draft_step) setStep(draft_step)
+        setStarted(true)
+      })
+  }, [])
+
+  const saveDraft = useCallback((formData: FormData, currentStep: number) => {
+    const id = getDraftId()
+    setSaveState('saving')
+    supabase.from('guide_applications')
+      .upsert({ id, ...formData, status: 'draft', draft_step: currentStep }, { onConflict: 'id' })
+      .then(() => {
+        setSaveState('saved')
+        setTimeout(() => setSaveState('idle'), 2000)
+      })
   const totalSteps = STEPS.length
 
   useEffect(() => {
@@ -548,6 +583,9 @@ export default function ApplicationForm() {
     saveTimer.current = setTimeout(() => saveDraft(updated, step), 1500)
   }
 
+  const handleStepChange = (newStep: number) => {
+    setStep(newStep)
+    saveDraft(form, newStep)
   const handleVideoValue = (name: string, val: string) => {
     const updated = { ...form, [name]: val }
     setForm(updated)
@@ -578,6 +616,8 @@ export default function ApplicationForm() {
     const id = getDraftId()
     const { error: dbError } = await supabase.from('guide_applications')
       .upsert({ id, ...form, status: 'submitted', draft_step: totalSteps }, { onConflict: 'id' })
+    if (dbError) { setError('Something went wrong. Please try again or email apply@alphaworldschool.com.'); setSubmitting(false); return }
+    localStorage.removeItem(DRAFT_KEY)
     if (dbError) { setError('Something went wrong. Please try again.'); setSubmitting(false); return }
     localStorage.removeItem(DRAFT_KEY)
     const { error: dbError } = await supabase.from('guide_applications').insert([form])
@@ -773,6 +813,8 @@ export default function ApplicationForm() {
           <Logo size="sm" />
           <div className="flex items-center gap-4">
             {saveState === 'saving' && <span className="text-xs text-white/25 animate-pulse">Saving…</span>}
+            {saveState === 'saved' && <span className="text-xs text-emerald-400/70">Draft saved</span>}
+            <span className="text-xs text-white/25 font-medium uppercase tracking-wider">Section {step} of {totalSteps}</span>
             {saveState === 'saved' && <span className="text-xs text-emerald-400/70">Saved ✓</span>}
             <span className="text-xs text-white/40 font-bold tabular-nums">{progress}%</span>
             <span className="text-xs text-white/25 uppercase tracking-wider">Section {step}/{totalSteps}</span>
@@ -1222,6 +1264,10 @@ export default function ApplicationForm() {
               <ArrowLeft className="w-4 h-4" /> {step === 1 ? 'Home' : 'Back'}
             </button>
             {step < totalSteps ? (
+              <button
+                onClick={() => handleStepChange(step + 1)}
+                className="flex items-center gap-2 px-8 py-3 bg-white text-[#0a1628] font-black uppercase tracking-wider text-sm rounded-full hover:bg-white/90 transition-colors"
+              >
               <button onClick={() => handleStepChange(step + 1)}
                 className="flex items-center gap-2 px-8 py-3 bg-white text-[#0a1628] font-black uppercase tracking-wider text-sm rounded-full hover:bg-white/90 transition-colors">
                 Continue <ArrowRight className="w-4 h-4" />
