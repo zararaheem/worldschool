@@ -553,6 +553,8 @@ export default function AdminDashboard() {
               <img src="/alphahigh.png" alt="Alpha World School" className="h-10 w-auto object-contain"
                 onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
             </div>
+            <img src="/alphahigh.png" alt="Alpha World School" className="h-12 w-auto object-contain"
+              onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
           </div>
           <form onSubmit={handleLogin} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-sm">
             <div className="text-center">
@@ -584,6 +586,8 @@ export default function AdminDashboard() {
               <img src="/alphahigh.png" alt="Alpha World School" className="h-7 w-auto object-contain"
                 onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
             </div>
+            <img src="/alphahigh.png" alt="Alpha World School" className="h-9 w-auto object-contain"
+              onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
             <div>
               <span className="text-gray-900 font-bold text-sm">Alpha World School</span>
               <span className="text-gray-400 text-xs ml-2">Admin · Guide Applications 2026–27</span>
