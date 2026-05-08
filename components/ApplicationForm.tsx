@@ -115,12 +115,13 @@ function Input({ label, name, value, onChange, required, placeholder, type = 'te
 }) {
   return (
     <div>
-      <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-1.5">
+      <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-1.5">
         {label}{required && <span className="text-blue-400 ml-1">*</span>}
       </label>
       {hint && <p className="text-xs text-white/30 mb-1.5">{hint}</p>}
       <input
         type={type} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
+        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/60 focus:ring-1 focus:ring-blue-400/30 transition-all text-sm"
         className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/20 transition-all"
       />
     </div>
@@ -133,12 +134,13 @@ function Textarea({ label, name, value, onChange, required, placeholder, rows = 
 }) {
   return (
     <div>
-      <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-1.5">
+      <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-1.5">
         {label}{required && <span className="text-blue-400 ml-1">*</span>}
       </label>
-      {hint && <p className="text-xs text-white/30 mb-1.5">{hint}</p>}
+      {hint && <p className="text-xs text-white/40 mb-1.5">{hint}</p>}
       <textarea
         name={name} value={value} onChange={onChange} required={required} placeholder={placeholder} rows={rows}
+        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/60 focus:ring-1 focus:ring-blue-400/30 transition-all resize-none text-sm"
         className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/20 transition-all"
       />
     </div>
@@ -314,12 +316,16 @@ const labelColor = { amber: 'text-amber-300 border-amber-400/20 bg-amber-400/10'
 function ExampleItem({ title, detail }: { title: string; detail: string }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="border border-white/8 rounded-lg overflow-hidden">
-      <button className="w-full text-left px-4 py-3 flex items-center justify-between gap-3 hover:bg-white/5 transition-colors" onClick={() => setOpen(o => !o)}>
-        <span className="text-sm font-semibold text-white/60">{title}</span>
-        {open ? <ChevronDown className="w-3.5 h-3.5 text-white/25 flex-shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-white/25 flex-shrink-0" />}
+    <div className={`border ${c.border} rounded-lg bg-white/5 overflow-hidden`}>
+      <button className="w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-white/5 transition-colors" onClick={() => setOpen(!open)}>
+        <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${c.dot}`} />
+        <div className="flex-1 min-w-0">
+          <div className={`font-semibold text-sm ${c.title}`}>{title}</div>
+          <div className="text-xs text-white/40 mt-0.5">{summary}</div>
+        </div>
+        {open ? <ChevronDown className="w-4 h-4 text-white/30 flex-shrink-0 mt-0.5" /> : <ChevronRight className="w-4 h-4 text-white/30 flex-shrink-0 mt-0.5" />}
       </button>
-      {open && <div className="px-4 pb-3"><p className="text-white/45 text-sm leading-relaxed">{detail}</p></div>}
+      {open && <div className="px-4 pb-4 pt-1 border-t border-white/10"><p className="text-white/60 text-sm leading-relaxed">{detail}</p></div>}
     </div>
   )
 }
@@ -327,6 +333,10 @@ function ExampleItem({ title, detail }: { title: string; detail: string }) {
 function ExamplesInline() {
   const [open, setOpen] = useState(false)
   return (
+    <div className="mb-3">
+      <button className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg border ${c.badge} text-left text-sm font-semibold transition-colors hover:opacity-90`} onClick={() => setOpen(!open)}>
+        {open ? <ChevronDown className="w-4 h-4 flex-shrink-0" /> : <ChevronRight className="w-4 h-4 flex-shrink-0" />}
+        {constraint.label}
     <div className="rounded-xl border border-white/10 overflow-hidden">
       <button className="w-full flex items-center justify-between px-5 py-3 bg-white/[0.04] hover:bg-white/[0.07] transition-colors text-left" onClick={() => setOpen(o => !o)}>
         <span className="text-xs font-black text-white/50 uppercase tracking-widest">Worked Examples</span>
@@ -336,18 +346,53 @@ function ExamplesInline() {
         </span>
       </button>
       {open && (
-        <div className="px-5 py-4 space-y-4 border-t border-white/8">
-          {constraints.map(c => (
-            <div key={c.id}>
-              <div className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border mb-2 ${labelColor[c.color]}`}>
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor[c.color]}`} />
-                {c.label}
-              </div>
-              <div className="space-y-1.5">
-                {c.examples.map(ex => <ExampleItem key={ex.title} {...ex} />)}
-              </div>
+        <div className="mt-2 space-y-2 pl-1">
+          {constraint.examples.map(ex => <ExampleCard key={ex.title} {...ex} color={constraint.color} />)}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ExamplesModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-2xl mx-4 my-10 bg-[#0d1b2e] rounded-2xl border border-white/10 shadow-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 sticky top-0 bg-[#0d1b2e] rounded-t-2xl">
+          <div>
+            <h2 className="font-bold text-white">Worked Examples — Build 2</h2>
+            <p className="text-xs text-white/40 mt-0.5">Click any constraint to see what a strong submission looks like</p>
+          </div>
+          <button onClick={onClose} className="text-white/30 hover:text-white/60 ml-4 transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="px-6 py-5 max-h-[75vh] overflow-y-auto">
+          {constraints.map(c => <ConstraintSection key={c.id} constraint={c} />)}
+          <div className="mt-5 rounded-xl border border-white/10 overflow-hidden">
+            <div className="px-4 py-3 bg-white/5 border-b border-white/10">
+              <h3 className="font-bold text-white text-sm uppercase tracking-wide">Strong vs. Weak</h3>
             </div>
-          ))}
+            <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10">
+              {[
+                { label: 'Strong', color: 'green', items: ['A repeating structural feature, not a one-time event', 'Specifies sequence, timing, prompts, what the guide says', 'Names what happens when it goes sideways', 'Local community as co-facilitators, not scenery'] },
+                { label: 'Weak', color: 'rose', items: ["Vague principle (\"we'll have honest conversations\")", "A one-time workshop that doesn't fit the cohort", 'Local community featured but not consulted', 'Design treats the community as a teaching prop'] },
+              ].map(({ label, color, items }) => (
+                <div key={label} className="p-4">
+                  <div className={`inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3 ${color === 'green' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-rose-500/10 text-rose-300'}`}>{label}</div>
+                  <ul className="space-y-1.5">
+                    {items.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-white/60">
+                        <span className={`mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${color === 'green' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -548,6 +593,12 @@ export default function ApplicationForm() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-[#0a1628] flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <AlphaLogo className="w-12 h-12 text-blue-400 mx-auto mb-6" />
+          <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-3">Application Received</p>
+          <h2 className="text-4xl font-black text-white mb-4 uppercase tracking-tight">You&rsquo;re In The Pool.</h2>
+          <p className="text-white/50 text-base mb-2">We have your application on file.</p>
+          <p className="text-white/30 text-sm">Our team will review it carefully. You'll hear from us when decisions are made.</p>
         <div className="text-center max-w-sm">
           <Logo size="lg" />
           <div className="mt-8 w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center mx-auto mb-5">
@@ -561,10 +612,45 @@ export default function ApplicationForm() {
     )
   }
 
-  // ── Landing ──
   if (!started) {
     return (
       <div className="min-h-screen bg-[#0a1628] flex flex-col">
+        {/* Nav */}
+        <nav className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <AlphaLogo className="w-7 h-7 text-white/80" />
+            <div>
+              <span className="text-white font-black text-xs tracking-widest uppercase">Alpha World School</span>
+              <span className="text-white/30 text-xs block leading-none tracking-wide uppercase">For Guides</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-white/40 uppercase tracking-wider px-4 py-1.5 rounded-full border border-white/10">For Students</span>
+            <span className="text-xs font-bold text-white/40 uppercase tracking-wider px-4 py-1.5 rounded-full">For Parents</span>
+          </div>
+        </nav>
+
+        {/* Hero */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-20 text-center">
+          <div className="flex items-center gap-3 mb-8 opacity-60">
+            <AlphaLogo className="w-5 h-5 text-white" />
+            <span className="text-white text-xs font-bold uppercase tracking-widest">Alpha World School</span>
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tight leading-none mb-6 max-w-3xl">
+            Guide Application
+          </h1>
+
+          <p className="text-white/50 text-lg md:text-xl max-w-xl mb-4 leading-relaxed">
+            This is not a year off. This is the hardest job Alpha has ever asked anyone to do — and the most rewarding year of your career.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-12">
+            {['38 Weeks', '3 Continents', '20 Students', 'Kenya · Ecuador · USA'].map((stat, i) => (
+              <span key={stat} className="flex items-center gap-2 text-white/40 text-sm">
+                {i > 0 && <span className="w-1 h-1 rounded-full bg-white/20" />}
+                {stat}
+              </span>
         <nav className="flex items-center justify-between px-6 py-4 border-b border-white/8">
           <Logo />
         </nav>
@@ -623,6 +709,11 @@ export default function ApplicationForm() {
               className="flex items-center gap-2 px-8 py-3 bg-blue-500 hover:bg-blue-400 text-white font-black uppercase tracking-wider text-sm rounded-full transition-colors shadow-lg shadow-blue-500/20">
               Apply Now <ArrowRight className="w-4 h-4" />
             </button>
+            <a
+              href="https://world.alpha.school"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-8 py-3.5 text-white/60 hover:text-white font-bold uppercase tracking-wider text-sm rounded-full border border-white/20 hover:border-white/40 transition-colors"
             <a href="https://world.alpha.school" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 px-8 py-3 text-white/45 hover:text-white font-bold uppercase tracking-wider text-sm rounded-full border border-white/15 hover:border-white/30 transition-colors">
               className="flex items-center gap-2 px-8 py-3.5 text-white/45 hover:text-white font-bold uppercase tracking-wider text-sm rounded-full border border-white/15 hover:border-white/30 transition-colors"
@@ -632,6 +723,12 @@ export default function ApplicationForm() {
           </div>
         </div>
 
+        {/* Stats bar */}
+        <div className="border-t border-white/10 grid grid-cols-3">
+          {[['20', 'Students Selected'], ['3', 'Continents'], ['1', 'School Year']].map(([n, label]) => (
+            <div key={label} className="py-8 flex flex-col items-center gap-1 border-r last:border-r-0 border-white/10">
+              <span className="text-3xl font-black text-blue-400">{n}</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-white/30">{label}</span>
         <div className="border-t border-white/8 px-6 py-8 flex flex-wrap justify-center gap-3">
           {[['20', 'Students Selected'], ['3', 'Continents'], ['1', 'School Year']].map(([n, label]) => (
             <div key={label} className="flex flex-col items-center gap-1 px-8 py-4 rounded-2xl bg-white/[0.04] border border-white/10 min-w-[110px]">
@@ -644,6 +741,26 @@ export default function ApplicationForm() {
     )
   }
 
+  return (
+    <div className="min-h-screen bg-[#0a1628] flex flex-col">
+
+      {/* ── Header ── */}
+      <header className="border-b border-white/10 sticky top-0 z-40 bg-[#0a1628]/95 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlphaLogo className="w-8 h-8 text-white/80" />
+            <div>
+              <span className="text-white font-black text-sm tracking-wider uppercase">Alpha World School</span>
+              <span className="text-white/30 text-xs block leading-none tracking-wide">Guide Application · 2026–2027</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="h-0.5 bg-white/5">
+          <div
+            className="h-full bg-blue-400 transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
   // ── Form ──
   const progress = calcProgress(form)
 
@@ -677,6 +794,23 @@ export default function ApplicationForm() {
         </div>
       </header>
 
+      {/* ── Step indicators ── */}
+      <div className="border-b border-white/5 bg-white/[0.02]">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-1 overflow-x-auto">
+          {STEPS.map((s, i) => (
+            <div key={s.id} className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={() => s.id < step && setStep(s.id)}
+                className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all ${
+                  s.id === step  ? 'bg-blue-500/20 text-blue-300 border border-blue-400/30' :
+                  s.id < step   ? 'text-white/40 hover:text-white/60 cursor-pointer' :
+                  'text-white/20 cursor-default'
+                }`}
+              >
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 border ${
+                  s.id === step  ? 'bg-blue-500 border-blue-400 text-white' :
+                  s.id < step   ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' :
+                  'border-white/10 text-white/20'
       <div className="flex-1 max-w-5xl w-full mx-auto px-4 py-8 flex gap-8">
 
         {/* Left sidebar */}
@@ -695,20 +829,75 @@ export default function ApplicationForm() {
                   done   ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' :
                   'border-white/12 text-white/20'
                 }`}>
-                  {done ? '✓' : s.id}
+                  {s.id < step ? '✓' : s.id}
                 </span>
-                <div>
-                  <div className={`text-xs font-bold uppercase tracking-wide ${active ? 'text-blue-300' : done ? 'text-white/50' : 'text-white/20'}`}>{s.label}</div>
-                  <div className={`text-xs mt-0.5 ${active ? 'text-white/30' : 'text-white/15'}`}>{s.desc}</div>
-                </div>
+                <span className="hidden sm:inline">{s.label}</span>
               </button>
-            )
-          })}
-        </aside>
+              {i < STEPS.length - 1 && <span className="text-white/10 px-0.5">›</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
-        {/* Main content */}
-        <div className="flex-1 min-w-0">
+      {/* ── Step content ── */}
+      <div className="flex-1 max-w-3xl w-full mx-auto px-4 py-10">
 
+        {/* STEP 1 — About You */}
+        {step === 1 && (
+          <div className="space-y-6">
+            <div>
+              <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Step 1 of 5</p>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tight">About You</h1>
+              <p className="text-white/40 text-sm mt-2">Basic info. If a field does not apply, write "N/A."</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input label="Full Name" name="full_name" value={form.full_name} onChange={handleChange} required placeholder="Jane Smith" />
+              <Input label="Email" name="email" value={form.email} onChange={handleChange} required placeholder="jane@alpha.school" type="email" />
+              <Input label="Phone" name="phone" value={form.phone} onChange={handleChange} placeholder="+1 (555) 000-0000" />
+              <Input label="Current Role at Alpha" name="role_at_alpha" value={form.role_at_alpha} onChange={handleChange} required placeholder="e.g. Guide, Academic Coach" />
+              <Input label="Campus" name="campus" value={form.campus} onChange={handleChange} placeholder="e.g. Austin, NYC" />
+              <Input label="Years at Alpha" name="years_at_alpha" value={form.years_at_alpha} onChange={handleChange} placeholder="e.g. 2 years" />
+              <Input label="Direct Manager" name="direct_manager" value={form.direct_manager} onChange={handleChange} placeholder="Name of direct manager" />
+              <Input label="Head of School" name="head_of_school" value={form.head_of_school} onChange={handleChange} placeholder="Name of Head of School" />
+            </div>
+            <Textarea label="Languages Spoken" name="languages_spoken" value={form.languages_spoken} onChange={handleChange} placeholder="English (native), Spanish (conversational), Swahili (basic)" hint="Note proficiency: conversational, fluent, or native" />
+            <Textarea label="Prior International Travel" name="prior_international_travel" value={form.prior_international_travel} onChange={handleChange} placeholder="Kenya (3 weeks, community development), Ecuador (1 month, volunteer teaching)..." hint="List countries, length of stay, and purpose" rows={3} />
+            <Textarea label="Developing-World Living Experience" name="developing_world_experience" value={form.developing_world_experience} onChange={handleChange} placeholder="Yes — spent 6 weeks in rural Guatemala..." hint="Have you spent 2+ weeks living in a developing-world setting? Y/N — describe" rows={3} />
+            <Textarea label="Health Considerations" name="health_considerations" value={form.health_considerations} onChange={handleChange} placeholder="Any current health considerations relevant to extended international travel..." rows={2} />
+            <Textarea label="Personal or Family Obligations" name="family_obligations" value={form.family_obligations} onChange={handleChange} placeholder="Partner, children, caregiving responsibilities..." hint="Relevant to a 38-week commitment" rows={3} />
+            <Input label="Emergency Contact" name="emergency_contact" value={form.emergency_contact} onChange={handleChange} placeholder="Name, relationship, phone number" />
+          </div>
+        )}
+
+        {/* STEP 2 — The Builds */}
+        {step === 2 && (
+          <div className="space-y-6">
+            <div>
+              <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Step 2 of 5</p>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tight">The Builds</h1>
+              <p className="text-white/40 text-sm mt-2">Three required Builds. One optional fourth. Submit each to the shared Drive folder from your invitation email.</p>
+            </div>
+
+            <BuildCard number="1" title="The Workshop Sprint" testing="Life skills design, project orientation, taste, AI fluency" time="2 hours max" deliverable="Workshop artifact (slides / Notion / one-pager)">
+              <p className="text-white/50 text-sm leading-relaxed">
+                Design and produce a real 90-minute kickoff workshop for your cohort of 5–7 students — anchored in one of: <span className="text-white/80 font-medium">Food · Water · Empowerment · Education · Healthcare · Culture & Conservation · Community</span>. The workshop should launch a real project with a real output the community actually uses.
+              </p>
+              <Input label="Build 1 Link or File Name" name="build1_link" value={form.build1_link} onChange={handleChange} placeholder="https://docs.google.com/... or Smith_Jane_Build1.pdf" />
+            </BuildCard>
+
+            <BuildCard number="2" title="The Cohort Experience" testing="Anticipating breaking points, design instinct, cultural humility" time="1.5–2 hours" deliverable="Two links: experience design + 3-min walkthrough video">
+              <div className="text-white/50 text-sm leading-relaxed space-y-2">
+                <p>Design something that prevents a cohort from breaking. Pick one design constraint:</p>
+                <ul className="space-y-1 ml-4">
+                  {['Assume your cohort has conflict by week 5.', 'Assume energy drops by mid-rotation.', 'Assume cultural missteps happen.', 'Assume someone wants to go home by week 10.'].map(c => (
+                    <li key={c} className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">·</span> {c}</li>
+                  ))}
+                </ul>
+                <button type="button" onClick={() => setShowExamples(true)} className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-xs font-bold uppercase tracking-wider mt-1 transition-colors border border-blue-400/30 hover:border-blue-400/60 px-3 py-1.5 rounded-full">
+                  <BookOpen className="w-3.5 h-3.5" /> See worked examples
+                </button>
           {/* Mobile steps */}
           <div className="flex md:hidden items-center gap-1.5 mb-6 overflow-x-auto pb-1">
             {STEPS.map((s, i) => (
@@ -721,7 +910,64 @@ export default function ApplicationForm() {
                   }`}>{s.id < step ? '✓' : s.id}</button>
                 {i < STEPS.length - 1 && <span className="text-white/15 text-xs">›</span>}
               </div>
-            ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input label="Design Doc Link" name="build2_design_link" value={form.build2_design_link} onChange={handleChange} placeholder="Link to one-pager, plan, or visual flow" />
+                <Input label="3-Minute Video Link" name="build2_video_link" value={form.build2_video_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive link" />
+              </div>
+            </BuildCard>
+
+            <BuildCard number="3" title="The Video" testing="Self-awareness, honesty, mindset" time="20 minutes" deliverable="One 90-second to 2-minute video">
+              <p className="text-white/50 text-sm leading-relaxed">
+                Talk to us. 90 seconds to 2 minutes. Phone-quality is fine. Don't script. Don't read. <span className="text-white/80">(1) What are you most excited about for this year?</span> <span className="text-white/80">(2) What do you understand your role to be on this trip?</span>
+              </p>
+              <Input label="Video Link" name="build3_video_link" value={form.build3_video_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive link" />
+            </BuildCard>
+
+            <BuildCard number="4" title="Language Tape" optional>
+              <p className="text-white/50 text-sm leading-relaxed">
+                If you speak a language other than English — especially Swahili, Spanish, or any language relevant to Kenya or Ecuador — talk to us in it. Anything natural. ≤60 seconds.
+              </p>
+              <Input label="Language Video Link (optional)" name="build4_language_link" value={form.build4_language_link} onChange={handleChange} placeholder="YouTube, Loom, or Drive link" />
+            </BuildCard>
+          </div>
+        )}
+
+        {/* STEP 3 — Submission Tracker */}
+        {step === 3 && (
+          <div className="space-y-6">
+            <div>
+              <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Step 3 of 5</p>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tight">Submission Check</h1>
+              <p className="text-white/40 text-sm mt-2">Confirm your builds are uploaded and linked. Go back to fix anything missing.</p>
+            </div>
+            <div className="space-y-3">
+              {[
+                { label: 'Build 1 — Workshop Sprint', value: form.build1_link, required: true },
+                { label: 'Build 2 — Cohort Experience (design doc)', value: form.build2_design_link, required: true },
+                { label: 'Build 2 — Cohort Experience (3-min video)', value: form.build2_video_link, required: true },
+                { label: 'Build 3 — The Video', value: form.build3_video_link, required: true },
+                { label: 'Build 4 — Language Tape', value: form.build4_language_link, required: false },
+              ].map(({ label, value, required }) => (
+                <div key={label} className={`flex items-center gap-4 px-5 py-4 rounded-2xl border ${value ? 'bg-emerald-500/10 border-emerald-500/20' : required ? 'bg-rose-500/10 border-rose-500/20' : 'bg-white/5 border-white/10'}`}>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 border ${value ? 'bg-emerald-500/20 border-emerald-500/40' : required ? 'bg-rose-500/10 border-rose-500/30' : 'border-white/10'}`}>
+                    {value
+                      ? <span className="text-emerald-400 font-black text-sm">✓</span>
+                      : <span className={`text-xs font-bold ${required ? 'text-rose-400' : 'text-white/20'}`}>{required ? '!' : '–'}</span>
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-sm font-bold uppercase tracking-wide ${value ? 'text-emerald-300' : required ? 'text-rose-300' : 'text-white/30'}`}>{label}</div>
+                    {value
+                      ? <div className="text-xs text-white/30 truncate mt-0.5">{value}</div>
+                      : <div className={`text-xs mt-0.5 ${required ? 'text-rose-400/70' : 'text-white/30'}`}>{required ? 'Missing — go back and add a link' : 'Optional — skip if not applicable'}</div>
+                    }
+                  </div>
+                  {!value && required && (
+                    <button onClick={() => setStep(2)} className="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider flex-shrink-0 border border-blue-400/30 px-3 py-1 rounded-full transition-colors">Fix</button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* STEP 1 */}
@@ -880,6 +1126,32 @@ export default function ApplicationForm() {
                   </div>
                 </div>
               ))}
+
+            <div className="bg-white/5 rounded-2xl border border-white/10 p-5 space-y-4">
+              <h3 className="text-xs font-black text-white/40 uppercase tracking-widest">Reference 2</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input label="Name" name="reference2_name" value={form.reference2_name} onChange={handleChange} />
+                <Input label="Role" name="reference2_role" value={form.reference2_role} onChange={handleChange} />
+                <Input label="Relationship to You" name="reference2_relationship" value={form.reference2_relationship} onChange={handleChange} />
+                <Input label="Phone" name="reference2_phone" value={form.reference2_phone} onChange={handleChange} />
+                <Input label="Email" name="reference2_email" value={form.reference2_email} onChange={handleChange} type="email" />
+              </div>
+            </div>
+
+            <div className="bg-blue-500/10 rounded-2xl border border-blue-400/20 p-5 space-y-4">
+              <div>
+                <h3 className="text-xs font-black text-blue-300 uppercase tracking-widest">Manager / Head of School Endorsement</h3>
+                <p className="text-xs text-white/30 mt-1">To be filled out by the candidate's direct manager or Head of School — <em>not</em> by the candidate.</p>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-3">Has this guide had your verbal support to apply?</label>
+                <div className="flex flex-wrap gap-3">
+                  {['Yes', 'No', 'Conversation pending'].map(opt => (
+                    <label key={opt} className={`flex items-center gap-2 px-4 py-2 rounded-full border cursor-pointer text-sm font-bold uppercase tracking-wide transition-all ${form.manager_endorsement_status === opt ? 'border-blue-400/60 bg-blue-500/20 text-blue-300' : 'border-white/10 text-white/30 hover:border-white/20'}`}>
+                      <input type="radio" name="manager_endorsement_status" value={opt} checked={form.manager_endorsement_status === opt} onChange={handleChange} className="sr-only" />
+                      {opt}
+                    </label>
+                  ))}
               <div className="bg-blue-500/8 rounded-xl border border-blue-400/12 p-5 space-y-4">
                 <div>
                   <p className="text-xs font-black text-blue-300 uppercase tracking-widest">Manager / HoS Endorsement</p>
@@ -961,6 +1233,78 @@ export default function ApplicationForm() {
               </button>
             )}
           </div>
+        )}
+
+        {/* STEP 5 — Acknowledgments */}
+        {step === 5 && (
+          <div className="space-y-6">
+            <div>
+              <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Step 5 of 5</p>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tight">Acknowledge & Sign</h1>
+              <p className="text-white/40 text-sm mt-2">Check each line. Each one is a real thing you are agreeing to.</p>
+            </div>
+            <div className="space-y-3">
+              {acknowledgments.map((text, i) => {
+                const key = `ack_${i + 1}` as keyof FormData
+                return (
+                  <label key={i} className={`flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${form[key] ? 'border-blue-400/30 bg-blue-500/10' : 'border-white/10 bg-white/5 hover:border-white/20'}`}>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${form[key] ? 'bg-blue-500 border-blue-400' : 'border-white/20'}`}>
+                      {form[key] && <span className="text-white text-xs font-black">✓</span>}
+                    </div>
+                    <input type="checkbox" name={key} checked={form[key] as boolean} onChange={handleChange} className="sr-only" />
+                    <span className="text-sm text-white/60 leading-relaxed">{text}</span>
+                  </label>
+                )
+              })}
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+              <p className="text-white/30 text-sm mb-4 italic">I am submitting this application of my own volition. I have read everything in this packet. I understand what I am signing up for.</p>
+              <Input label="Full Name (Signature)" name="applicant_name" value={form.applicant_name} onChange={handleChange} required placeholder="Type your full legal name" />
+            </div>
+
+            {error && (
+              <div className="flex items-start gap-3 px-4 py-3 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+                <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+                <p className="text-rose-300 text-sm">{error}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Navigation ── */}
+        <div className="flex items-center justify-between mt-12 pt-6 border-t border-white/10">
+          <button
+            type="button"
+            onClick={() => setStep(s => s - 1)}
+            disabled={step === 1}
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-white/30 hover:text-white/60 disabled:opacity-0 transition-colors rounded-full border border-transparent hover:border-white/10"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+
+          {step < totalSteps ? (
+            <button
+              type="button"
+              onClick={() => setStep(s => s + 1)}
+              className="flex items-center gap-2 px-8 py-3 bg-white text-[#0a1628] font-black uppercase tracking-wider text-sm rounded-full hover:bg-white/90 transition-colors shadow-lg"
+            >
+              Continue <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="flex items-center gap-2 px-8 py-3 bg-white text-[#0a1628] font-black uppercase tracking-wider text-sm rounded-full hover:bg-white/90 disabled:opacity-50 transition-colors shadow-lg"
+            >
+              {submitting ? 'Submitting…' : 'Submit Application'} {!submitting && <ArrowRight className="w-4 h-4" />}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {showExamples && <ExamplesModal onClose={() => setShowExamples(false)} />}
         </div>
       </div>
     </div>
