@@ -776,7 +776,7 @@ export default function ApplicationForm() {
   if (phase === 'landing') {
     return (
       <div className={`min-h-screen ${bg} flex flex-col`}>
-        <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
+        <nav className={`flex items-center justify-between px-6 py-4 border-b ${border}`}>
           <div className="flex items-center gap-3">
             <img src="/alphahigh.png" alt="Alpha World School"
               className="h-7 w-auto object-contain"
@@ -786,10 +786,19 @@ export default function ApplicationForm() {
               <div className={`text-xs font-bold uppercase tracking-widest ${lm ? 'text-blue-400' : 'text-white/40'}`}>School</div>
             </div>
           </div>
-          <button onClick={() => setLightMode(m => !m)}
-            className={`p-2 rounded-full border transition-all ${lm ? 'border-blue-200 text-blue-500 hover:bg-blue-50' : 'border-white/15 text-white/40 hover:border-white/30'}`}>
-            {lm ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-          </button>
+          <div className="flex items-center gap-5">
+            <div className="hidden sm:flex items-center gap-4">
+              {['38 Weeks', '3 Continents', '20 Students'].map((s, i) => (
+                <span key={s} className={`flex items-center gap-2 text-xs ${lm ? 'text-gray-500' : 'text-white/30'}`}>
+                  {i > 0 && <span className={`w-1 h-1 rounded-full ${lm ? 'bg-blue-200' : 'bg-white/15'}`} />}{s}
+                </span>
+              ))}
+            </div>
+            <button onClick={() => setLightMode(m => !m)}
+              className={`p-2 rounded-full border transition-all ${lm ? 'border-blue-200 text-blue-500 hover:bg-blue-50' : 'border-white/15 text-white/40 hover:border-white/30'}`}>
+              {lm ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
+          </div>
         </nav>
 
         {/* Draft saved — top banner */}
@@ -832,14 +841,6 @@ export default function ApplicationForm() {
               This is not a year off. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>This is a full-time job — arguably the hardest one Alpha has ever asked anyone to do.</strong> You will be a 24/7 chaperone, coach, and culture-keeper for a cohort of teenagers, far from home, the calm voice at 3 AM, the person who walks a homesick kid through the week. You will also have the most rewarding year of your career — seeing students transform, speaking languages you never thought you would, eating with families on three continents. You will come home different.
             </p>
             <p className={`text-sm font-semibold ${lm ? 'text-blue-900' : 'text-white/75'}`}>Both of these things are true.</p>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 mb-8 text-sm">
-            {['38 Weeks', '3 Continents', '20 Students', 'Kenya · Ecuador · USA'].map((s, i) => (
-              <span key={s} className={`flex items-center gap-2 ${lm ? 'text-gray-500' : 'text-white/30'}`}>
-                {i > 0 && <span className={`w-1 h-1 rounded-full ${lm ? 'bg-blue-200' : 'bg-white/15'}`} />}{s}
-              </span>
-            ))}
           </div>
 
           {/* Accordions */}
@@ -895,7 +896,7 @@ export default function ApplicationForm() {
 
           {/* Email resume */}
           <div className={`w-full max-w-sm rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.03] border-white/8'}`}>
-            <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${lm ? 'text-gray-600' : 'text-white/30'}`}>Already started? Resume with your email</p>
+            <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${lm ? 'text-gray-600' : 'text-white/30'}`}>Continue where you left off</p>
             <div className="flex gap-2">
               <input
                 type="email"
@@ -916,14 +917,6 @@ export default function ApplicationForm() {
           </div>
         </div>
 
-        <div className={`border-t ${border} grid grid-cols-3`}>
-          {[['20', 'Students Selected'], ['3', 'Continents'], ['38', 'Weeks']].map(([n, lbl]) => (
-            <div key={lbl} className={`py-7 flex flex-col items-center gap-1 border-r last:border-r-0 ${border}`}>
-              <span className="text-3xl font-black text-blue-400">{n}</span>
-              <span className={`text-xs font-bold uppercase tracking-widest ${lm ? 'text-gray-500' : 'text-white/30'}`}>{lbl}</span>
-            </div>
-          ))}
-        </div>
       </div>
     )
   }
