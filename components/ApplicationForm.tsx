@@ -114,11 +114,9 @@ function LandingLogo() {
 function HeaderLogo({ onClick, lightMode }: { onClick?: () => void; lightMode: boolean }) {
   return (
     <button onClick={onClick} className="flex items-center gap-3 group">
-      <div className="bg-blue-600 rounded-xl p-1.5 group-hover:bg-blue-500 transition-colors">
-        <img src="/alphahigh.png" alt="Alpha World School"
+      <img src="/alphahigh.png" alt="Alpha World School"
           className="h-7 w-auto object-contain"
           onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-      </div>
       <div className="leading-tight text-left">
         <div className={`font-black uppercase tracking-wider text-xs ${lightMode ? 'text-blue-900' : 'text-white'}`}>Alpha World</div>
         <div className={`text-xs font-bold uppercase tracking-widest ${lightMode ? 'text-blue-400' : 'text-white/40'}`}>School</div>
@@ -650,11 +648,9 @@ export default function ApplicationForm() {
       <div className={`min-h-screen ${bg} flex flex-col`}>
         <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
           <div className="flex items-center gap-3">
-            <div className="bg-blue-600 rounded-xl p-1.5">
-              <img src="/alphahigh.png" alt="Alpha World School"
-                className="h-7 w-auto object-contain"
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-            </div>
+            <img src="/alphahigh.png" alt="Alpha World School"
+              className="h-7 w-auto object-contain"
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
             <div className="leading-tight">
               <div className={`font-black uppercase tracking-wider text-xs ${lm ? 'text-blue-900' : 'text-white'}`}>Alpha World</div>
               <div className={`text-xs font-bold uppercase tracking-widest ${lm ? 'text-blue-400' : 'text-white/40'}`}>School</div>
@@ -667,11 +663,6 @@ export default function ApplicationForm() {
         </nav>
 
         <div className={`flex-1 flex flex-col items-center justify-center px-6 py-14 text-center`}>
-          {/* Logo hero */}
-          <div className="mb-8">
-            <LandingLogo />
-          </div>
-
           <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">Inaugural Cohort · 2026–2027</p>
           <h1 className={`text-5xl md:text-7xl font-black uppercase tracking-tight leading-none mb-8 ${lm ? 'text-blue-900' : 'text-white'}`}>
             Guide<br/>Application
@@ -762,11 +753,9 @@ export default function ApplicationForm() {
       <div className={`min-h-screen ${bg} flex flex-col`}>
         <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
           <button onClick={() => setPhase('landing')} className="flex items-center gap-3">
-            <div className="bg-blue-600 rounded-xl p-1.5">
-              <img src="/alphahigh.png" alt="Alpha World School"
-                className="h-7 w-auto object-contain"
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-            </div>
+            <img src="/alphahigh.png" alt="Alpha World School"
+              className="h-7 w-auto object-contain"
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
             <div className="leading-tight text-left">
               <div className={`font-black uppercase tracking-wider text-xs ${lm ? 'text-blue-900' : 'text-white'}`}>Alpha World</div>
               <div className={`text-xs font-bold uppercase tracking-widest ${lm ? 'text-blue-400' : 'text-white/40'}`}>School</div>
