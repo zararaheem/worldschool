@@ -96,20 +96,6 @@ function getDraftId() {
 
 // ─── Primitives ───────────────────────────────────────────────────────
 
-function LandingLogo() {
-  return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="bg-white rounded-2xl p-5 shadow-xl shadow-blue-500/10">
-        <img src="/awslogo.png" alt="Alpha World School"
-          className="h-24 w-auto object-contain"
-          onError={e => {
-            const el = e.target as HTMLImageElement
-            el.style.display = 'none'
-          }} />
-      </div>
-    </div>
-  )
-}
 
 function HeaderLogo({ onClick, lightMode }: { onClick?: () => void; lightMode: boolean }) {
   return (
@@ -765,15 +751,13 @@ export default function ApplicationForm() {
 
           {/* Intro text */}
           <div className={`max-w-xl text-left space-y-3 mb-10 rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100 text-blue-800' : 'bg-white/[0.03] border-white/8 text-white/55'}`}>
-            <p className="text-sm leading-relaxed">
-              Twenty Alpha students will travel through Kenya, Ecuador, and the United States across 38 weeks. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>This is a full-time job — 24/7, far from home, and the hardest thing Alpha has ever asked anyone to do.</strong> You'll also have the most rewarding year of your career.
+            <p className={`text-sm leading-relaxed ${lm ? 'text-blue-700' : 'text-white/60'}`}>
+              This is the inaugural year of Alpha World School. Twenty Alpha students will travel through Kenya, Ecuador, and the United States across 38 weeks — building schools, learning languages, running rigorous academics, and living in communities most of them have never imagined. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>We need guides who can lead them through it.</strong>
             </p>
-            <p className={`text-sm font-semibold ${lm ? 'text-blue-900' : 'text-white/70'}`}>Both of these things are true.</p>
-            <div className={`border-t pt-3 ${lm ? 'border-blue-100' : 'border-white/8'}`}>
-              <p className="text-sm leading-relaxed">
-                Three required Builds and one optional — each produces a real artifact. AI use is expected. If you're reading this and thinking &ldquo;yes, this is for me&rdquo; — start below.
-              </p>
-            </div>
+            <p className={`text-sm leading-relaxed ${lm ? 'text-blue-700' : 'text-white/60'}`}>
+              This is not a year off. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>This is a full-time job — arguably the hardest one Alpha has ever asked anyone to do.</strong> You will be a 24/7 chaperone, coach, and culture-keeper for a cohort of teenagers, far from home, the calm voice at 3 AM, the person who walks a homesick kid through the week. You will also have the most rewarding year of your career — seeing students transform, speaking languages you never thought you would, eating with families on three continents. You will come home different.
+            </p>
+            <p className={`text-sm font-semibold ${lm ? 'text-blue-900' : 'text-white/75'}`}>Both of these things are true.</p>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 mb-8 text-sm">
