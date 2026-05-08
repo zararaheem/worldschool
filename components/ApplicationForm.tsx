@@ -884,6 +884,26 @@ export default function ApplicationForm() {
             </LandingAccordion>
           </div>
 
+          {/* Section overview */}
+          <div className="w-full max-w-xl mb-10">
+            <p className={`text-xs font-black uppercase tracking-widest text-center mb-4 ${lm ? 'text-blue-300' : 'text-white/20'}`}>5 Sections</p>
+            <div className="space-y-2">
+              {[
+                { n: 1, label: 'About You',        sub: 'Background & contact info' },
+                { n: 2, label: 'The Builds',       sub: '3 required + 1 optional' },
+                { n: 3, label: 'Submission Check', sub: 'Confirm all links' },
+                { n: 4, label: 'References',       sub: '2 references + endorsement' },
+                { n: 5, label: 'Sign & Submit',    sub: 'Acknowledgments & signature' },
+              ].map(({ n, label, sub }) => (
+                <div key={n} className={`flex items-center gap-4 px-4 py-3 rounded-xl border ${lm ? 'border-blue-100 bg-blue-50' : 'border-white/8 bg-white/[0.03]'}`}>
+                  <span className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-black flex-shrink-0 ${lm ? 'border-blue-200 text-blue-400' : 'border-white/20 text-white/35'}`}>{n}</span>
+                  <span className={`text-xs font-black uppercase tracking-wider ${lm ? 'text-blue-700' : 'text-white/70'}`}>{label}</span>
+                  <span className={`text-xs ml-1 ${lm ? 'text-gray-500' : 'text-white/30'}`}>{sub}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-center gap-3 mb-10">
             <button onClick={() => setPhase('gate')}
               className="flex items-center gap-2 px-8 py-3.5 bg-blue-500 hover:bg-blue-400 text-white font-black uppercase tracking-wider text-sm rounded-full transition-colors shadow-lg shadow-blue-500/20">
