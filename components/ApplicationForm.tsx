@@ -316,6 +316,8 @@ function ConstraintSelector({ value, onChange }: { value: string; onChange: (v: 
 
 export default function ApplicationForm() {
   const [started, setStarted]       = useState(false)
+  const [hasDraft, setHasDraft]     = useState(false)
+  const returnedToLanding           = useRef(false)
   const [step, setStep]             = useState(1)
   const [form, setForm]             = useState<FormData>(initialForm)
   const [submitting, setSubmitting] = useState(false)
@@ -349,7 +351,8 @@ export default function ApplicationForm() {
         const { id: _id, created_at: _ca, updated_at: _ua, status: _s, admin_notes: _an, draft_step, ...fields } = data
         setForm(f => ({ ...f, ...fields }))
         if (draft_step) setStep(draft_step)
-        setStarted(true)
+        setHasDraft(true)
+        if (!returnedToLanding.current) setStarted(true)
       })
   }, [])
 
@@ -451,10 +454,24 @@ export default function ApplicationForm() {
               </button>
             ))}
           </div>
+          {hasDraft && (
+            <div className="w-full max-w-xs mb-4 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Draft saved</p>
+                <p className="text-xs text-white/30 mt-0.5">Section {step} of {totalSteps} — continue where you left off</p>
+              </div>
+              <button
+                onClick={() => { returnedToLanding.current = false; setStarted(true) }}
+                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-black text-emerald-300 uppercase tracking-wider border border-emerald-400/30 hover:bg-emerald-500/15 rounded-full transition-colors"
+              >
+                Resume <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          )}
           <div className="flex flex-col sm:flex-row items-center gap-3">
-            <button onClick={() => setStarted(true)}
+            <button onClick={() => { returnedToLanding.current = false; setStarted(true) }}
               className="flex items-center gap-2 px-8 py-3.5 bg-blue-500 hover:bg-blue-400 text-white font-black uppercase tracking-wider text-sm rounded-full transition-colors shadow-lg shadow-blue-500/20">
-              Start from Beginning <ArrowRight className="w-4 h-4" />
+              {hasDraft ? 'Continue Application' : 'Start Application'} <ArrowRight className="w-4 h-4" />
             </button>
             <a href="https://world.alpha.school" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 px-8 py-3.5 text-white/45 hover:text-white font-bold uppercase tracking-wider text-sm rounded-full border border-white/15 hover:border-white/30 transition-colors">
@@ -478,15 +495,21 @@ export default function ApplicationForm() {
   return (
     <div className="min-h-screen bg-[#08111f] flex flex-col">
       <header className="border-b border-white/8 sticky top-0 z-40 bg-[#08111f]/95 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Logo size="sm" onClick={() => setStarted(false)} />
-          <div className="flex items-center gap-4">
-            {saveState === 'saving' && <span className="text-xs text-white/25 animate-pulse">Saving…</span>}
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <Logo size="sm" onClick={() => { saveDraft(form, step); setStarted(false) }} />
+          <div className="flex items-center gap-3">
+            {saveState === 'saving' && <span className="text-xs text-white/30 animate-pulse">Saving…</span>}
             {saveState === 'saved'  && <span className="text-xs text-emerald-400/70">Saved ✓</span>}
-            <span className="text-xs text-white/25 font-medium uppercase tracking-wider">Section {step} of {totalSteps}</span>
+            <span className="hidden sm:inline text-xs text-white/25 font-medium uppercase tracking-wider">Section {step}/{totalSteps}</span>
+            <button
+              onClick={() => { returnedToLanding.current = true; saveDraft(form, step); setStarted(false) }}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white/40 hover:text-white border border-white/10 hover:border-white/25 rounded-full transition-all"
+            >
+              <ArrowLeft className="w-3 h-3" /> Save &amp; Exit
+            </button>
           </div>
         </div>
-        <div className="h-0.5 bg-white/5">
+        <div className="h-1 bg-white/[0.06]">
           <div className="h-full bg-blue-400 transition-all duration-500" style={{ width: `${(step / totalSteps) * 100}%` }} />
         </div>
       </header>
