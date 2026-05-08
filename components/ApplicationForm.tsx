@@ -664,7 +664,7 @@ export default function ApplicationForm() {
 
         <div className={`flex-1 flex flex-col items-center justify-center px-6 py-14 text-center`}>
           <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">Inaugural Cohort · 2026–2027</p>
-          <h1 className={`text-5xl md:text-7xl font-black uppercase tracking-tight leading-none mb-8 ${lm ? 'text-blue-900' : 'text-white'}`}>
+          <h1 className={`text-4xl md:text-5xl font-black uppercase tracking-tight leading-none mb-8 ${lm ? 'text-blue-700' : 'text-blue-400'}`}>
             Guide<br/>Application
           </h1>
 
