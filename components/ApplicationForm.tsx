@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CheckCircle, AlertCircle, ChevronDown, ChevronRight, ArrowRight, ArrowLeft, Copy, Check, ExternalLink, Info } from 'lucide-react'
+import {
+  CheckCircle, AlertCircle, ChevronDown, ChevronRight,
+  ArrowRight, ArrowLeft, Copy, Check, ExternalLink, Info
+} from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -30,7 +33,7 @@ const initialForm: FormData = {
   direct_manager: '', head_of_school: '', languages_spoken: '', prior_international_travel: '',
   developing_world_experience: '', health_considerations: '', family_obligations: '', emergency_contact: '',
   build1_link: '', build2_design_link: '', build2_video_link: '', build3_video_link: '', build4_language_link: '',
-  reference1_name: '', reference1_role: '',reference1_phone: '', reference1_email: '',
+  reference1_name: '', reference1_role: '', reference1_phone: '', reference1_email: '',
   reference2_name: '', reference2_role: '', reference2_phone: '', reference2_email: '',
   manager_endorsement_status: '', manager_endorsement_text: '', endorser_name: '', endorser_role: '',
   ack_1: false, ack_2: false, ack_3: false, ack_4: false,
@@ -68,7 +71,7 @@ function getDraftId(): string {
 // ─── Logo ─────────────────────────────────────────────────────────────
 
 function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
-  const imgSizes = { sm: 'h-8', md: 'h-10', lg: 'h-14' }
+  const imgSizes = { sm: 'h-8', md: 'h-12', lg: 'h-16' }
   const textSizes = { sm: 'text-xs', md: 'text-sm', lg: 'text-base' }
   return (
     <div className="flex items-center gap-3">
@@ -76,10 +79,7 @@ function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
         src="/Alpha_World_School_Logo.png"
         alt="Alpha World School"
         className={`${imgSizes[size]} w-auto object-contain brightness-0 invert`}
-        onError={(e) => {
-          const el = e.target as HTMLImageElement
-          el.style.display = 'none'
-        }}
+        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
       />
       <div className="leading-tight">
         <div className={`font-black text-white uppercase tracking-wider ${textSizes[size]}`}>Alpha World</div>
@@ -242,7 +242,7 @@ function ExamplesInline() {
   )
 }
 
-// ─── Reference Shareable Link ─────────────────────────────────────────
+// ─── Reference Share Link ─────────────────────────────────────────────
 
 function ReferenceShareLink({ refNumber, applicantName, applicantEmail }: { refNumber: number; applicantName: string; applicantEmail: string }) {
   const [copied, setCopied] = useState(false)
@@ -351,7 +351,6 @@ export default function ApplicationForm() {
 
   const progress = (step / totalSteps) * 100
 
-  // ── Success ──
   if (submitted) {
     return (
       <div className="min-h-screen bg-[#08111f] flex items-center justify-center px-4">
@@ -367,7 +366,6 @@ export default function ApplicationForm() {
     )
   }
 
-  // ── Landing ──
   if (!started) {
     return (
       <div className="min-h-screen bg-[#08111f] flex flex-col">
@@ -428,11 +426,8 @@ export default function ApplicationForm() {
     )
   }
 
-  // ── Form ──
   return (
     <div className="min-h-screen bg-[#08111f] flex flex-col">
-
-      {/* Top bar */}
       <header className="border-b border-white/8 sticky top-0 z-40 bg-[#08111f]/95 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Logo size="sm" />
@@ -448,8 +443,6 @@ export default function ApplicationForm() {
       </header>
 
       <div className="flex-1 max-w-5xl w-full mx-auto px-4 py-8 flex gap-8">
-
-        {/* Left sidebar */}
         <aside className="hidden md:flex flex-col gap-1 w-56 flex-shrink-0 pt-1">
           <p className="text-xs font-bold text-white/20 uppercase tracking-widest mb-3 px-3">{totalSteps} Sections</p>
           {STEPS.map(s => {
@@ -476,10 +469,7 @@ export default function ApplicationForm() {
           })}
         </aside>
 
-        {/* Main content */}
         <div className="flex-1 min-w-0">
-
-          {/* Mobile step dots */}
           <div className="flex md:hidden items-center gap-1.5 mb-6 overflow-x-auto pb-1">
             {STEPS.map((s, i) => (
               <div key={s.id} className="flex items-center gap-1.5 flex-shrink-0">
@@ -493,7 +483,7 @@ export default function ApplicationForm() {
             ))}
           </div>
 
-          {/* STEP 1 — About You */}
+          {/* STEP 1 */}
           {step === 1 && (
             <div className="space-y-5">
               <div className="mb-7">
@@ -525,7 +515,7 @@ export default function ApplicationForm() {
             </div>
           )}
 
-          {/* STEP 2 — The Builds */}
+          {/* STEP 2 */}
           {step === 2 && (
             <div className="space-y-5">
               <div className="mb-7">
@@ -534,7 +524,6 @@ export default function ApplicationForm() {
                 <p className="text-white/35 text-sm mt-1.5">Three required Builds, one optional. Submit each to the shared Drive folder from your invitation email. Naming convention: <span className="font-mono text-white/50">LastName_FirstName_Build1.pdf</span></p>
               </div>
 
-              {/* Build 1 */}
               <BuildCard number="1" title="The Workshop Sprint" filled={Boolean(form.build1_link)}
                 meta={[['Testing', 'Life skills design, AI fluency, taste'], ['Time', '2 hours max'], ['Deliverable', 'Slides / Notion / one-pager']]}>
                 <div className="space-y-3">
@@ -554,7 +543,6 @@ export default function ApplicationForm() {
                   placeholder="https://docs.google.com/... or Smith_Jane_Build1.pdf" />
               </BuildCard>
 
-              {/* Build 2 */}
               <BuildCard number="2" title="The Cohort Experience" filled={Boolean(form.build2_design_link && form.build2_video_link)}
                 meta={[['Testing', 'Design instinct, cultural humility, resilience'], ['Time', '1.5–2 hours'], ['Deliverable', 'Design doc + 3-min video']]}>
                 <div className="space-y-3">
@@ -569,7 +557,7 @@ export default function ApplicationForm() {
                       { color: 'blue', text: 'Assume cultural missteps happen.' },
                       { color: 'rose', text: 'Assume someone wants to go home by week 10.' },
                     ].map(c => (
-                      <div key={c.text} className={`flex items-start gap-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/8 text-xs text-white/50`}>
+                      <div key={c.text} className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/8 text-xs text-white/50">
                         <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${dotColor[c.color as keyof typeof dotColor]}`} />
                         {c.text}
                       </div>
@@ -591,7 +579,6 @@ export default function ApplicationForm() {
                 </div>
               </BuildCard>
 
-              {/* Build 3 */}
               <BuildCard number="3" title="The Video" filled={Boolean(form.build3_video_link)}
                 meta={[['Testing', 'Self-awareness, honesty, mindset'], ['Time', '20 minutes'], ['Deliverable', '90 sec – 2 min video']]}>
                 <div className="space-y-2">
@@ -608,13 +595,12 @@ export default function ApplicationForm() {
                       <p className="text-sm text-white/50">What do you understand your role to be on this trip? Be specific — not what you hope it will be, what you <em>actually believe</em> it is.</p>
                     </div>
                   </div>
-                  <p className="text-white/30 text-xs">We are looking for a clear-eyed picture of the job, not a pitch. The candidates who get it will sound different from the candidates who don&apos;t. Most of your 20 minutes should be taking 3 takes and picking the most honest one.</p>
+                  <p className="text-white/30 text-xs">We are looking for a clear-eyed picture of the job, not a pitch. Most of your 20 minutes should be taking 3 takes and picking the most honest one.</p>
                 </div>
                 <Input label="Video Link" name="build3_video_link" value={form.build3_video_link} onChange={handleChange}
                   placeholder="YouTube, Loom, or Drive link" />
               </BuildCard>
 
-              {/* Build 4 */}
               <BuildCard number="4" title="Language Tape" optional filled={Boolean(form.build4_language_link)}>
                 <p className="text-white/45 text-sm leading-relaxed">
                   If you speak a language other than English — especially <strong className="text-white/60">Swahili, Spanish</strong>, or any language relevant to Kenya or Ecuador — talk to us in it. Tell us about your morning, your last vacation, your favorite food. Anything natural. ≤60 seconds.
@@ -626,7 +612,7 @@ export default function ApplicationForm() {
             </div>
           )}
 
-          {/* STEP 3 — Submission Check */}
+          {/* STEP 3 */}
           {step === 3 && (
             <div className="space-y-5">
               <div className="mb-7">
@@ -662,7 +648,7 @@ export default function ApplicationForm() {
             </div>
           )}
 
-          {/* STEP 4 — References */}
+          {/* STEP 4 */}
           {step === 4 && (
             <div className="space-y-5">
               <div className="mb-7">
@@ -671,7 +657,6 @@ export default function ApplicationForm() {
                 <p className="text-white/35 text-sm mt-1.5">Two internal Alpha references. One must be your direct manager or Head of School.</p>
               </div>
 
-              {/* Info box */}
               <div className="rounded-xl bg-blue-500/8 border border-blue-400/15 px-4 py-3">
                 <div className="flex items-start gap-2">
                   <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
@@ -681,7 +666,6 @@ export default function ApplicationForm() {
                 </div>
               </div>
 
-              {/* Reference 1 */}
               {([
                 { n: 1, nameField: 'reference1_name', roleField: 'reference1_role', phoneField: 'reference1_phone', emailField: 'reference1_email' },
                 { n: 2, nameField: 'reference2_name', roleField: 'reference2_role', phoneField: 'reference2_phone', emailField: 'reference2_email' },
@@ -694,15 +678,10 @@ export default function ApplicationForm() {
                     <Input label="Phone" name={phoneField} value={form[phoneField]} onChange={handleChange} placeholder="+1 (555) 000-0000" />
                     <Input label="Email" name={emailField} value={form[emailField]} onChange={handleChange} placeholder="ref@alpha.school" type="email" />
                   </div>
-                  <ReferenceShareLink
-                    refNumber={n}
-                    applicantName={form.full_name}
-                    applicantEmail={form.email}
-                  />
+                  <ReferenceShareLink refNumber={n} applicantName={form.full_name} applicantEmail={form.email} />
                 </div>
               ))}
 
-              {/* Manager Endorsement */}
               <div className="bg-blue-500/8 rounded-xl border border-blue-400/12 p-5 space-y-4">
                 <div>
                   <p className="text-xs font-black text-blue-300 uppercase tracking-widest">Manager / Head of School Endorsement</p>
@@ -728,7 +707,7 @@ export default function ApplicationForm() {
             </div>
           )}
 
-          {/* STEP 5 — Sign & Submit */}
+          {/* STEP 5 */}
           {step === 5 && (
             <div className="space-y-5">
               <div className="mb-7">
@@ -772,10 +751,8 @@ export default function ApplicationForm() {
               <ArrowLeft className="w-4 h-4" /> {step === 1 ? 'Home' : 'Back'}
             </button>
             {step < totalSteps ? (
-              <button
-                onClick={() => handleStepChange(step + 1)}
-                className="flex items-center gap-2 px-8 py-3 bg-white text-[#08111f] font-black uppercase tracking-wider text-sm rounded-full hover:bg-white/90 transition-colors"
-              >
+              <button onClick={() => handleStepChange(step + 1)}
+                className="flex items-center gap-2 px-8 py-3 bg-white text-[#08111f] font-black uppercase tracking-wider text-sm rounded-full hover:bg-white/90 transition-colors">
                 Continue <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
