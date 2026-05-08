@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { CheckCircle, AlertCircle } from 'lucide-react'
@@ -58,16 +58,11 @@ function Textarea({ label, name, value, onChange, required, placeholder, rows = 
 }
 
 interface ReferenceForm {
-  ref_name: string
-  ref_role: string
-  ref_phone: string
-  ref_email: string
-  endorsement_status: string
-  endorsement_text: string
-  endorser_signature: string
+  ref_name: string; ref_role: string; ref_phone: string; ref_email: string
+  endorsement_status: string; endorsement_text: string; endorser_signature: string
 }
 
-export default function ReferencePage() {
+function ReferenceFormContent() {
   const searchParams = useSearchParams()
   const refNumber = searchParams.get('ref') || '1'
   const applicantName = searchParams.get('applicant') || 'the applicant'
@@ -98,7 +93,6 @@ export default function ReferencePage() {
     setSubmitting(true)
     setError(null)
 
-    // Find the application by applicant email and update the reference fields
     const refNum = parseInt(refNumber)
     const updateData: Record<string, string> = {}
 
@@ -107,13 +101,10 @@ export default function ReferencePage() {
       updateData.reference1_role = form.ref_role
       updateData.reference1_phone = form.ref_phone
       updateData.reference1_email = form.ref_email
-      // For manager endorsement
-      if (form.endorsement_text) {
-        updateData.manager_endorsement_status = form.endorsement_status
-        updateData.manager_endorsement_text = form.endorsement_text
-        updateData.endorser_name = form.ref_name
-        updateData.endorser_role = form.ref_role
-      }
+      updateData.manager_endorsement_status = form.endorsement_status
+      updateData.manager_endorsement_text = form.endorsement_text
+      updateData.endorser_name = form.ref_name
+      updateData.endorser_role = form.ref_role
     } else {
       updateData.reference2_name = form.ref_name
       updateData.reference2_role = form.ref_role
@@ -121,7 +112,6 @@ export default function ReferencePage() {
       updateData.reference2_email = form.ref_email
     }
 
-    // Store reference response in a separate table or as a note
     const { error: dbError } = await supabase
       .from('reference_submissions')
       .insert([{
@@ -138,7 +128,6 @@ export default function ReferencePage() {
       }])
 
     if (dbError) {
-      // If table doesn't exist, try updating the application directly
       const { error: appError } = await supabase
         .from('guide_applications')
         .update(updateData)
@@ -189,7 +178,6 @@ export default function ReferencePage() {
           </div>
         </div>
 
-        {/* What the role involves */}
         <div className="rounded-xl border border-white/8 bg-white/[0.02] p-5 mb-8 space-y-3">
           <p className="text-xs font-black text-white/30 uppercase tracking-widest">What You&apos;re Vouching For</p>
           <p className="text-white/45 text-sm leading-relaxed">
@@ -199,7 +187,6 @@ export default function ReferencePage() {
         </div>
 
         <div className="space-y-5">
-          {/* Your info */}
           <div className="space-y-4">
             <h2 className="text-xs font-black text-white/30 uppercase tracking-widest">Your Information</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -210,7 +197,6 @@ export default function ReferencePage() {
             </div>
           </div>
 
-          {/* Verbal support */}
           <div>
             <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-2">
               Has <span className="text-white/70">{applicantName}</span> had your verbal support to apply? <span className="text-blue-400">*</span>
@@ -224,7 +210,6 @@ export default function ReferencePage() {
             </div>
           </div>
 
-          {/* Endorsement text */}
           <Textarea
             label="Your Endorsement (150 words minimum)"
             name="endorsement_text"
@@ -236,7 +221,6 @@ export default function ReferencePage() {
             hint="Be specific. We're looking for concrete observations, not general praise."
           />
 
-          {/* Signature */}
           <Input
             label="Your Full Name (Signature)"
             name="endorser_signature"
@@ -253,11 +237,8 @@ export default function ReferencePage() {
             </div>
           )}
 
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="w-full py-3.5 bg-white text-[#08111f] font-black uppercase tracking-wider text-sm rounded-full hover:bg-white/90 disabled:opacity-50 transition-colors"
-          >
+          <button onClick={handleSubmit} disabled={submitting}
+            className="w-full py-3.5 bg-white text-[#08111f] font-black uppercase tracking-wider text-sm rounded-full hover:bg-white/90 disabled:opacity-50 transition-colors">
             {submitting ? 'Submitting…' : 'Submit Reference'}
           </button>
 
@@ -267,5 +248,17 @@ export default function ReferencePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ReferencePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#08111f] flex items-center justify-center">
+        <div className="text-white/30 text-sm">Loading…</div>
+      </div>
+    }>
+      <ReferenceFormContent />
+    </Suspense>
   )
 }
