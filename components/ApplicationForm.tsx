@@ -96,29 +96,13 @@ function getDraftId() {
 
 // ─── Primitives ───────────────────────────────────────────────────────
 
-function LandingLogo() {
-  return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="bg-white rounded-2xl p-5 shadow-xl shadow-blue-500/10">
-        <img src="/awslogo.png" alt="Alpha World School"
-          className="h-24 w-auto object-contain"
-          onError={e => {
-            const el = e.target as HTMLImageElement
-            el.style.display = 'none'
-          }} />
-      </div>
-    </div>
-  )
-}
 
 function HeaderLogo({ onClick, lightMode }: { onClick?: () => void; lightMode: boolean }) {
   return (
     <button onClick={onClick} className="flex items-center gap-3 group">
-      <div className="bg-blue-600 rounded-xl p-1.5 group-hover:bg-blue-500 transition-colors">
-        <img src="/alphahigh.png" alt="Alpha World School"
+      <img src="/alphahigh.png" alt="Alpha World School"
           className="h-7 w-auto object-contain"
           onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-      </div>
       <div className="leading-tight text-left">
         <div className={`font-black uppercase tracking-wider text-xs ${lightMode ? 'text-blue-900' : 'text-white'}`}>Alpha World</div>
         <div className={`text-xs font-bold uppercase tracking-widest ${lightMode ? 'text-blue-400' : 'text-white/40'}`}>School</div>
@@ -415,23 +399,32 @@ function BuildCard({ number, title, meta, optional, filled, children, lm }: {
   )
 }
 
-const FOCUS_AREAS = ['Food', 'Water', 'Empowerment', 'Education', 'Healthcare', 'Culture & Conservation', 'Community']
+const FOCUS_AREAS: { label: string; desc: string }[] = [
+  { label: 'Food',                   desc: 'Food security, farming, nutrition' },
+  { label: 'Water',                  desc: 'Clean water access & sanitation' },
+  { label: 'Empowerment',            desc: 'Economic access & agency' },
+  { label: 'Education',              desc: 'Learning infrastructure & literacy' },
+  { label: 'Healthcare',             desc: 'Community health & prevention' },
+  { label: 'Culture & Conservation', desc: 'Heritage, land, environment' },
+  { label: 'Community',              desc: 'Social cohesion & infrastructure' },
+]
 
 function FocusAreaSelector({ value, onChange, lm }: { value: string; onChange: (v: string) => void; lm?: boolean }) {
   return (
     <div className="space-y-2">
-      <p className={`text-sm ${lm ? 'text-blue-500' : 'text-white/40'}`}>Pick one focus area for your workshop:</p>
-      <div className="flex flex-wrap gap-2">
+      <p className={`text-sm font-semibold ${lm ? 'text-blue-700' : 'text-white/60'}`}>Choose one focus area for your workshop — this anchors your Build 1 project:</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {FOCUS_AREAS.map(f => {
-          const sel = value === f
+          const sel = value === f.label
           return (
-            <button key={f} type="button" onClick={() => onChange(f)}
-              className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${
+            <button key={f.label} type="button" onClick={() => onChange(f.label)}
+              className={`flex flex-col items-start px-4 py-3 rounded-xl border text-left transition-all ${
                 sel
-                  ? 'bg-blue-500/20 border-blue-400/40 text-blue-300'
-                  : lm ? 'border-blue-200 text-blue-400 hover:border-blue-400' : 'border-white/10 text-white/30 hover:border-white/25'
+                  ? lm ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-blue-500/25 border-blue-400/60 text-white'
+                  : lm ? 'bg-white border-blue-200 text-blue-700 hover:border-blue-400 hover:bg-blue-50' : 'bg-white/[0.04] border-white/10 text-white/60 hover:border-blue-400/40 hover:bg-white/[0.07]'
               }`}>
-              {f}{sel && ' ✓'}
+              <span className={`text-xs font-black uppercase tracking-wide ${sel ? lm ? 'text-white' : 'text-blue-200' : ''}`}>{f.label}{sel && ' ✓'}</span>
+              <span className={`text-xs mt-0.5 ${sel ? lm ? 'text-blue-100' : 'text-white/50' : lm ? 'text-blue-400' : 'text-white/25'}`}>{f.desc}</span>
             </button>
           )
         })}
@@ -470,6 +463,94 @@ function ConstraintSelector({ value, onChange, lm }: { value: string; onChange: 
         })}
       </div>
     </div>
+  )
+}
+
+// ─── Build 2 card (has Brief / Worked Examples tabs) ──────────────────
+
+const BUILD2_EXAMPLES = [
+  {
+    constraint: 'Energy drops at mid-rotation',
+    title: 'The Sunday Reset',
+    summary: 'A 30-min weekly ritual held every Sunday evening. Each student writes one thing they\'re "still carrying" and one thing they\'re "releasing." Guide reads them aloud anonymously, then the group chooses one "carry" to address as a cohort action for the coming week.',
+    why: 'Surfaces hidden tension before it becomes resentment. Creates a habit of naming emotional load — which mid-rotation fatigue amplifies.',
+    signal: 'By Week 15: students self-initiate the ritual if the guide is slow to start it. That\'s the signal it\'s theirs, not yours.',
+    tools: 'Designed with Claude for structure, Canva for the ritual card, a shared Notion doc for the running log.',
+  },
+  {
+    constraint: 'Conflict by Week 5',
+    title: 'The 3-Step Conflict Protocol',
+    summary: '1) Private reflection prompt (15 min, written). 2) Paired conversation with a neutral cohort-mate. 3) Facilitated group session only if steps 1–2 don\'t resolve it. A shared "tension map" (1–5 scale, weekly) lets the guide spot escalation early.',
+    why: 'Most group conflicts start as small friction that gets ignored. A visible protocol makes it safe to surface issues before they compound.',
+    signal: 'By Week 15: students use the paired conversation step without being prompted. The guide becomes a backstop, not the first responder.',
+    tools: 'Protocol drafted in ChatGPT, tension map built in Notion, walkthrough recorded in Loom.',
+  },
+]
+
+function Build2Card({ form, handleFieldChange, lm, isReq }: {
+  form: FormData; handleFieldChange: (n: string, v: string) => void; lm?: boolean; isReq: (f: string) => boolean
+}) {
+  const [tab, setTab] = useState<'brief' | 'examples'>('brief')
+  const filled = Boolean(form.build2_design_link && form.build2_video_link && form.build2_constraint)
+  const tabBtn = (t: 'brief' | 'examples') =>
+    `px-4 py-2 text-xs font-bold uppercase tracking-wide rounded-lg border transition-all ${
+      tab === t
+        ? lm ? 'bg-blue-600 border-blue-600 text-white' : 'bg-blue-500/25 border-blue-400/50 text-blue-200'
+        : lm ? 'border-blue-200 text-blue-400 hover:border-blue-400' : 'border-white/10 text-white/30 hover:border-white/25'
+    }`
+  return (
+    <BuildCard number="2" title="The Cohort Experience" filled={filled} lm={lm}
+      meta={[['Testing', 'Design instinct, AI use (Claude, ChatGPT, Cursor), cohort resilience'], ['Time', '1.5–2 hours'], ['Deliverable', 'Design doc + 3-min walkthrough video']]}>
+      <div className="flex gap-2 pb-1">
+        <button type="button" onClick={() => setTab('brief')} className={tabBtn('brief')}>Brief</button>
+        <button type="button" onClick={() => setTab('examples')} className={tabBtn('examples')}>Worked Examples</button>
+      </div>
+
+      {tab === 'brief' && (
+        <div className="space-y-4">
+          <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>
+            Design something that <strong className={lm ? 'text-blue-800' : 'text-white/70'}>prevents a cohort from breaking</strong>. By week 30, the cohort will be tired, homesick, and far from home. The strongest cohorts don't avoid these moments — they're built to survive them. That's your job: build the experience, ritual, or structure that holds this cohort together when the year gets hard.
+          </p>
+          <div className={`rounded-lg px-3 py-2 border ${lm ? 'bg-blue-50 border-blue-200' : 'bg-white/[0.03] border-white/8'}`}>
+            <p className={`text-xs ${lm ? 'text-blue-500' : 'text-white/35'}`}>AI use is expected. Use Claude, ChatGPT, Cursor, or whatever you reach for. We're evaluating your design instinct and taste.</p>
+          </div>
+          <ConstraintSelector value={form.build2_constraint} onChange={v => handleFieldChange('build2_constraint', v)} lm={lm} />
+          <p className={`text-xs leading-relaxed ${lm ? 'text-blue-500' : 'text-white/35'}`}>
+            Show how it runs in practice: sequence, prompts, materials, what the guide says, what students do, what happens when it goes sideways. <strong className={lm ? 'text-blue-700' : 'text-white/55'}>How do you know it's working by week 15?</strong>
+          </p>
+          <div className="rounded-lg bg-amber-500/8 border border-amber-400/15 px-3 py-2">
+            <p className="text-xs text-amber-300/80"><strong>Cultural humility is not optional.</strong> If your design involves the local community, tell us how you'll center their leadership — not feature them as a backdrop.</p>
+          </div>
+          <VideoInput label="Experience Design — paste link or upload" name="build2_design_link" value={form.build2_design_link} onValueChange={handleFieldChange}
+            hint="One-pager, plan, or visual flow — Drive, Notion, or PDF" lm={lm} />
+          <VideoInput label="3-Minute Walkthrough Video — paste link or upload" name="build2_video_link" value={form.build2_video_link} onValueChange={handleFieldChange}
+            hint="Loom or YouTube preferred. If using Google Drive, set sharing to 'Anyone at Alpha with the link can view'." lm={lm} />
+        </div>
+      )}
+
+      {tab === 'examples' && (
+        <div className="space-y-4">
+          <p className={`text-xs ${lm ? 'text-blue-500' : 'text-white/35'}`}>These are illustrative examples — not a template. Your submission should be your own design.</p>
+          {BUILD2_EXAMPLES.map((ex, i) => (
+            <div key={i} className={`rounded-xl border-2 overflow-hidden ${lm ? 'border-amber-300 bg-amber-50' : 'border-amber-400/40 bg-amber-400/5'}`}>
+              <div className={`px-4 py-2 flex items-center gap-2 ${lm ? 'bg-amber-100 border-b border-amber-200' : 'bg-amber-400/10 border-b border-amber-400/20'}`}>
+                <span className={`text-xs font-black uppercase tracking-wider ${lm ? 'text-amber-700' : 'text-amber-300'}`}>Worked Example {i + 1}</span>
+                <span className={`text-xs ${lm ? 'text-amber-500' : 'text-amber-400/60'}`}>· {ex.constraint}</span>
+              </div>
+              <div className="px-4 py-3 space-y-2.5">
+                <p className={`text-sm font-bold ${lm ? 'text-amber-800' : 'text-amber-200'}`}>{ex.title}</p>
+                <p className={`text-xs leading-relaxed ${lm ? 'text-amber-700' : 'text-amber-300/80'}`}>{ex.summary}</p>
+                <div className={`text-xs space-y-1 ${lm ? 'text-amber-600' : 'text-amber-400/70'}`}>
+                  <p><strong className={lm ? 'text-amber-800' : 'text-amber-300'}>Why it works:</strong> {ex.why}</p>
+                  <p><strong className={lm ? 'text-amber-800' : 'text-amber-300'}>Success signal:</strong> {ex.signal}</p>
+                  <p><strong className={lm ? 'text-amber-800' : 'text-amber-300'}>Tools used:</strong> {ex.tools}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </BuildCard>
   )
 }
 
@@ -635,10 +716,8 @@ export default function ApplicationForm() {
           <div className="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-emerald-400" />
           </div>
-          <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Application Received</p>
-          <h2 className={`text-3xl font-black uppercase tracking-tight mb-3 ${lm ? 'text-blue-900' : 'text-white'}`}>You&rsquo;re In The Pool.</h2>
-          <p className={`text-sm leading-relaxed ${lm ? 'text-blue-500' : 'text-white/40'}`}>Our team will review carefully. You&apos;ll hear from us when decisions are made. In the meantime — keep being the person who applied.</p>
-          <p className={`text-xs mt-4 ${lm ? 'text-blue-300' : 'text-white/20'}`}>The admin team will follow up with your references directly.</p>
+          <h2 className={`text-2xl font-black uppercase tracking-tight mb-3 ${lm ? 'text-blue-900' : 'text-white'}`}>Thank you for your application.</h2>
+          <p className={`text-sm leading-relaxed ${lm ? 'text-blue-500' : 'text-white/40'}`}>We&apos;ve received everything and will be in touch. In the meantime, feel free to reach out to the team with any questions.</p>
         </div>
       </div>
     )
@@ -650,11 +729,9 @@ export default function ApplicationForm() {
       <div className={`min-h-screen ${bg} flex flex-col`}>
         <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
           <div className="flex items-center gap-3">
-            <div className="bg-blue-600 rounded-xl p-1.5">
-              <img src="/alphahigh.png" alt="Alpha World School"
-                className="h-7 w-auto object-contain"
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-            </div>
+            <img src="/alphahigh.png" alt="Alpha World School"
+              className="h-7 w-auto object-contain"
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
             <div className="leading-tight">
               <div className={`font-black uppercase tracking-wider text-xs ${lm ? 'text-blue-900' : 'text-white'}`}>Alpha World</div>
               <div className={`text-xs font-bold uppercase tracking-widest ${lm ? 'text-blue-400' : 'text-white/40'}`}>School</div>
@@ -667,34 +744,20 @@ export default function ApplicationForm() {
         </nav>
 
         <div className={`flex-1 flex flex-col items-center justify-center px-6 py-14 text-center`}>
-          {/* Logo hero */}
-          <div className="mb-8">
-            <LandingLogo />
-          </div>
-
           <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">Inaugural Cohort · 2026–2027</p>
-          <h1 className={`text-5xl md:text-7xl font-black uppercase tracking-tight leading-none mb-8 ${lm ? 'text-blue-900' : 'text-white'}`}>
+          <h1 className={`text-4xl md:text-5xl font-black uppercase tracking-tight leading-none mb-8 ${lm ? 'text-blue-700' : 'text-blue-400'}`}>
             Guide<br/>Application
           </h1>
 
           {/* Intro text */}
-          <div className={`max-w-2xl text-left space-y-4 mb-10 rounded-2xl border p-6 ${lm ? 'bg-blue-50 border-blue-100 text-blue-800' : 'bg-white/[0.03] border-white/8 text-white/55'}`}>
-            <p className="text-sm leading-relaxed">
-              This is the inaugural year of Alpha World School. Twenty Alpha students will travel through Kenya, Ecuador, and the United States across 38 weeks. They are going to build schools, learn languages, run rigorous academics, and live in communities most of them have never imagined. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>We need guides who can lead them through it.</strong>
+          <div className={`max-w-xl text-left space-y-3 mb-10 rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100 text-blue-800' : 'bg-white/[0.03] border-white/8 text-white/55'}`}>
+            <p className={`text-sm leading-relaxed ${lm ? 'text-blue-700' : 'text-white/60'}`}>
+              This is the inaugural year of Alpha World School. Twenty Alpha students will travel through Kenya, Ecuador, and the United States across 38 weeks — building schools, learning languages, running rigorous academics, and living in communities most of them have never imagined. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>We need guides who can lead them through it.</strong>
             </p>
-            <p className="text-sm leading-relaxed">
-              This is not a year off. This is not a year abroad. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>This is a full-time job — arguably the hardest one Alpha has ever asked anyone to do.</strong> You will be a 24/7 chaperone, coach, and culture-keeper for a cohort of teenagers in environments where the systems we rely on at home are not available. You will be far from your family for long stretches. You will be the calm voice when something goes wrong at 3 AM. You will be the person who tells a homesick kid they will make it through the week — and then you will be the one who actually walks them through that week. You will hold both students and yourself to the highest physical, emotional, and academic bar.
+            <p className={`text-sm leading-relaxed ${lm ? 'text-blue-700' : 'text-white/60'}`}>
+              This is not a year off. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>This is a full-time job — arguably the hardest one Alpha has ever asked anyone to do.</strong> You will be a 24/7 chaperone, coach, and culture-keeper for a cohort of teenagers, far from home, the calm voice at 3 AM, the person who walks a homesick kid through the week. You will also have the most rewarding year of your career — seeing students transform, speaking languages you never thought you would, eating with families on three continents. You will come home different.
             </p>
-            <p className="text-sm leading-relaxed">
-              You will also have the most rewarding year of your career. You will see kids transform in front of you. You will speak languages you never thought you would. You will eat with families on three continents and remember their names for the rest of your life. You will come home different.
-            </p>
-            <p className={`text-sm font-bold ${lm ? 'text-blue-900' : 'text-white/80'}`}>Both of these things are true.</p>
-            <div className={`border-t pt-4 ${lm ? 'border-blue-100' : 'border-white/8'}`}>
-              <p className={`text-xs font-black uppercase tracking-widest mb-2 ${lm ? 'text-blue-500' : 'text-white/30'}`}>How this application works</p>
-              <p className="text-sm leading-relaxed">
-                This packet has three required Builds and one optional one. Each produces a real artifact — a workshop, a cohort experience, a video. AI use is expected, not penalized. Reading this and thinking &ldquo;yes, this is for me&rdquo; is the right starting point. Reading this and thinking &ldquo;I just want to travel&rdquo; is a sign to stop here.
-              </p>
-            </div>
+            <p className={`text-sm font-semibold ${lm ? 'text-blue-900' : 'text-white/75'}`}>Both of these things are true.</p>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 mb-8 text-sm">
@@ -762,11 +825,9 @@ export default function ApplicationForm() {
       <div className={`min-h-screen ${bg} flex flex-col`}>
         <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
           <button onClick={() => setPhase('landing')} className="flex items-center gap-3">
-            <div className="bg-blue-600 rounded-xl p-1.5">
-              <img src="/alphahigh.png" alt="Alpha World School"
-                className="h-7 w-auto object-contain"
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-            </div>
+            <img src="/alphahigh.png" alt="Alpha World School"
+              className="h-7 w-auto object-contain"
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
             <div className="leading-tight text-left">
               <div className={`font-black uppercase tracking-wider text-xs ${lm ? 'text-blue-900' : 'text-white'}`}>Alpha World</div>
               <div className={`text-xs font-bold uppercase tracking-widest ${lm ? 'text-blue-400' : 'text-white/40'}`}>School</div>
@@ -970,32 +1031,19 @@ export default function ApplicationForm() {
               </div>
 
               <BuildCard number="1" title="The Workshop Sprint" filled={Boolean(form.build1_link && form.build1_focus_area)} lm={lm}
-                meta={[['Testing', 'Life skills design, project orientation, AI fluency, taste'], ['Time', '2 hours max'], ['Deliverable', 'The workshop artifact (slides / Notion / one-pager)']]}>
+                meta={[['Testing', 'Life skills design, AI use (Claude, ChatGPT, Cursor), project orientation'], ['Time', '2 hours max'], ['Deliverable', 'Workshop artifact (slides / Notion / one-pager)']]}>
                 <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>
                   Design and produce a real <strong className={lm ? 'text-blue-800' : 'text-white/70'}>90-minute kickoff workshop</strong> for your cohort of 5–7 students — anchored in one of the international development focus areas we're working in with the Kenya team. Pick ONE area. The workshop should launch a real project in that area — something the cohort will continue building over the rotation, with a real output that lives past the workshop. <strong className={lm ? 'text-blue-700' : 'text-white/60'}>This isn't a lecture. It's the first 90 minutes of work that produces something the community actually uses.</strong>
                 </p>
+                <div className={`rounded-lg px-3 py-2 border ${lm ? 'bg-blue-50 border-blue-200' : 'bg-white/[0.03] border-white/8'}`}>
+                  <p className={`text-xs ${lm ? 'text-blue-500' : 'text-white/35'}`}>AI use is expected and encouraged. Use Claude, ChatGPT, Cursor, or any tool — we're evaluating your judgment and taste, not whether you wrote it from scratch.</p>
+                </div>
                 <FocusAreaSelector value={form.build1_focus_area} onChange={v => handleFieldChange('build1_focus_area', v)} lm={lm} />
                 <VideoInput label="Workshop Artifact — paste link or upload" name="build1_link" value={form.build1_link} onValueChange={handleFieldChange}
-                  hint="Slides, Notion page, one-pager, or whatever you'd actually use on the day" lm={lm} />
+                  hint="Slides, Notion page, or one-pager. If using Google Drive, set sharing to 'Anyone at Alpha with the link can view'." lm={lm} />
               </BuildCard>
 
-              <BuildCard number="2" title="The Cohort Experience" filled={Boolean(form.build2_design_link && form.build2_video_link && form.build2_constraint)} lm={lm}
-                meta={[['Testing', 'Anticipating breaking points, design instinct, cultural humility, cohort resilience'], ['Time', '1.5–2 hours'], ['Deliverable', 'Design doc + 3-min video']]}>
-                <p className={`text-sm leading-relaxed ${lm ? 'text-blue-600' : 'text-white/45'}`}>
-                  Design something that <strong className={lm ? 'text-blue-800' : 'text-white/70'}>prevents a cohort from breaking</strong>. By week 30, the cohort will be tired, homesick, and far from home. The strongest cohorts don't avoid these moments — they're built to survive them. The greatest cohort experiences anticipate the failure modes and design for them before they happen. That's your job: build the experience, ritual, or structure that holds this cohort together when the year gets hard.
-                </p>
-                <ConstraintSelector value={form.build2_constraint} onChange={v => handleFieldChange('build2_constraint', v)} lm={lm} />
-                <p className={`text-xs leading-relaxed ${lm ? 'text-blue-500' : 'text-white/35'}`}>
-                  Your design could be a repeating ritual, a milestone tradition, a built-in reset mechanism, an integration with the local community — whatever actually addresses the failure mode you chose. Show how it runs in practice: sequence, prompts, materials, what the guide says, what the students do, what happens when it goes sideways. <strong className={lm ? 'text-blue-700' : 'text-white/55'}>How do you know this ritual is working by week 15?</strong>
-                </p>
-                <div className="rounded-lg bg-amber-500/8 border border-amber-400/15 px-3 py-2">
-                  <p className="text-xs text-amber-300/80"><strong>Cultural humility is not optional.</strong> If your design involves the local community, tell us how you'll center their leadership — not feature them as a backdrop.</p>
-                </div>
-                <VideoInput label="Experience Design — paste link or upload" name="build2_design_link" value={form.build2_design_link} onValueChange={handleFieldChange}
-                  hint="One-pager, plan, or visual flow — Drive, Notion, or PDF" lm={lm} />
-                <VideoInput label="3-Minute Walkthrough Video — paste link or upload" name="build2_video_link" value={form.build2_video_link} onValueChange={handleFieldChange}
-                  hint="Walk us through it in the voice you'd actually use — Loom, YouTube, Drive, or upload" lm={lm} />
-              </BuildCard>
+              <Build2Card form={form} handleFieldChange={handleFieldChange} lm={lm} isReq={isReq} />
 
               <BuildCard number="3" title="The Video" filled={Boolean(form.build3_video_link)} lm={lm}
                 meta={[['Testing', 'Self-awareness, honesty, mindset'], ['Time', '20 minutes'], ['Deliverable', '90 sec – 2 min video']]}>
@@ -1016,7 +1064,7 @@ export default function ApplicationForm() {
                 </div>
                 <p className={`text-xs ${lm ? 'text-blue-400' : 'text-white/25'}`}>Most of the 20 minutes is taking 3 takes and picking the most honest one.</p>
                 <VideoInput label="Your Video — paste link or upload" name="build3_video_link" value={form.build3_video_link} onValueChange={handleFieldChange}
-                  hint="Loom, YouTube, Google Drive, or upload directly" lm={lm} />
+                  hint="Loom or YouTube preferred. If using Google Drive, set sharing to 'Anyone at Alpha with the link can view'." lm={lm} />
               </BuildCard>
 
               <BuildCard number="4" title="Language Tape" optional filled={Boolean(form.build4_language_link)} lm={lm}
@@ -1040,32 +1088,75 @@ export default function ApplicationForm() {
                 <h1 className={`text-3xl font-black uppercase tracking-tight ${lm ? 'text-blue-900' : 'text-white'}`}>Submission Check</h1>
                 <p className={`text-sm mt-1.5 ${lm ? 'text-blue-400' : 'text-white/35'}`}>Confirm your builds are ready before continuing.</p>
               </div>
-              <div className="space-y-2.5">
-                {[
-                  { label: 'Build 1 — Workshop Sprint',           value: form.build1_link,        required: isReq('build1_link'),         sub: form.build1_focus_area ? `Focus area: ${form.build1_focus_area}` : 'Focus area not selected' },
-                  { label: 'Build 1 — Focus area selected',       value: form.build1_focus_area,  required: isReq('build1_link'),         sub: null },
-                  { label: 'Build 2 — Cohort Experience (design)',value: form.build2_design_link,  required: isReq('build2_design_link'),  sub: null },
-                  { label: 'Build 2 — Cohort Experience (video)', value: form.build2_video_link,   required: isReq('build2_video_link'),   sub: null },
-                  { label: 'Build 2 — Design constraint chosen',  value: form.build2_constraint,   required: isReq('build2_constraint'),  sub: null },
-                  { label: 'Build 3 — The Video',                 value: form.build3_video_link,   required: isReq('build3_video_link'),   sub: null },
-                  { label: 'Build 4 — Language Tape (optional)',  value: form.build4_language_link, required: false,                       sub: null },
-                ].map(({ label, value, required, sub }) => (
-                  <div key={label} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border ${value ? lm ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-500/8 border-emerald-500/15' : required ? 'bg-rose-500/8 border-rose-500/15' : lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.02] border-white/8'}`}>
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black border ${value ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' : required ? 'bg-rose-500/20 border-rose-400/30 text-rose-400' : lm ? 'border-blue-200 text-blue-300' : 'border-white/15 text-white/25'}`}>
-                      {value ? '✓' : required ? '!' : '–'}
+              <div className="space-y-3">
+                {([
+                  {
+                    num: '1', title: 'The Workshop Sprint',
+                    items: [
+                      { label: 'Focus area selected', value: form.build1_focus_area, required: isReq('build1_link'), display: form.build1_focus_area || '' },
+                      { label: 'Workshop artifact link', value: form.build1_link, required: isReq('build1_link'), display: form.build1_link },
+                    ],
+                  },
+                  {
+                    num: '2', title: 'The Cohort Experience',
+                    items: [
+                      { label: 'Design constraint chosen', value: form.build2_constraint, required: isReq('build2_constraint'), display: form.build2_constraint },
+                      { label: 'Design doc link', value: form.build2_design_link, required: isReq('build2_design_link'), display: form.build2_design_link },
+                      { label: 'Walkthrough video link', value: form.build2_video_link, required: isReq('build2_video_link'), display: form.build2_video_link },
+                    ],
+                  },
+                  {
+                    num: '3', title: 'The Video',
+                    items: [
+                      { label: 'Video link', value: form.build3_video_link, required: isReq('build3_video_link'), display: form.build3_video_link },
+                    ],
+                  },
+                  {
+                    num: '4', title: 'Language Tape', optional: true,
+                    items: [
+                      { label: 'Language video link', value: form.build4_language_link, required: false, display: form.build4_language_link },
+                    ],
+                  },
+                ] as { num: string; title: string; optional?: boolean; items: { label: string; value: string; required: boolean; display: string }[] }[]).map(build => {
+                  const allDone = build.items.every(i => !i.required || i.value)
+                  const anyMissing = build.items.some(i => i.required && !i.value)
+                  return (
+                    <div key={build.num} className={`rounded-xl border overflow-hidden ${
+                      allDone ? lm ? 'border-emerald-300' : 'border-emerald-500/20' :
+                      anyMissing ? 'border-rose-500/20' :
+                      lm ? 'border-blue-100' : 'border-white/8'
+                    }`}>
+                      <div className={`flex items-center gap-3 px-4 py-2.5 ${
+                        allDone ? lm ? 'bg-emerald-50' : 'bg-emerald-500/8' :
+                        anyMissing ? lm ? 'bg-rose-50' : 'bg-rose-500/5' :
+                        lm ? 'bg-blue-50' : 'bg-white/[0.03]'
+                      }`}>
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black border flex-shrink-0 ${
+                          allDone ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' :
+                          anyMissing ? 'bg-rose-500/20 border-rose-400/30 text-rose-400' :
+                          lm ? 'border-blue-200 text-blue-300' : 'border-white/15 text-white/25'
+                        }`}>{allDone ? '✓' : anyMissing ? '!' : build.num}</span>
+                        <span className={`text-xs font-bold uppercase tracking-wide flex-1 ${
+                          allDone ? 'text-emerald-400' : anyMissing ? 'text-rose-300' : lm ? 'text-blue-700' : 'text-white/60'
+                        }`}>Build {build.num} — {build.title}{build.optional ? ' (optional)' : ''}</span>
+                        {anyMissing && (
+                          <button onClick={() => goStep(2)} className="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase border border-blue-400/20 px-3 py-1 rounded-full flex-shrink-0 transition-colors">Fix</button>
+                        )}
+                      </div>
+                      <div className={`divide-y ${lm ? 'divide-gray-100' : 'divide-white/5'}`}>
+                        {build.items.map(item => (
+                          <div key={item.label} className="flex items-center gap-3 px-4 py-2">
+                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${item.value ? 'bg-emerald-400' : item.required ? 'bg-rose-400' : lm ? 'bg-blue-200' : 'bg-white/15'}`} />
+                            <span className={`text-xs flex-1 ${lm ? 'text-blue-500' : 'text-white/35'}`}>{item.label}</span>
+                            <span className={`text-xs truncate max-w-[180px] ${item.value ? lm ? 'text-blue-700' : 'text-white/50' : item.required ? 'text-rose-400/60' : lm ? 'text-blue-200' : 'text-white/15'}`}>
+                              {item.value ? (item.display.startsWith('http') ? '✓ Linked' : item.display) : item.required ? 'Missing' : 'Optional'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className={`text-xs font-bold uppercase tracking-wide ${value ? 'text-emerald-400' : required ? 'text-rose-300' : lm ? 'text-blue-300' : 'text-white/20'}`}>{label}</div>
-                      {value
-                        ? <div className={`text-xs truncate mt-0.5 ${lm ? 'text-blue-400' : 'text-white/20'}`}>{sub || value}</div>
-                        : <div className={`text-xs mt-0.5 ${required ? 'text-rose-400/60' : lm ? 'text-blue-300' : 'text-white/15'}`}>{required ? 'Missing — go back and add' : 'Optional'}</div>
-                      }
-                    </div>
-                    {!value && required && (
-                      <button onClick={() => goStep(2)} className="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase border border-blue-400/20 px-3 py-1 rounded-full flex-shrink-0 transition-colors">Fix</button>
-                    )}
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
