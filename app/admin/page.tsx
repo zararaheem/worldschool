@@ -333,22 +333,44 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: { app: any
               <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 pb-2 border-b border-gray-100">Builds</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
-                  { label: 'Build 1 — Workshop Sprint', value: app.build1_link },
-                  { label: 'Build 2 — Design Doc', value: app.build2_design_link },
-                  { label: 'Build 2 — Video', value: app.build2_video_link },
-                  { label: 'Build 3 — The Video', value: app.build3_video_link },
-                  { label: 'Build 4 — Language Tape', value: app.build4_language_link },
-                ].map(({ label, value }) => (
+                  { label: 'Build 1 — Workshop Sprint', value: app.build1_link, isVideo: false },
+                  { label: 'Build 2 — Design Doc', value: app.build2_design_link, isVideo: false },
+                  { label: 'Build 2 — Video', value: app.build2_video_link, isVideo: true },
+                  { label: 'Build 3 — The Video', value: app.build3_video_link, isVideo: true },
+                  { label: 'Build 4 — Language Tape', value: app.build4_language_link, isVideo: true },
+                ].map(({ label, value, isVideo }) => {
+                  const isYoutube = value && (value.includes('youtube.com') || value.includes('youtu.be'))
+                  const isLoom = value && value.includes('loom.com')
+                  const isDrive = value && value.includes('drive.google.com')
+                  const canEmbed = isVideo && (isYoutube || isLoom)
+                  const embedUrl = isYoutube
+                    ? value.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')
+                    : isLoom ? value.replace('/share/', '/embed/') : null
+                  return (
                   <div key={label} className={`p-3 rounded-lg border ${value ? 'border-green-100 bg-green-50' : 'border-gray-100 bg-gray-50'}`}>
                     <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">{label}</div>
-                    {value
-                      ? <a href={value} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-500 break-all flex items-center gap-1">
+                    {value ? (
+                      <div className="space-y-2">
+                        {canEmbed && embedUrl && (
+                          <div className="rounded overflow-hidden bg-black aspect-video">
+                            <iframe src={embedUrl} className="w-full h-full" allow="autoplay; fullscreen" allowFullScreen title={label} />
+                          </div>
+                        )}
+                        {isDrive && isVideo && (
+                          <div className="rounded overflow-hidden bg-black aspect-video">
+                            <iframe
+                              src={value.replace('/view', '/preview').replace('/edit', '/preview')}
+                              className="w-full h-full" allow="autoplay" allowFullScreen title={label} />
+                          </div>
+                        )}
+                        <a href={value} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-500 break-all flex items-center gap-1">
                           Open <ExternalLink className="w-3 h-3 flex-shrink-0" />
                         </a>
-                      : <span className="text-xs text-gray-400 italic">Not submitted</span>
-                    }
+                      </div>
+                    ) : <span className="text-xs text-gray-400 italic">Not submitted</span>}
                   </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
 
@@ -425,6 +447,83 @@ const ADMIN_EMAILS = [
   'zara.raheem@alpha.school',
 ]
 
+// ─── Admin Users Panel ────────────────────────────────────────────────
+
+const SUPER_ADMINS = ['zara.raheem@alpha.school']
+
+function AdminUsersPanel({ currentEmail }: { currentEmail: string }) {
+  const [adminList, setAdminList] = useState<string[]>(ADMIN_EMAILS)
+  const [newEmail, setNewEmail]   = useState('')
+  const [saving, setSaving]       = useState(false)
+  const [saved, setSaved]         = useState(false)
+  const isSuperAdmin = SUPER_ADMINS.includes(currentEmail.toLowerCase())
+
+  useEffect(() => {
+    supabase.from('form_config').select('config').eq('id', 'admin_users').single()
+      .then(({ data }) => { if (data?.config?.emails) setAdminList(data.config.emails) })
+  }, [])
+
+  const save = async (list: string[]) => {
+    setSaving(true)
+    await supabase.from('form_config').upsert({ id: 'admin_users', config: { emails: list } }, { onConflict: 'id' })
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000)
+  }
+
+  const add = () => {
+    const e = newEmail.toLowerCase().trim()
+    if (!e || adminList.includes(e)) return
+    const updated = [...adminList, e]
+    setAdminList(updated); setNewEmail(''); save(updated)
+  }
+
+  const remove = (email: string) => {
+    if (SUPER_ADMINS.includes(email)) return
+    const updated = adminList.filter(e => e !== email)
+    setAdminList(updated); save(updated)
+  }
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+        <div>
+          <h2 className="text-sm font-bold text-gray-900">Admin Users</h2>
+          <p className="text-xs text-gray-400 mt-0.5">People who can access this dashboard.</p>
+        </div>
+        {saved && <span className="text-xs text-green-600 font-medium">✓ Saved</span>}
+        {saving && <span className="text-xs text-gray-400">Saving…</span>}
+      </div>
+      <div className="divide-y divide-gray-100">
+        {adminList.map(email => (
+          <div key={email} className="flex items-center justify-between px-5 py-3">
+            <div>
+              <span className="text-sm text-gray-800">{email}</span>
+              {SUPER_ADMINS.includes(email) && <span className="ml-2 text-xs bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-full">Super Admin</span>}
+              {email === currentEmail && <span className="ml-2 text-xs text-gray-400">(you)</span>}
+            </div>
+            {isSuperAdmin && !SUPER_ADMINS.includes(email) && (
+              <button onClick={() => remove(email)} className="text-xs text-red-400 hover:text-red-600 border border-red-200 hover:border-red-400 px-3 py-1 rounded-lg transition-colors">Remove</button>
+            )}
+          </div>
+        ))}
+      </div>
+      {isSuperAdmin && (
+        <div className="px-5 py-4 border-t border-gray-100 bg-gray-50 flex gap-2">
+          <input value={newEmail} onChange={e => setNewEmail(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && add()}
+            placeholder="new.admin@alpha.school"
+            className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500" />
+          <button onClick={add} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-lg transition-colors">Add</button>
+        </div>
+      )}
+      {!isSuperAdmin && (
+        <div className="px-5 py-3 border-t border-gray-100">
+          <p className="text-xs text-gray-400">Contact zara.raheem@alpha.school to add or remove admin users.</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main Dashboard ───────────────────────────────────────────────────
 
 export default function AdminDashboard() {
@@ -435,7 +534,7 @@ export default function AdminDashboard() {
   const [applications, setApplications] = useState<any[]>([])
   const [loading, setLoading]           = useState(false)
   const [search, setSearch]             = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('non_draft')
   const [selectedApp, setSelectedApp]   = useState<any>(null)
   const [sortField, setSortField]       = useState('created_at')
   const [sortDir, setSortDir]           = useState('desc')
@@ -515,8 +614,10 @@ export default function AdminDashboard() {
   const filtered = applications
     .filter(a => {
       const q = search.toLowerCase()
-      return (!q || a.full_name?.toLowerCase().includes(q) || a.email?.toLowerCase().includes(q) || a.campus?.toLowerCase().includes(q)) &&
-        (statusFilter === 'all' || a.status === statusFilter)
+      const statusMatch = statusFilter === 'all' ? true :
+        statusFilter === 'non_draft' ? a.status !== 'draft' :
+        a.status === statusFilter
+      return (!q || a.full_name?.toLowerCase().includes(q) || a.email?.toLowerCase().includes(q) || a.campus?.toLowerCase().includes(q)) && statusMatch
     })
     .sort((a, b) => {
       const av = a[sortField] || '', bv = b[sortField] || ''
@@ -615,7 +716,10 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* ── Settings tab ── */}
         {tab === 'settings' && (
-          <FieldConfigEditor config={fieldConfig} onSave={saveFieldConfig} />
+          <div className="space-y-8">
+            <FieldConfigEditor config={fieldConfig} onSave={saveFieldConfig} />
+            <AdminUsersPanel currentEmail={adminEmail} />
+          </div>
         )}
 
         {/* ── Applications tab ── */}
@@ -630,7 +734,7 @@ export default function AdminDashboard() {
 
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
               {[
-                { label: 'Submitted',    value: stats.total,        Icon: Users,      color: 'text-gray-900',    click: () => setStatusFilter('all') },
+                { label: 'Submitted',    value: stats.total,        Icon: Users,      color: 'text-gray-900',    click: () => setStatusFilter('non_draft') },
                 { label: 'Drafts',       value: stats.drafts,       Icon: Clock,      color: 'text-gray-400',    click: () => setStatusFilter('draft') },
                 { label: 'Under Review', value: stats.under_review, Icon: Eye,        color: 'text-amber-600',   click: () => setStatusFilter('under_review') },
                 { label: 'Advancing',    value: stats.advancing,    Icon: TrendingUp, color: 'text-green-600',   click: () => setStatusFilter('advancing') },
@@ -657,8 +761,10 @@ export default function AdminDashboard() {
                 <Filter className="w-4 h-4 text-gray-400" />
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
                   className="bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-blue-500">
-                  <option value="all">All Statuses</option>
-                  {Object.entries(STATUS_CONFIG).map(([k,cfg]) => <option key={k} value={k}>{cfg.label}</option>)}
+                  <option value="non_draft">All Submitted</option>
+                  <option value="all">All (incl. Drafts)</option>
+                  {Object.entries(STATUS_CONFIG).filter(([k]) => k !== 'draft').map(([k,cfg]) => <option key={k} value={k}>{cfg.label}</option>)}
+                  <option value="draft">Drafts only</option>
                 </select>
               </div>
               <button onClick={fetchApplications} className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 text-sm rounded-lg border border-gray-300 transition-colors">
@@ -728,7 +834,17 @@ export default function AdminDashboard() {
                             </div>
                           </td>
                           <td className="px-5 py-4">
-                            <StatusBadge status={app.status} />
+                            <select
+                              value={app.status}
+                              onChange={e => { e.stopPropagation(); handleStatusChange(app.id, e.target.value) }}
+                              onClick={e => e.stopPropagation()}
+                              className={`text-xs font-medium rounded-full px-2.5 py-1 border cursor-pointer focus:outline-none ${
+                                STATUS_CONFIG[app.status as keyof typeof STATUS_CONFIG]
+                                  ? `${STATUS_CONFIG[app.status as keyof typeof STATUS_CONFIG].bg} ${STATUS_CONFIG[app.status as keyof typeof STATUS_CONFIG].color} ${STATUS_CONFIG[app.status as keyof typeof STATUS_CONFIG].border}`
+                                  : 'bg-gray-50 text-gray-500 border-gray-200'
+                              }`}>
+                              {Object.entries(STATUS_CONFIG).map(([k,cfg]) => <option key={k} value={k}>{cfg.label}</option>)}
+                            </select>
                             {app.admin_notes && (
                               <div className="flex items-center gap-1 mt-1" title={app.admin_notes}>
                                 <MessageSquare className="w-3 h-3 text-gray-300" />

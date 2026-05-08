@@ -538,7 +538,7 @@ function Build2Card({ form, handleFieldChange, lm, isReq }: {
           <VideoInput label="Experience Design — paste link or upload" name="build2_design_link" value={form.build2_design_link} onValueChange={handleFieldChange}
             hint="One-pager, plan, or visual flow — Drive, Notion, or PDF" lm={lm} />
           <VideoInput label="3-Minute Walkthrough Video — paste link or upload" name="build2_video_link" value={form.build2_video_link} onValueChange={handleFieldChange}
-            hint="Walk us through it in the voice you'd actually use — Loom, YouTube, Drive, or upload" lm={lm} />
+            hint="Loom or YouTube preferred. If using Google Drive, set sharing to 'Anyone at Alpha with the link can view'." lm={lm} />
         </div>
       )}
 
@@ -764,21 +764,14 @@ export default function ApplicationForm() {
           </h1>
 
           {/* Intro text */}
-          <div className={`max-w-2xl text-left space-y-4 mb-10 rounded-2xl border p-6 ${lm ? 'bg-blue-50 border-blue-100 text-blue-800' : 'bg-white/[0.03] border-white/8 text-white/55'}`}>
+          <div className={`max-w-xl text-left space-y-3 mb-10 rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100 text-blue-800' : 'bg-white/[0.03] border-white/8 text-white/55'}`}>
             <p className="text-sm leading-relaxed">
-              This is the inaugural year of Alpha World School. Twenty Alpha students will travel through Kenya, Ecuador, and the United States across 38 weeks. They are going to build schools, learn languages, run rigorous academics, and live in communities most of them have never imagined. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>We need guides who can lead them through it.</strong>
+              Twenty Alpha students will travel through Kenya, Ecuador, and the United States across 38 weeks. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>This is a full-time job — 24/7, far from home, and the hardest thing Alpha has ever asked anyone to do.</strong> You'll also have the most rewarding year of your career.
             </p>
-            <p className="text-sm leading-relaxed">
-              This is not a year off. This is not a year abroad. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>This is a full-time job — arguably the hardest one Alpha has ever asked anyone to do.</strong> You will be a 24/7 chaperone, coach, and culture-keeper for a cohort of teenagers in environments where the systems we rely on at home are not available. You will be far from your family for long stretches. You will be the calm voice when something goes wrong at 3 AM. You will be the person who tells a homesick kid they will make it through the week — and then you will be the one who actually walks them through that week. You will hold both students and yourself to the highest physical, emotional, and academic bar.
-            </p>
-            <p className="text-sm leading-relaxed">
-              You will also have the most rewarding year of your career. You will see kids transform in front of you. You will speak languages you never thought you would. You will eat with families on three continents and remember their names for the rest of your life. You will come home different.
-            </p>
-            <p className={`text-sm font-bold ${lm ? 'text-blue-900' : 'text-white/80'}`}>Both of these things are true.</p>
-            <div className={`border-t pt-4 ${lm ? 'border-blue-100' : 'border-white/8'}`}>
-              <p className={`text-xs font-black uppercase tracking-widest mb-2 ${lm ? 'text-blue-500' : 'text-white/30'}`}>How this application works</p>
+            <p className={`text-sm font-semibold ${lm ? 'text-blue-900' : 'text-white/70'}`}>Both of these things are true.</p>
+            <div className={`border-t pt-3 ${lm ? 'border-blue-100' : 'border-white/8'}`}>
               <p className="text-sm leading-relaxed">
-                This packet has three required Builds and one optional one. Each produces a real artifact — a workshop, a cohort experience, a video. AI use is expected, not penalized. Reading this and thinking &ldquo;yes, this is for me&rdquo; is the right starting point. Reading this and thinking &ldquo;I just want to travel&rdquo; is a sign to stop here.
+                Three required Builds and one optional — each produces a real artifact. AI use is expected. If you're reading this and thinking &ldquo;yes, this is for me&rdquo; — start below.
               </p>
             </div>
           </div>
@@ -1063,7 +1056,7 @@ export default function ApplicationForm() {
                 </div>
                 <FocusAreaSelector value={form.build1_focus_area} onChange={v => handleFieldChange('build1_focus_area', v)} lm={lm} />
                 <VideoInput label="Workshop Artifact — paste link or upload" name="build1_link" value={form.build1_link} onValueChange={handleFieldChange}
-                  hint="Slides, Notion page, one-pager, or whatever you'd actually use on the day" lm={lm} />
+                  hint="Slides, Notion page, or one-pager. If using Google Drive, set sharing to 'Anyone at Alpha with the link can view'." lm={lm} />
               </BuildCard>
 
               <Build2Card form={form} handleFieldChange={handleFieldChange} lm={lm} isReq={isReq} />
@@ -1087,7 +1080,7 @@ export default function ApplicationForm() {
                 </div>
                 <p className={`text-xs ${lm ? 'text-blue-400' : 'text-white/25'}`}>Most of the 20 minutes is taking 3 takes and picking the most honest one.</p>
                 <VideoInput label="Your Video — paste link or upload" name="build3_video_link" value={form.build3_video_link} onValueChange={handleFieldChange}
-                  hint="Loom, YouTube, Google Drive, or upload directly" lm={lm} />
+                  hint="Loom or YouTube preferred. If using Google Drive, set sharing to 'Anyone at Alpha with the link can view'." lm={lm} />
               </BuildCard>
 
               <BuildCard number="4" title="Language Tape" optional filled={Boolean(form.build4_language_link)} lm={lm}
