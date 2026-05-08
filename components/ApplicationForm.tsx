@@ -730,10 +730,8 @@ export default function ApplicationForm() {
           <div className="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-emerald-400" />
           </div>
-          <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Application Received</p>
-          <h2 className={`text-3xl font-black uppercase tracking-tight mb-3 ${lm ? 'text-blue-900' : 'text-white'}`}>You&rsquo;re In The Pool.</h2>
-          <p className={`text-sm leading-relaxed ${lm ? 'text-blue-500' : 'text-white/40'}`}>Our team will review carefully. You&apos;ll hear from us when decisions are made. In the meantime — keep being the person who applied.</p>
-          <p className={`text-xs mt-4 ${lm ? 'text-blue-300' : 'text-white/20'}`}>The admin team will follow up with your references directly.</p>
+          <h2 className={`text-2xl font-black uppercase tracking-tight mb-3 ${lm ? 'text-blue-900' : 'text-white'}`}>Thank you for your application.</h2>
+          <p className={`text-sm leading-relaxed ${lm ? 'text-blue-500' : 'text-white/40'}`}>We&apos;ve received everything and will be in touch. In the meantime, feel free to reach out to the team with any questions.</p>
         </div>
       </div>
     )
