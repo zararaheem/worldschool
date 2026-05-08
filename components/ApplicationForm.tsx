@@ -832,55 +832,47 @@ export default function ApplicationForm() {
             Guide<br/>Application
           </h1>
 
-          {/* Intro text */}
-          <div className={`max-w-xl text-left space-y-3 mb-10 rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100 text-blue-800' : 'bg-white/[0.03] border-white/8 text-white/55'}`}>
-            <p className={`text-sm leading-relaxed ${lm ? 'text-gray-800' : 'text-white/60'}`}>
-              This is the inaugural year of Alpha World School. Twenty Alpha students will travel through Kenya, Ecuador, and the United States across 38 weeks — building schools, learning languages, running rigorous academics, and living in communities most of them have never imagined. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>We need guides who can lead them through it.</strong>
-            </p>
-            <p className={`text-sm leading-relaxed ${lm ? 'text-gray-800' : 'text-white/60'}`}>
-              This is not a year off. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>This is a full-time job — arguably the hardest one Alpha has ever asked anyone to do.</strong> You will be a 24/7 chaperone, coach, and culture-keeper for a cohort of teenagers, far from home, the calm voice at 3 AM, the person who walks a homesick kid through the week. You will also have the most rewarding year of your career — seeing students transform, speaking languages you never thought you would, eating with families on three continents. You will come home different.
-            </p>
-            <p className={`text-sm font-semibold ${lm ? 'text-blue-900' : 'text-white/75'}`}>Both of these things are true.</p>
-          </div>
+          {/* Intro text + accordions */}
+          <div className="w-full max-w-xl space-y-2 mb-10 text-left">
+            <div className={`rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.03] border-white/8'}`}>
+              <p className={`text-sm leading-relaxed ${lm ? 'text-gray-800' : 'text-white/60'}`}>
+                This is the inaugural year of Alpha World School. Twenty Alpha students will travel through Kenya, Ecuador, and the United States across 38 weeks — building schools, learning languages, running rigorous academics, and living in communities most of them have never imagined. <strong className={lm ? 'text-blue-900' : 'text-white/80'}>We need guides who can lead them through it.</strong>
+              </p>
+            </div>
 
-          {/* Accordions */}
-          <div className="w-full max-w-xl space-y-2 mb-10">
-            {([
-              {
-                id: 'top10',
-                title: 'What the top 10% of Guides do differently',
-                content: (
-                  <div className="space-y-2">
-                    <p className={`text-xs mb-3 ${lm ? 'text-gray-500' : 'text-white/35'}`}>If you read this list and think &ldquo;that&rsquo;s me&rdquo; — keep going.</p>
-                    {[
-                      'They anticipate problems before they happen',
-                      'They never wait to be told what to do',
-                      'They design moments kids remember 10 years later',
-                      'They stay calm when everyone else escalates',
-                      'They hold the bar even when it\'s uncomfortable',
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-start gap-2.5">
-                        <span className="text-blue-400 font-black text-xs mt-0.5 flex-shrink-0">•</span>
-                        <span className={`text-sm ${lm ? 'text-gray-700' : 'text-white/55'}`}>{item}</span>
-                      </div>
-                    ))}
+            <LandingAccordion title="What can you expect?" lm={lm}>
+              <div className={`text-sm leading-relaxed space-y-3 ${lm ? 'text-gray-700' : 'text-white/55'}`}>
+                <p>This is a full-time job — arguably the hardest one Alpha has ever asked anyone to do. You will be a 24/7 chaperone, coach, and culture-keeper for a cohort of teenagers in environments where the systems we rely on at home are not available. You will be far from your family for long stretches. You will be the calm voice when something goes wrong at 3 AM. You will be the person who tells a homesick kid they will make it through the week — and then you will be the one who actually walks them through that week. You will hold both students and yourself to the highest physical, emotional, and academic bar.</p>
+                <p>You will also have the most rewarding year of your career. You will see kids transform in front of you. You will speak languages you never thought you would. You will eat with families on three continents and remember their names for the rest of your life. You will come home different.</p>
+                <p className={`font-semibold ${lm ? 'text-blue-900' : 'text-white/75'}`}>Both of these things are true.</p>
+              </div>
+            </LandingAccordion>
+
+            <LandingAccordion title="What the top 10% of Guides do differently" lm={lm}>
+              <div className="space-y-2">
+                <p className={`text-xs mb-3 ${lm ? 'text-gray-500' : 'text-white/35'}`}>If you read this list and think &ldquo;that&rsquo;s me&rdquo; — keep going.</p>
+                {[
+                  'They anticipate problems before they happen',
+                  'They never wait to be told what to do',
+                  'They design moments kids remember 10 years later',
+                  'They stay calm when everyone else escalates',
+                  "They hold the bar even when it's uncomfortable",
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <span className="text-blue-400 font-black text-xs mt-0.5 flex-shrink-0">•</span>
+                    <span className={`text-sm ${lm ? 'text-gray-700' : 'text-white/55'}`}>{item}</span>
                   </div>
-                ),
-              },
-              {
-                id: 'howworks',
-                title: 'How this application works',
-                content: (
-                  <div className={`text-sm leading-relaxed space-y-3 ${lm ? 'text-gray-700' : 'text-white/55'}`}>
-                    <p>This packet has three required Builds and one optional one. Each produces a real artifact — a workshop, a cohort experience, a video. We are testing the two skills that matter most for this role: designing experiences that teach, and designing experiences that bond a cohort across an extraordinary year.</p>
-                    <p><strong className={lm ? 'text-gray-900' : 'text-white/80'}>AI use is expected, not penalized.</strong> Use Claude, ChatGPT, Cursor, custom GPTs — whatever stack makes you fast. We assume our guides already operate this way.</p>
-                    <p>Reading this and thinking &ldquo;yes, this is for me&rdquo; is the right starting point. Reading this and thinking &ldquo;I just want to travel&rdquo; is a sign to stop here. There is no penalty for opting out — we would much rather know now than seven weeks into Kenya.</p>
-                  </div>
-                ),
-              },
-            ] as { id: string; title: string; content: React.ReactNode }[]).map(({ id, title, content }) => (
-              <LandingAccordion key={id} title={title} lm={lm}>{content}</LandingAccordion>
-            ))}
+                ))}
+              </div>
+            </LandingAccordion>
+
+            <LandingAccordion title="How this application works" lm={lm}>
+              <div className={`text-sm leading-relaxed space-y-3 ${lm ? 'text-gray-700' : 'text-white/55'}`}>
+                <p>This packet has three required Builds and one optional one. Each produces a real artifact — a workshop, a cohort experience, a video. We are testing the two skills that matter most for this role: designing experiences that teach, and designing experiences that bond a cohort across an extraordinary year.</p>
+                <p><strong className={lm ? 'text-gray-900' : 'text-white/80'}>AI use is expected, not penalized.</strong> Use Claude, ChatGPT, Cursor, custom GPTs — whatever stack makes you fast. We assume our guides already operate this way.</p>
+                <p>Reading this and thinking &ldquo;yes, this is for me&rdquo; is the right starting point. Reading this and thinking &ldquo;I just want to travel&rdquo; is a sign to stop here. There is no penalty for opting out — we would much rather know now than seven weeks into Kenya.</p>
+              </div>
+            </LandingAccordion>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-3 mb-10">
