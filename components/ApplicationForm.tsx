@@ -1,26 +1,40 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import {
   CheckCircle, AlertCircle, ChevronDown, ChevronRight,
-  ArrowRight, ArrowLeft, Copy, Check, ExternalLink, Info
+  ArrowRight, ArrowLeft, ExternalLink, Info, Upload, Link2, X
 } from 'lucide-react'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+// ─── Field config — synced with admin settings ─────────────────────────
+const DEFAULT_REQUIRED: Record<string, boolean> = {
+  full_name: true, email: true, role_at_alpha: true,
+  build1_link: true, build2_design_link: true, build2_video_link: true,
+  build2_constraint: true, build3_video_link: true,
+}
 
 // ─── Types ────────────────────────────────────────────────────────────
 
 interface FormData {
   full_name: string; email: string; phone: string; role_at_alpha: string
   campus: string; years_at_alpha: string; direct_manager: string; head_of_school: string
-  languages_spoken: string; prior_international_travel: string
-  developing_world_experience: string; health_considerations: string
-  family_obligations: string; emergency_contact: string
+  languages_spoken: string
+  prior_international_travel_yn: string; prior_international_travel: string
+  developing_world_experience_yn: string; developing_world_experience: string
+  health_considerations_yn: string; health_considerations: string
+  family_obligations_yn: string; family_obligations: string
+  emergency_contact: string
   build1_link: string; build2_design_link: string; build2_video_link: string
   build3_video_link: string; build4_language_link: string
-  reference1_name: string; reference1_role: string
-  reference1_phone: string; reference1_email: string
-  reference2_name: string; reference2_role: string
-  reference2_phone: string; reference2_email: string
+  build2_constraint: string
+  reference1_name: string; reference1_role: string; reference1_phone: string; reference1_email: string
+  reference2_name: string; reference2_role: string; reference2_phone: string; reference2_email: string
   manager_endorsement_status: string; manager_endorsement_text: string
   endorser_name: string; endorser_role: string
   ack_1: boolean; ack_2: boolean; ack_3: boolean; ack_4: boolean
@@ -30,9 +44,14 @@ interface FormData {
 
 const initialForm: FormData = {
   full_name: '', email: '', phone: '', role_at_alpha: '', campus: '', years_at_alpha: '',
-  direct_manager: '', head_of_school: '', languages_spoken: '', prior_international_travel: '',
-  developing_world_experience: '', health_considerations: '', family_obligations: '', emergency_contact: '',
+  direct_manager: '', head_of_school: '', languages_spoken: '',
+  prior_international_travel_yn: '', prior_international_travel: '',
+  developing_world_experience_yn: '', developing_world_experience: '',
+  health_considerations_yn: '', health_considerations: '',
+  family_obligations_yn: '', family_obligations: '',
+  emergency_contact: '',
   build1_link: '', build2_design_link: '', build2_video_link: '', build3_video_link: '', build4_language_link: '',
+  build2_constraint: '',
   reference1_name: '', reference1_role: '', reference1_phone: '', reference1_email: '',
   reference2_name: '', reference2_role: '', reference2_phone: '', reference2_email: '',
   manager_endorsement_status: '', manager_endorsement_text: '', endorser_name: '', endorser_role: '',
@@ -42,11 +61,11 @@ const initialForm: FormData = {
 }
 
 const STEPS = [
-  { id: 1, label: 'About You', desc: 'Background & contact info' },
-  { id: 2, label: 'The Builds', desc: '3 required + 1 optional' },
+  { id: 1, label: 'About You',        desc: 'Background & contact info' },
+  { id: 2, label: 'The Builds',       desc: '3 required + 1 optional' },
   { id: 3, label: 'Submission Check', desc: 'Confirm all links' },
-  { id: 4, label: 'References', desc: '2 references + endorsement' },
-  { id: 5, label: 'Sign & Submit', desc: 'Acknowledgments & signature' },
+  { id: 4, label: 'References',       desc: '2 references + endorsement' },
+  { id: 5, label: 'Sign & Submit',    desc: 'Acknowledgments & signature' },
 ]
 
 const acknowledgments = [
@@ -61,35 +80,30 @@ const acknowledgments = [
 ]
 
 const DRAFT_KEY = 'aws_guide_draft_id'
-function getDraftId(): string {
+function getDraftId() {
   if (typeof window === 'undefined') return ''
   let id = localStorage.getItem(DRAFT_KEY)
   if (!id) { id = crypto.randomUUID(); localStorage.setItem(DRAFT_KEY, id) }
   return id
 }
 
-// ─── Logo ─────────────────────────────────────────────────────────────
+// ─── Primitives ───────────────────────────────────────────────────────
 
-function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
-  const imgSizes = { sm: 'h-8', md: 'h-12', lg: 'h-16' }
-  const textSizes = { sm: 'text-xs', md: 'text-sm', lg: 'text-base' }
+function Logo({ size = 'md', onClick }: { size?: 'sm' | 'md'; onClick?: () => void }) {
+  const h = size === 'sm' ? 'h-8' : 'h-12'
+  const t = size === 'sm' ? 'text-xs' : 'text-sm'
   return (
-    <div className="flex items-center gap-3">
-      <img
-        src="/Alpha_World_School_Logo.png"
-        alt="Alpha World School"
-        className={`${imgSizes[size]} w-auto object-contain brightness-0 invert`}
-        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-      />
-      <div className="leading-tight">
-        <div className={`font-black text-white uppercase tracking-wider ${textSizes[size]}`}>Alpha World</div>
+    <button onClick={onClick} className="flex items-center gap-3">
+      <img src="/Alpha_World_School_Logo.png" alt="Alpha World School"
+        className={`${h} w-auto object-contain brightness-0 invert`}
+        onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+      <div className="leading-tight text-left">
+        <div className={`font-black text-white uppercase tracking-wider ${t}`}>Alpha World</div>
         <div className="text-xs font-bold text-white/40 uppercase tracking-widest">School</div>
       </div>
-    </div>
+    </button>
   )
 }
-
-// ─── Field components ─────────────────────────────────────────────────
 
 function Input({ label, name, value, onChange, required, placeholder, type = 'text', hint }: {
   label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -101,10 +115,8 @@ function Input({ label, name, value, onChange, required, placeholder, type = 'te
         {label}{required && <span className="text-blue-400 ml-1">*</span>}
       </label>
       {hint && <p className="text-xs text-white/30 mb-1.5">{hint}</p>}
-      <input
-        type={type} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
-        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/60 focus:ring-1 focus:ring-blue-400/30 transition-all text-sm"
-      />
+      <input type={type} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
+        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/60 focus:ring-1 focus:ring-blue-400/30 transition-all text-sm" />
     </div>
   )
 }
@@ -119,15 +131,118 @@ function Textarea({ label, name, value, onChange, required, placeholder, rows = 
         {label}{required && <span className="text-blue-400 ml-1">*</span>}
       </label>
       {hint && <p className="text-xs text-white/30 mb-1.5">{hint}</p>}
-      <textarea
-        name={name} value={value} onChange={onChange} required={required} placeholder={placeholder} rows={rows}
-        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/60 focus:ring-1 focus:ring-blue-400/30 transition-all resize-none text-sm"
-      />
+      <textarea name={name} value={value} onChange={onChange} required={required} placeholder={placeholder} rows={rows}
+        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/60 focus:ring-1 focus:ring-blue-400/30 transition-all resize-none text-sm" />
     </div>
   )
 }
 
-// ─── Build Card ───────────────────────────────────────────────────────
+function YesNoField({ label, hint, ynValue, detailValue, onYnChange, onDetailChange, yesPrompt }: {
+  label: string; hint?: string; ynValue: string; detailValue: string
+  onYnChange: (v: string) => void; onDetailChange: (v: string) => void; yesPrompt: string
+}) {
+  return (
+    <div className="space-y-2">
+      <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">{label}</label>
+      {hint && <p className="text-xs text-white/30">{hint}</p>}
+      <div className="flex gap-2">
+        {['Yes', 'No'].map(opt => (
+          <button key={opt} type="button" onClick={() => onYnChange(opt)}
+            className={`px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wide border transition-all ${
+              ynValue === opt
+                ? opt === 'Yes' ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300' : 'bg-white/8 border-white/20 text-white/50'
+                : 'border-white/10 text-white/25 hover:border-white/20'
+            }`}>{opt}</button>
+        ))}
+      </div>
+      {ynValue === 'Yes' && (
+        <textarea value={detailValue} onChange={e => onDetailChange(e.target.value)} rows={3} placeholder={yesPrompt}
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/60 transition-all resize-none text-sm" />
+      )}
+    </div>
+  )
+}
+
+// ─── Video/File Input ─────────────────────────────────────────────────
+
+function VideoInput({ label, name, value, onValueChange, hint }: {
+  label: string; name: string; value: string
+  onValueChange: (name: string, val: string) => void; hint?: string
+}) {
+  const [mode, setMode]         = useState<'link' | 'upload'>('link')
+  const [uploading, setUploading] = useState(false)
+  const [uploadErr, setUploadErr] = useState<string | null>(null)
+  const [fileName, setFileName] = useState<string | null>(null)
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 500 * 1024 * 1024) { setUploadErr('File too large. Max 500 MB.'); return }
+    setUploading(true); setUploadErr(null)
+    const ext = file.name.split('.').pop()
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    const { data, error } = await supabase.storage.from('video-submissions').upload(path, file, { upsert: true })
+    if (error) { setUploadErr('Upload failed — try pasting a link instead.'); setUploading(false); return }
+    const { data: urlData } = supabase.storage.from('video-submissions').getPublicUrl(data.path)
+    setFileName(file.name)
+    onValueChange(name, urlData.publicUrl)
+    setUploading(false)
+  }
+
+  const clear = () => { onValueChange(name, ''); setFileName(null); setUploadErr(null) }
+
+  return (
+    <div>
+      <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-1.5">{label}</label>
+      {hint && <p className="text-xs text-white/30 mb-2">{hint}</p>}
+      <div className="flex gap-1 mb-3">
+        {([['link', 'Paste link', Link2], ['upload', 'Upload file', Upload]] as const).map(([m, lbl, Icon]) => (
+          <button key={m} type="button" onClick={() => setMode(m)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide border transition-all ${
+              mode === m ? 'bg-blue-500/20 border-blue-400/30 text-blue-300' : 'border-white/10 text-white/30 hover:border-white/20'
+            }`}>
+            <Icon className="w-3 h-3" />{lbl}
+          </button>
+        ))}
+      </div>
+
+      {mode === 'link' && (
+        <div className="relative">
+          <input type="text" value={value} onChange={e => onValueChange(name, e.target.value)}
+            placeholder="Paste Google Drive, YouTube, Loom, Dropbox, or any link…"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/60 transition-all text-sm pr-10" />
+          {value && <button type="button" onClick={clear} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50"><X className="w-4 h-4" /></button>}
+          <p className="text-xs text-white/20 mt-1">Google Drive · YouTube · Loom · Dropbox · Vimeo · Notion</p>
+        </div>
+      )}
+
+      {mode === 'upload' && (
+        <div>
+          {value && fileName ? (
+            <div className="flex items-center gap-3 px-4 py-3 bg-emerald-500/10 border border-emerald-400/20 rounded-xl">
+              <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span className="text-xs text-emerald-300 flex-1 truncate">{fileName}</span>
+              <button type="button" onClick={clear} className="text-white/25 hover:text-white/50 text-xs flex-shrink-0">Remove</button>
+            </div>
+          ) : (
+            <label className={`flex flex-col items-center justify-center gap-2 w-full border border-dashed rounded-xl px-4 py-8 cursor-pointer transition-all ${
+              uploading ? 'border-blue-400/30 bg-blue-500/5' : 'border-white/15 bg-white/[0.02] hover:border-white/25'
+            }`}>
+              <input type="file" accept="video/*,.pdf,.doc,.docx,.ppt,.pptx" className="sr-only" onChange={handleUpload} disabled={uploading} />
+              {uploading
+                ? <><div className="w-6 h-6 border-2 border-blue-400/50 border-t-blue-400 rounded-full animate-spin" /><span className="text-xs text-blue-300">Uploading…</span></>
+                : <><Upload className="w-6 h-6 text-white/25" /><span className="text-sm font-medium text-white/40">Click to select file</span><span className="text-xs text-white/20">Video, PDF, PPTX · up to 500 MB</span></>
+              }
+            </label>
+          )}
+          {uploadErr && <p className="text-xs text-rose-400 mt-1.5">{uploadErr}</p>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Build card ───────────────────────────────────────────────────────
 
 function BuildCard({ number, title, meta, optional, filled, children }: {
   number: string; title: string; meta?: [string, string][]
@@ -136,21 +251,17 @@ function BuildCard({ number, title, meta, optional, filled, children }: {
   const [open, setOpen] = useState(true)
   return (
     <div className="rounded-xl border border-white/10 overflow-hidden">
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="w-full px-5 py-3.5 bg-white/[0.04] hover:bg-white/[0.07] flex items-center gap-3 text-left transition-colors"
-      >
+      <button onClick={() => setOpen(o => !o)}
+        className="w-full px-5 py-3.5 bg-white/[0.04] hover:bg-white/[0.07] flex items-center gap-3 text-left transition-colors">
         <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 border ${
           filled ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' :
           optional ? 'border-white/15 text-white/25' : 'bg-blue-500/20 border-blue-400/30 text-blue-300'
-        }`}>
-          {filled ? '✓' : number}
-        </span>
+        }`}>{filled ? '✓' : number}</span>
         <div className="flex-1">
           {optional && <span className="text-xs font-bold text-white/25 uppercase tracking-wider">Optional · </span>}
           <span className="font-bold text-white text-sm">{title}</span>
         </div>
-        {open ? <ChevronDown className="w-4 h-4 text-white/25 flex-shrink-0" /> : <ChevronRight className="w-4 h-4 text-white/25 flex-shrink-0" />}
+        {open ? <ChevronDown className="w-4 h-4 text-white/25" /> : <ChevronRight className="w-4 h-4 text-white/25" />}
       </button>
       {open && (
         <>
@@ -171,135 +282,64 @@ function BuildCard({ number, title, meta, optional, filled, children }: {
   )
 }
 
-// ─── Inline Examples (Build 2) ────────────────────────────────────────
-
-const constraintExamples = [
-  { id: 'conflict', label: 'Conflict by Week 5', color: 'amber' as const, examples: [
-    { title: 'The Sunday Council', detail: "Every Sunday at 6pm, the cohort sits in a circle for 30 minutes. Each person gets 90 seconds to name one thing they appreciated about another cohort member that week, and one thing that's grating on them. Structured rules: start with appreciation, name a specific behavior (not a personality trait), no debating in the moment. Guide facilitates the first three weeks, then a rotating cohort member runs it. By week 5, friction gets surfaced in real-time before it festers into factions." },
-    { title: 'The Repair Protocol', detail: 'Cohort agrees in week 1 to a written 4-step protocol for handling friction. When something happens, the protocol says you say "I need a Repair." Within 24 hours, the two students sit with a guide for 20 minutes using a specific 4-question template (what happened / how it landed / what I want / what I\'ll do differently). No avoidance, no triangulating through other cohort members. The protocol is laminated and lives on the wall of every common space all year.' },
-  ]},
-  { id: 'energy', label: 'Energy Drop at Mid-Rotation', color: 'emerald' as const, examples: [
-    { title: 'Friday Bring-Your-Best', detail: 'Every Friday afternoon, one cohort member designs and leads a 30-minute recharge activity for the group — could be a game from their hometown, a skill they want to teach, a meditation, a dance, whatever. Rotates so every kid gets two slots per rotation. Solves energy AND distributes leadership ownership AND gives every kid a recurring moment in the spotlight.' },
-    { title: 'The Midpoint Reset Day', detail: 'Built into the calendar at the exact midpoint of each rotation (around week 4). Looks like a structured retreat day: morning is solo journaling against three specific prompts, afternoon is a cohort conversation where everyone names one behavior they want to recommit to and one they want to drop, evening is a shared meal with a gratitude rotation. Built-in reset valve before the energy crash actually compounds.' },
-  ]},
-  { id: 'cultural', label: 'Cultural Missteps', color: 'blue' as const, examples: [
-    { title: 'The What-We-Got-Wrong Debrief', detail: "Friday evenings in the local language (with the local guide co-facilitating). Each cohort member shares one cultural moment from the week where they felt unsure or knew they messed up. The local guide normalizes the mistake — 'that's a normal thing to get wrong, here's why' — and teaches the next-level cultural understanding. Transforms shame into curriculum." },
-    { title: 'The Cultural Compass', detail: "A 60-minute pre-arrival workshop the day before each rotation begins. Covers 20 specific cultural norms, then role-plays 10 hard scenarios, then each student writes down the specific moment they expect to mess up first. By naming it ahead, when it happens it's predicted, not catastrophic." },
-  ]},
-  { id: 'homesick', label: 'Someone Wants to Go Home (Week 10)', color: 'rose' as const, examples: [
-    { title: 'Buddy-Up Pairs', detail: "Every cohort member is paired with one specific peer they're responsible for. Daily 5-minute check-ins built into the schedule, weekly 30-minute deeper conversation on Sundays. Pairs rotate every rotation. So when someone starts to spiral, their buddy notices it the day it starts, and there's already a structure for that conversation. Distributes the emotional load." },
-    { title: 'The Sunday Letter Home', detail: 'Every Sunday at 4pm, every cohort member writes a letter or records a voice memo to a parent, grandparent, sibling, or friend back home. Then each shares one sentence from theirs with the cohort. Channels homesickness into connection (and into a written record they\'ll have forever) rather than avoidance.' },
-  ]},
+const CONSTRAINTS = [
+  { id: 'conflict',  label: 'Conflict by Week 5',              color: 'amber'   },
+  { id: 'energy',   label: 'Energy drop at mid-rotation',      color: 'emerald' },
+  { id: 'cultural', label: 'Cultural missteps',                color: 'blue'    },
+  { id: 'homesick', label: 'Someone wants to go home (Wk 10)',color: 'rose'    },
 ]
+const DOT    = { amber: 'bg-amber-400',   emerald: 'bg-emerald-400', blue: 'bg-blue-400',   rose: 'bg-rose-400' }
+const SEL_BG = { amber: 'bg-amber-400/12 border-amber-400/40', emerald: 'bg-emerald-400/12 border-emerald-400/40', blue: 'bg-blue-400/12 border-blue-400/40', rose: 'bg-rose-400/12 border-rose-400/40' }
+const SEL_TX = { amber: 'text-amber-300', emerald: 'text-emerald-300', blue: 'text-blue-300', rose: 'text-rose-300' }
 
-const dotColor = { amber: 'bg-amber-400', emerald: 'bg-emerald-400', blue: 'bg-blue-400', rose: 'bg-rose-400' }
-const labelColor = { amber: 'text-amber-300 border-amber-400/20 bg-amber-400/10', emerald: 'text-emerald-300 border-emerald-400/20 bg-emerald-400/10', blue: 'text-blue-300 border-blue-400/20 bg-blue-400/10', rose: 'text-rose-300 border-rose-400/20 bg-rose-400/10' }
-
-function ExampleItem({ title, detail }: { title: string; detail: string }) {
-  const [open, setOpen] = useState(false)
+function ConstraintSelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className="border border-white/8 rounded-lg overflow-hidden">
-      <button className="w-full text-left px-4 py-3 flex items-center justify-between gap-3 hover:bg-white/5 transition-colors" onClick={() => setOpen(o => !o)}>
-        <span className="text-sm font-semibold text-white/60">{title}</span>
-        {open ? <ChevronDown className="w-3.5 h-3.5 text-white/25 flex-shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-white/25 flex-shrink-0" />}
-      </button>
-      {open && <div className="px-4 pb-3 border-t border-white/8"><p className="text-white/45 text-sm leading-relaxed pt-3">{detail}</p></div>}
-    </div>
-  )
-}
-
-function ExamplesInline() {
-  const [open, setOpen] = useState(false)
-  return (
-    <div className="rounded-xl border border-white/10 overflow-hidden">
-      <button
-        className="w-full flex items-center justify-between px-5 py-3 bg-white/[0.04] hover:bg-white/[0.07] transition-colors text-left"
-        onClick={() => setOpen(o => !o)}
-      >
-        <span className="text-xs font-black text-white/50 uppercase tracking-widest">Worked Examples — What Strong Looks Like</span>
-        <span className="flex items-center gap-1.5 text-xs text-white/25">
-          {open ? 'Hide' : 'Show examples'}
-          {open ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-        </span>
-      </button>
-      {open && (
-        <div className="px-5 py-4 space-y-4 border-t border-white/8">
-          <p className="text-xs text-white/30 leading-relaxed">Strong submissions: repeating structural feature (not one-time event), specifies sequence/timing/prompts, names what happens when it goes sideways, cultural humility built in — local community as co-facilitators, not scenery.</p>
-          {constraintExamples.map(c => (
-            <div key={c.id}>
-              <div className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border mb-2 ${labelColor[c.color]}`}>
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor[c.color]}`} />
-                {c.label}
-              </div>
-              <div className="space-y-1.5">
-                {c.examples.map(ex => <ExampleItem key={ex.title} {...ex} />)}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Reference Share Link ─────────────────────────────────────────────
-
-function ReferenceShareLink({ refNumber, applicantName, applicantEmail }: { refNumber: number; applicantName: string; applicantEmail: string }) {
-  const [copied, setCopied] = useState(false)
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const params = new URLSearchParams({
-    ref: String(refNumber),
-    applicant: applicantName || 'the applicant',
-    email: applicantEmail || '',
-  })
-  const link = `${baseUrl}/reference?${params.toString()}`
-
-  const copy = () => {
-    navigator.clipboard.writeText(link).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
-  }
-
-  return (
-    <div className="mt-3 rounded-lg bg-blue-500/8 border border-blue-400/15 p-3">
-      <div className="flex items-start gap-2 mb-2">
-        <Info className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
-        <p className="text-xs text-blue-300/80 leading-relaxed">
-          Share this link with your reference so they can fill out their section directly — no login required.
-        </p>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/30 truncate font-mono">
-          {link}
-        </div>
-        <button
-          onClick={copy}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex-shrink-0 ${
-            copied ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30' : 'bg-blue-500/20 text-blue-300 border border-blue-400/30 hover:bg-blue-500/30'
-          }`}
-        >
-          {copied ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy link</>}
-        </button>
+    <div className="space-y-2">
+      <p className="text-white/40 text-sm">Pick one design constraint and build for it:</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {CONSTRAINTS.map(c => {
+          const sel = value === c.id
+          return (
+            <button key={c.id} type="button" onClick={() => onChange(c.id)}
+              className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border text-left transition-all ${sel ? SEL_BG[c.color] : 'border-white/8 bg-white/[0.02] hover:border-white/15'}`}>
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${DOT[c.color]}`} />
+              <span className={`text-xs font-bold ${sel ? SEL_TX[c.color] : 'text-white/50'}`}>{c.label}{sel && ' ✓'}</span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )
 }
 
-// ─── Main component ───────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────
 
 export default function ApplicationForm() {
-  const [started, setStarted] = useState(false)
-  const [step, setStep] = useState(1)
-  const [form, setForm] = useState<FormData>(initialForm)
+  const [started, setStarted]       = useState(false)
+  const [step, setStep]             = useState(1)
+  const [form, setForm]             = useState<FormData>(initialForm)
   const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [submitted, setSubmitted]   = useState(false)
+  const [error, setError]           = useState<string | null>(null)
+  const [saveState, setSaveState]   = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [requiredFields, setRequiredFields] = useState<Record<string, boolean>>(DEFAULT_REQUIRED)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
   const totalSteps = STEPS.length
 
+  // Load required field config from admin settings
+  useEffect(() => {
+    supabase.from('form_config').select('config').eq('id', 'default').single()
+      .then(({ data }) => {
+        if (data?.config) {
+          const config = data.config as Record<string, { required: boolean }>
+          const req: Record<string, boolean> = {}
+          Object.entries(config).forEach(([k, v]) => { req[k] = v.required })
+          setRequiredFields(req)
+        }
+      })
+  }, [])
+
+  // Restore draft
   useEffect(() => {
     const id = localStorage.getItem(DRAFT_KEY)
     if (!id) return
@@ -312,6 +352,8 @@ export default function ApplicationForm() {
         setStarted(true)
       })
   }, [])
+
+  const isReq = (field: string) => Boolean(requiredFields[field])
 
   const saveDraft = useCallback((formData: FormData, currentStep: number) => {
     const id = getDraftId()
@@ -329,28 +371,42 @@ export default function ApplicationForm() {
     saveTimer.current = setTimeout(() => saveDraft(updated, step), 1500)
   }
 
-  const handleStepChange = (newStep: number) => {
-    setStep(newStep)
-    saveDraft(form, newStep)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+  const handleFieldChange = (name: string, value: string) => {
+    const updated = { ...form, [name]: value }
+    setForm(updated)
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => saveDraft(updated, step), 1500)
   }
 
-  const allAcksChecked = [1,2,3,4,5,6,7,8].every(n => form[`ack_${n}` as keyof FormData])
+  const goStep = (s: number) => { setStep(s); saveDraft(form, s); window.scrollTo({ top: 0, behavior: 'smooth' }) }
 
   const handleSubmit = async () => {
-    if (!allAcksChecked) { setError('Please check all acknowledgments before submitting.'); return }
+    const allAcks = [1,2,3,4,5,6,7,8].every(n => form[`ack_${n}` as keyof FormData])
+    if (!allAcks) { setError('Please check all acknowledgments before submitting.'); return }
     if (!form.applicant_name.trim()) { setError('Please type your full name as your signature.'); return }
     setSubmitting(true); setError(null)
     const id = getDraftId()
-    const { error: dbError } = await supabase.from('guide_applications')
-      .upsert({ id, ...form, status: 'submitted', draft_step: totalSteps }, { onConflict: 'id' })
-    if (dbError) { setError('Something went wrong. Please try again.'); setSubmitting(false); return }
+
+    // Use API route — saves to Supabase AND sends email to Zara
+    const res = await fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...form }),
+    })
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      setError(err.error || 'Something went wrong. Please try again.')
+      setSubmitting(false)
+      return
+    }
+
     localStorage.removeItem(DRAFT_KEY)
-    setSubmitted(true); setSubmitting(false)
+    setSubmitted(true)
+    setSubmitting(false)
   }
 
-  const progress = (step / totalSteps) * 100
-
+  // ── Success ──
   if (submitted) {
     return (
       <div className="min-h-screen bg-[#08111f] flex items-center justify-center px-4">
@@ -361,51 +417,44 @@ export default function ApplicationForm() {
           <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Application Received</p>
           <h2 className="text-3xl font-black text-white uppercase tracking-tight mb-3">You&rsquo;re In The Pool.</h2>
           <p className="text-white/40 text-sm leading-relaxed">Our team will review carefully. You&apos;ll hear from us when decisions are made. In the meantime — keep being the person who applied.</p>
+          <p className="text-white/20 text-xs mt-4">The admin team will follow up with your references directly.</p>
         </div>
       </div>
     )
   }
 
+  // ── Landing ──
   if (!started) {
     return (
       <div className="min-h-screen bg-[#08111f] flex flex-col">
-        <nav className="flex items-center justify-between px-6 py-5 border-b border-white/8">
-          <Logo size="md" />
-        </nav>
-
+        <nav className="flex items-center px-6 py-5 border-b border-white/8"><Logo /></nav>
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-14 text-center">
           <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-5">Inaugural Cohort · 2026–2027</p>
-          <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tight leading-none mb-5">
-            Guide<br/>Application
-          </h1>
-          <p className="text-white/40 text-base max-w-lg mb-3 leading-relaxed">
-            This is not a year off. This is the hardest job Alpha has ever asked anyone to do — and the most rewarding year of your career.
-          </p>
+          <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tight leading-none mb-5">Guide<br/>Application</h1>
+          <p className="text-white/40 text-base max-w-lg mb-3 leading-relaxed">This is not a year off. This is the hardest job Alpha has ever asked anyone to do — and the most rewarding year of your career.</p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 mb-10 text-white/30 text-sm">
             {['38 Weeks', '3 Continents', '20 Students', 'Kenya · Ecuador · USA'].map((s, i) => (
-              <span key={s} className="flex items-center gap-2">
-                {i > 0 && <span className="w-1 h-1 rounded-full bg-white/15" />}{s}
-              </span>
+              <span key={s} className="flex items-center gap-2">{i > 0 && <span className="w-1 h-1 rounded-full bg-white/15" />}{s}</span>
             ))}
           </div>
-
           <div className="flex flex-col gap-1.5 mb-10 w-full max-w-xs text-left">
-            <p className="text-xs font-bold text-white/20 uppercase tracking-widest mb-2 text-center">{totalSteps} Sections</p>
+            <p className="text-xs font-bold text-white/20 uppercase tracking-widest mb-2 text-center">Jump to any section</p>
             {STEPS.map((s, i) => (
-              <div key={s.id} className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-white/[0.03] border border-white/8">
-                <span className="w-5 h-5 rounded-full border border-white/15 flex items-center justify-center text-xs text-white/25 font-bold flex-shrink-0">{i + 1}</span>
-                <div>
-                  <span className="text-xs font-bold text-white/50 uppercase tracking-wide">{s.label}</span>
+              <button key={s.id} onClick={() => { setStarted(true); goStep(s.id) }}
+                className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-white/[0.03] border border-white/8 hover:bg-white/[0.06] hover:border-white/15 transition-all text-left group">
+                <span className="w-5 h-5 rounded-full border border-white/15 group-hover:border-blue-400/40 flex items-center justify-center text-xs text-white/25 group-hover:text-blue-300 font-bold flex-shrink-0 transition-all">{i + 1}</span>
+                <div className="flex-1">
+                  <span className="text-xs font-bold text-white/50 group-hover:text-white/70 uppercase tracking-wide">{s.label}</span>
                   <span className="text-xs text-white/20 ml-2">{s.desc}</span>
                 </div>
-              </div>
+                <ArrowRight className="w-3 h-3 text-white/10 group-hover:text-blue-300/50 transition-colors" />
+              </button>
             ))}
           </div>
-
           <div className="flex flex-col sm:flex-row items-center gap-3">
             <button onClick={() => setStarted(true)}
               className="flex items-center gap-2 px-8 py-3.5 bg-blue-500 hover:bg-blue-400 text-white font-black uppercase tracking-wider text-sm rounded-full transition-colors shadow-lg shadow-blue-500/20">
-              Apply Now <ArrowRight className="w-4 h-4" />
+              Start from Beginning <ArrowRight className="w-4 h-4" />
             </button>
             <a href="https://world.alpha.school" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 px-8 py-3.5 text-white/45 hover:text-white font-bold uppercase tracking-wider text-sm rounded-full border border-white/15 hover:border-white/30 transition-colors">
@@ -413,12 +462,11 @@ export default function ApplicationForm() {
             </a>
           </div>
         </div>
-
         <div className="border-t border-white/8 grid grid-cols-3">
-          {[['20', 'Students Selected'], ['3', 'Continents'], ['38', 'Weeks']].map(([n, label]) => (
-            <div key={label} className="py-7 flex flex-col items-center gap-1 border-r last:border-r-0 border-white/8">
+          {[['20', 'Students Selected'], ['3', 'Continents'], ['38', 'Weeks']].map(([n, lbl]) => (
+            <div key={lbl} className="py-7 flex flex-col items-center gap-1 border-r last:border-r-0 border-white/8">
               <span className="text-3xl font-black text-blue-400">{n}</span>
-              <span className="text-xs font-bold uppercase tracking-widest text-white/30">{label}</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-white/30">{lbl}</span>
             </div>
           ))}
         </div>
@@ -426,19 +474,20 @@ export default function ApplicationForm() {
     )
   }
 
+  // ── Form ──
   return (
     <div className="min-h-screen bg-[#08111f] flex flex-col">
       <header className="border-b border-white/8 sticky top-0 z-40 bg-[#08111f]/95 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Logo size="sm" />
+          <Logo size="sm" onClick={() => setStarted(false)} />
           <div className="flex items-center gap-4">
             {saveState === 'saving' && <span className="text-xs text-white/25 animate-pulse">Saving…</span>}
-            {saveState === 'saved' && <span className="text-xs text-emerald-400/70">Draft saved ✓</span>}
+            {saveState === 'saved'  && <span className="text-xs text-emerald-400/70">Saved ✓</span>}
             <span className="text-xs text-white/25 font-medium uppercase tracking-wider">Section {step} of {totalSteps}</span>
           </div>
         </div>
         <div className="h-0.5 bg-white/5">
-          <div className="h-full bg-blue-400 transition-all duration-500 ease-out" style={{ width: `${progress}%` }} />
+          <div className="h-full bg-blue-400 transition-all duration-500" style={{ width: `${(step / totalSteps) * 100}%` }} />
         </div>
       </header>
 
@@ -446,20 +495,13 @@ export default function ApplicationForm() {
         <aside className="hidden md:flex flex-col gap-1 w-56 flex-shrink-0 pt-1">
           <p className="text-xs font-bold text-white/20 uppercase tracking-widest mb-3 px-3">{totalSteps} Sections</p>
           {STEPS.map(s => {
-            const done = s.id < step
-            const active = s.id === step
+            const active = s.id === step, done = s.id < step
             return (
-              <button key={s.id} onClick={() => done ? handleStepChange(s.id) : undefined}
-                className={`flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-all ${
-                  active ? 'bg-blue-500/12 border border-blue-400/20' : done ? 'hover:bg-white/[0.04] cursor-pointer' : 'cursor-default'
-                }`}>
+              <button key={s.id} onClick={() => goStep(s.id)}
+                className={`flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-all cursor-pointer ${active ? 'bg-blue-500/12 border border-blue-400/20' : 'hover:bg-white/[0.04]'}`}>
                 <span className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 border transition-all ${
-                  active ? 'bg-blue-500 border-blue-400 text-white' :
-                  done ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' :
-                  'border-white/12 text-white/20'
-                }`}>
-                  {done ? '✓' : s.id}
-                </span>
+                  active ? 'bg-blue-500 border-blue-400 text-white' : done ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' : 'border-white/12 text-white/20'
+                }`}>{done ? '✓' : s.id}</span>
                 <div>
                   <div className={`text-xs font-bold uppercase tracking-wide ${active ? 'text-blue-300' : done ? 'text-white/50' : 'text-white/20'}`}>{s.label}</div>
                   <div className={`text-xs mt-0.5 ${active ? 'text-white/30' : 'text-white/15'}`}>{s.desc}</div>
@@ -473,11 +515,11 @@ export default function ApplicationForm() {
           <div className="flex md:hidden items-center gap-1.5 mb-6 overflow-x-auto pb-1">
             {STEPS.map((s, i) => (
               <div key={s.id} className="flex items-center gap-1.5 flex-shrink-0">
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-black border flex-shrink-0 ${
-                  s.id === step ? 'bg-blue-500 border-blue-400 text-white' :
-                  s.id < step ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' :
-                  'border-white/12 text-white/20'
-                }`}>{s.id < step ? '✓' : s.id}</span>
+                <button onClick={() => goStep(s.id)}
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black border ${
+                    s.id === step ? 'bg-blue-500 border-blue-400 text-white' :
+                    s.id < step ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' : 'border-white/12 text-white/20'
+                  }`}>{s.id < step ? '✓' : s.id}</button>
                 {i < STEPS.length - 1 && <span className="text-white/12 text-xs">›</span>}
               </div>
             ))}
@@ -489,29 +531,42 @@ export default function ApplicationForm() {
               <div className="mb-7">
                 <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1.5">Section 1 of {totalSteps}</p>
                 <h1 className="text-3xl font-black text-white uppercase tracking-tight">About You</h1>
-                <p className="text-white/35 text-sm mt-1.5">Basic info. Write &quot;N/A&quot; if a field doesn&apos;t apply.</p>
+                <p className="text-white/35 text-sm mt-1.5">Basic info. Write "N/A" if a field doesn't apply.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input label="Full Name" name="full_name" value={form.full_name} onChange={handleChange} required placeholder="Jane Smith" />
-                <Input label="Email" name="email" value={form.email} onChange={handleChange} required placeholder="jane@alpha.school" type="email" />
-                <Input label="Phone" name="phone" value={form.phone} onChange={handleChange} placeholder="+1 (555) 000-0000" />
-                <Input label="Role at Alpha" name="role_at_alpha" value={form.role_at_alpha} onChange={handleChange} required placeholder="e.g. Guide, Academic Coach" />
-                <Input label="Campus" name="campus" value={form.campus} onChange={handleChange} placeholder="e.g. Austin, NYC" />
-                <Input label="Years at Alpha" name="years_at_alpha" value={form.years_at_alpha} onChange={handleChange} placeholder="e.g. 2 years" />
-                <Input label="Direct Manager" name="direct_manager" value={form.direct_manager} onChange={handleChange} placeholder="Manager's name" />
-                <Input label="Head of School" name="head_of_school" value={form.head_of_school} onChange={handleChange} placeholder="Head of School's name" />
+                <Input label="Full Name" name="full_name" value={form.full_name} onChange={handleChange} required={isReq('full_name')} placeholder="Jane Smith" />
+                <Input label="Email" name="email" value={form.email} onChange={handleChange} required={isReq('email')} placeholder="jane@alpha.school" type="email" />
+                <Input label="Phone" name="phone" value={form.phone} onChange={handleChange} required={isReq('phone')} placeholder="+1 (555) 000-0000" />
+                <Input label="Role at Alpha" name="role_at_alpha" value={form.role_at_alpha} onChange={handleChange} required={isReq('role_at_alpha')} placeholder="e.g. Guide, Academic Coach" />
+                <Input label="Campus" name="campus" value={form.campus} onChange={handleChange} required={isReq('campus')} placeholder="e.g. Austin, NYC" />
+                <Input label="Years at Alpha" name="years_at_alpha" value={form.years_at_alpha} onChange={handleChange} required={isReq('years_at_alpha')} placeholder="e.g. 2 years" />
+                <Input label="Direct Manager" name="direct_manager" value={form.direct_manager} onChange={handleChange} required={isReq('direct_manager')} placeholder="Manager's name" />
+                <Input label="Dean of Parents / Head of School" name="head_of_school" value={form.head_of_school} onChange={handleChange} required={isReq('head_of_school')} placeholder="Head of School's name" />
               </div>
               <Textarea label="Languages Spoken" name="languages_spoken" value={form.languages_spoken} onChange={handleChange}
-                placeholder="English (native), Spanish (conversational), Swahili (basic)..." hint="Note proficiency: conversational, fluent, or native" />
-              <Textarea label="Prior International Travel" name="prior_international_travel" value={form.prior_international_travel} onChange={handleChange}
-                placeholder="Kenya (3 weeks, community development), Ecuador (1 month, volunteer teaching)..." hint="Countries, length of stay, purpose" rows={3} />
-              <Textarea label="Developing-World Living Experience" name="developing_world_experience" value={form.developing_world_experience} onChange={handleChange}
-                placeholder="Yes — spent 6 weeks in rural Guatemala building water systems with a local NGO..." hint="Have you spent 2+ weeks living in a developing-world setting? Y/N — describe" rows={3} />
-              <Textarea label="Health Considerations" name="health_considerations" value={form.health_considerations} onChange={handleChange}
-                placeholder="Any current health considerations relevant to extended international travel..." rows={2} />
-              <Textarea label="Personal or Family Obligations" name="family_obligations" value={form.family_obligations} onChange={handleChange}
-                placeholder="Partner, children, caregiving responsibilities — please be specific so we can plan with you, not around you..." hint="Relevant to a 38-week commitment" rows={2} />
-              <Input label="Emergency Contact" name="emergency_contact" value={form.emergency_contact} onChange={handleChange} placeholder="Name, relationship, phone number" />
+                required={isReq('languages_spoken')} placeholder="English (native), Spanish (conversational)…" hint="Note proficiency level" />
+              <YesNoField label="Prior International Travel"
+                ynValue={form.prior_international_travel_yn} detailValue={form.prior_international_travel}
+                onYnChange={v => handleFieldChange('prior_international_travel_yn', v)}
+                onDetailChange={v => handleFieldChange('prior_international_travel', v)}
+                yesPrompt="List countries, length of stay, and purpose…" />
+              <YesNoField label="Developing-World Living Experience" hint="Have you spent 2+ weeks living in a developing-world setting?"
+                ynValue={form.developing_world_experience_yn} detailValue={form.developing_world_experience}
+                onYnChange={v => handleFieldChange('developing_world_experience_yn', v)}
+                onDetailChange={v => handleFieldChange('developing_world_experience', v)}
+                yesPrompt="Where, how long, what you were doing, and what surprised you…" />
+              <YesNoField label="Health Considerations" hint="Any current health considerations relevant to 38 weeks of international travel?"
+                ynValue={form.health_considerations_yn} detailValue={form.health_considerations}
+                onYnChange={v => handleFieldChange('health_considerations_yn', v)}
+                onDetailChange={v => handleFieldChange('health_considerations', v)}
+                yesPrompt="Please describe — kept confidential, used only for planning…" />
+              <YesNoField label="Personal or Family Obligations" hint="Partner, children, or caregiving responsibilities relevant to a 38-week commitment?"
+                ynValue={form.family_obligations_yn} detailValue={form.family_obligations}
+                onYnChange={v => handleFieldChange('family_obligations_yn', v)}
+                onDetailChange={v => handleFieldChange('family_obligations', v)}
+                yesPrompt="Be specific so we can plan with you, not around you…" />
+              <Input label="Emergency Contact" name="emergency_contact" value={form.emergency_contact} onChange={handleChange}
+                required={isReq('emergency_contact')} placeholder="Name, relationship, phone number" />
             </div>
           )}
 
@@ -521,93 +576,55 @@ export default function ApplicationForm() {
               <div className="mb-7">
                 <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1.5">Section 2 of {totalSteps}</p>
                 <h1 className="text-3xl font-black text-white uppercase tracking-tight">The Builds</h1>
-                <p className="text-white/35 text-sm mt-1.5">Three required Builds, one optional. Submit each to the shared Drive folder from your invitation email. Naming convention: <span className="font-mono text-white/50">LastName_FirstName_Build1.pdf</span></p>
+                <p className="text-white/35 text-sm mt-1.5">Three required, one optional. Paste a link (Google Drive, Loom, YouTube) or upload a file directly.</p>
               </div>
 
               <BuildCard number="1" title="The Workshop Sprint" filled={Boolean(form.build1_link)}
                 meta={[['Testing', 'Life skills design, AI fluency, taste'], ['Time', '2 hours max'], ['Deliverable', 'Slides / Notion / one-pager']]}>
-                <div className="space-y-3">
-                  <p className="text-white/45 text-sm leading-relaxed">
-                    Design and produce a real <strong className="text-white/70">90-minute kickoff workshop</strong> for your cohort of 5–7 students — anchored in one of the international development focus areas we&apos;re working in with the Kenya team:
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {['Food', 'Water', 'Empowerment', 'Education', 'Healthcare', 'Culture & Conservation', 'Community'].map(f => (
-                      <span key={f} className="px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-xs font-bold">{f}</span>
-                    ))}
-                  </div>
-                  <p className="text-white/40 text-sm leading-relaxed">
-                    Pick ONE area. The workshop should launch a real project in that area — something the cohort will continue building over the rotation, with a <strong className="text-white/60">real output that lives past the workshop</strong>. This isn&apos;t a lecture. It&apos;s the first 90 minutes of work that produces something the community actually uses.
-                  </p>
+                <p className="text-white/45 text-sm leading-relaxed">Design and produce a real <strong className="text-white/70">90-minute kickoff workshop</strong> for your cohort — anchored in one of the Kenya team's focus areas. Not a lecture. A first 90 minutes of real work that produces something the community uses.</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {['Food','Water','Empowerment','Education','Healthcare','Culture & Conservation','Community'].map(f => (
+                    <span key={f} className="px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-xs font-bold">{f}</span>
+                  ))}
                 </div>
-                <Input label="Build 1 Link or File Name" name="build1_link" value={form.build1_link} onChange={handleChange}
-                  placeholder="https://docs.google.com/... or Smith_Jane_Build1.pdf" />
+                <VideoInput label="Build 1 — Paste link or upload" name="build1_link" value={form.build1_link} onValueChange={handleFieldChange}
+                  hint="Google Drive, Notion, Slides, PDF, or file upload" />
               </BuildCard>
 
               <BuildCard number="2" title="The Cohort Experience" filled={Boolean(form.build2_design_link && form.build2_video_link)}
                 meta={[['Testing', 'Design instinct, cultural humility, resilience'], ['Time', '1.5–2 hours'], ['Deliverable', 'Design doc + 3-min video']]}>
-                <div className="space-y-3">
-                  <p className="text-white/45 text-sm leading-relaxed">
-                    Design something that <strong className="text-white/70">prevents a cohort from breaking</strong>. By week 30, the cohort will be tired, homesick, and far from home. The strongest cohorts don&apos;t avoid these moments — they&apos;re built to survive them.
-                  </p>
-                  <p className="text-white/40 text-sm">Pick one design constraint. Build for it:</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {[
-                      { color: 'amber', text: 'Assume your cohort has conflict by week 5.' },
-                      { color: 'emerald', text: 'Assume energy drops by mid-rotation.' },
-                      { color: 'blue', text: 'Assume cultural missteps happen.' },
-                      { color: 'rose', text: 'Assume someone wants to go home by week 10.' },
-                    ].map(c => (
-                      <div key={c.text} className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/8 text-xs text-white/50">
-                        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${dotColor[c.color as keyof typeof dotColor]}`} />
-                        {c.text}
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-white/35 text-xs leading-relaxed">
-                    Your design could be a repeating ritual, a milestone tradition, a built-in reset mechanism, or a community integration. Show us how it runs: sequence, prompts, materials, what the guide says, what students do, what happens when it goes sideways. How do you know it&apos;s working by week 15?
-                  </p>
-                  <div className="rounded-lg bg-amber-500/8 border border-amber-400/15 px-3 py-2">
-                    <p className="text-xs text-amber-300/80"><strong>Cultural humility is not optional.</strong> If your design involves the local community, tell us how you&apos;ll center their leadership — not feature them as a backdrop.</p>
-                  </div>
+                <p className="text-white/45 text-sm leading-relaxed">Design something that <strong className="text-white/70">prevents a cohort from breaking</strong>. By week 30 they'll be tired, homesick, and far from home. Strong cohorts don't avoid that — they're built to survive it.</p>
+                <ConstraintSelector value={form.build2_constraint} onChange={v => handleFieldChange('build2_constraint', v)} />
+                <div className="rounded-lg bg-amber-500/8 border border-amber-400/15 px-3 py-2">
+                  <p className="text-xs text-amber-300/80"><strong>Cultural humility is not optional.</strong> If your design involves the local community, tell us how you'll center their leadership — not feature them as a backdrop.</p>
                 </div>
-                <ExamplesInline />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input label="Design Doc Link" name="build2_design_link" value={form.build2_design_link} onChange={handleChange}
-                    placeholder="One-pager, plan, or visual flow" />
-                  <Input label="3-Minute Video Link" name="build2_video_link" value={form.build2_video_link} onChange={handleChange}
-                    placeholder="YouTube, Loom, or Drive link" />
-                </div>
+                <VideoInput label="Design Doc — paste link or upload" name="build2_design_link" value={form.build2_design_link} onValueChange={handleFieldChange}
+                  hint="One-pager, plan, visual — Drive, Notion, or PDF" />
+                <VideoInput label="3-Minute Video — paste link or upload" name="build2_video_link" value={form.build2_video_link} onValueChange={handleFieldChange}
+                  hint="Loom, YouTube, Google Drive, or upload" />
               </BuildCard>
 
               <BuildCard number="3" title="The Video" filled={Boolean(form.build3_video_link)}
                 meta={[['Testing', 'Self-awareness, honesty, mindset'], ['Time', '20 minutes'], ['Deliverable', '90 sec – 2 min video']]}>
-                <div className="space-y-2">
-                  <p className="text-white/45 text-sm leading-relaxed">
-                    Talk to us. 90 seconds to 2 minutes. <strong className="text-white/65">Phone-quality is fine. Don&apos;t script. Don&apos;t read.</strong>
-                  </p>
-                  <div className="space-y-1.5">
-                    <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/8">
-                      <span className="text-blue-400 font-bold text-xs flex-shrink-0 mt-0.5">①</span>
-                      <p className="text-sm text-white/50">What are you most excited about for this year?</p>
+                <p className="text-white/45 text-sm leading-relaxed">Talk to us. 90 seconds to 2 minutes. <strong className="text-white/65">Phone-quality is fine. Don't script. Don't read.</strong></p>
+                <div className="space-y-1.5">
+                  {[
+                    'What are you most excited about for this year?',
+                    'What do you understand your role to be on this trip? Not what you hope — what you actually believe it is.',
+                  ].map((q, i) => (
+                    <div key={i} className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/8">
+                      <span className="text-blue-400 font-bold text-xs flex-shrink-0 mt-0.5">{'①②'[i]}</span>
+                      <p className="text-sm text-white/50">{q}</p>
                     </div>
-                    <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/8">
-                      <span className="text-blue-400 font-bold text-xs flex-shrink-0 mt-0.5">②</span>
-                      <p className="text-sm text-white/50">What do you understand your role to be on this trip? Be specific — not what you hope it will be, what you <em>actually believe</em> it is.</p>
-                    </div>
-                  </div>
-                  <p className="text-white/30 text-xs">We are looking for a clear-eyed picture of the job, not a pitch. Most of your 20 minutes should be taking 3 takes and picking the most honest one.</p>
+                  ))}
                 </div>
-                <Input label="Video Link" name="build3_video_link" value={form.build3_video_link} onChange={handleChange}
-                  placeholder="YouTube, Loom, or Drive link" />
+                <VideoInput label="Your Video — paste link or upload" name="build3_video_link" value={form.build3_video_link} onValueChange={handleFieldChange}
+                  hint="Loom, YouTube, Google Drive, or upload directly" />
               </BuildCard>
 
               <BuildCard number="4" title="Language Tape" optional filled={Boolean(form.build4_language_link)}>
-                <p className="text-white/45 text-sm leading-relaxed">
-                  If you speak a language other than English — especially <strong className="text-white/60">Swahili, Spanish</strong>, or any language relevant to Kenya or Ecuador — talk to us in it. Tell us about your morning, your last vacation, your favorite food. Anything natural. ≤60 seconds.
-                </p>
-                <p className="text-white/30 text-xs">This filters for actual conversational fluency, which we value more than self-reported proficiency.</p>
-                <Input label="Language Video Link (optional)" name="build4_language_link" value={form.build4_language_link} onChange={handleChange}
-                  placeholder="YouTube, Loom, or Drive link" />
+                <p className="text-white/45 text-sm leading-relaxed">If you speak Swahili, Spanish, or any language relevant to Kenya or Ecuador — talk to us in it. Anything natural. ≤60 seconds.</p>
+                <VideoInput label="Language Video (optional)" name="build4_language_link" value={form.build4_language_link} onValueChange={handleFieldChange} />
               </BuildCard>
             </div>
           )}
@@ -618,15 +635,16 @@ export default function ApplicationForm() {
               <div className="mb-7">
                 <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1.5">Section 3 of {totalSteps}</p>
                 <h1 className="text-3xl font-black text-white uppercase tracking-tight">Submission Check</h1>
-                <p className="text-white/35 text-sm mt-1.5">Confirm your builds are linked. Click &ldquo;Fix&rdquo; to go back and add a missing link.</p>
+                <p className="text-white/35 text-sm mt-1.5">Confirm your builds are ready before continuing.</p>
               </div>
               <div className="space-y-2.5">
                 {[
-                  { label: 'Build 1 — Workshop Sprint', value: form.build1_link, required: true },
-                  { label: 'Build 2 — Cohort Experience (design doc)', value: form.build2_design_link, required: true },
-                  { label: 'Build 2 — Cohort Experience (3-min video)', value: form.build2_video_link, required: true },
-                  { label: 'Build 3 — The Video', value: form.build3_video_link, required: true },
-                  { label: 'Build 4 — Language Tape', value: form.build4_language_link, required: false },
+                  { label: 'Build 1 — Workshop Sprint',           value: form.build1_link,        required: isReq('build1_link') },
+                  { label: 'Build 2 — Cohort Experience (design)',value: form.build2_design_link,  required: isReq('build2_design_link') },
+                  { label: 'Build 2 — Cohort Experience (video)', value: form.build2_video_link,   required: isReq('build2_video_link') },
+                  { label: 'Build 2 — Design constraint chosen',  value: form.build2_constraint,   required: isReq('build2_constraint') },
+                  { label: 'Build 3 — The Video',                 value: form.build3_video_link,   required: isReq('build3_video_link') },
+                  { label: 'Build 4 — Language Tape',             value: form.build4_language_link, required: false },
                 ].map(({ label, value, required }) => (
                   <div key={label} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border ${value ? 'bg-emerald-500/8 border-emerald-500/15' : required ? 'bg-rose-500/8 border-rose-500/15' : 'bg-white/[0.02] border-white/8'}`}>
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black border ${value ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-400' : required ? 'bg-rose-500/20 border-rose-400/30 text-rose-400' : 'border-white/15 text-white/25'}`}>
@@ -636,11 +654,11 @@ export default function ApplicationForm() {
                       <div className={`text-xs font-bold uppercase tracking-wide ${value ? 'text-emerald-300' : required ? 'text-rose-300' : 'text-white/20'}`}>{label}</div>
                       {value
                         ? <div className="text-xs text-white/20 truncate mt-0.5">{value}</div>
-                        : <div className={`text-xs mt-0.5 ${required ? 'text-rose-400/60' : 'text-white/15'}`}>{required ? 'Missing — go back and add a link' : 'Optional — skip if not applicable'}</div>
+                        : <div className={`text-xs mt-0.5 ${required ? 'text-rose-400/60' : 'text-white/15'}`}>{required ? 'Missing — go back and add' : 'Optional'}</div>
                       }
                     </div>
                     {!value && required && (
-                      <button onClick={() => handleStepChange(2)} className="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider border border-blue-400/20 px-3 py-1 rounded-full flex-shrink-0 transition-colors">Fix</button>
+                      <button onClick={() => goStep(2)} className="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase border border-blue-400/20 px-3 py-1 rounded-full flex-shrink-0 transition-colors">Fix</button>
                     )}
                   </div>
                 ))}
@@ -654,51 +672,39 @@ export default function ApplicationForm() {
               <div className="mb-7">
                 <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1.5">Section 4 of {totalSteps}</p>
                 <h1 className="text-3xl font-black text-white uppercase tracking-tight">References</h1>
-                <p className="text-white/35 text-sm mt-1.5">Two internal Alpha references. One must be your direct manager or Head of School.</p>
+                <p className="text-white/35 text-sm mt-1.5">Two internal Alpha references. One must be your direct manager or Dean of Parents / Head of School.</p>
               </div>
-
               <div className="rounded-xl bg-blue-500/8 border border-blue-400/15 px-4 py-3">
                 <div className="flex items-start gap-2">
                   <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-blue-300/80 leading-relaxed">
-                    Since these are internal Alpha references, we already know their relationship to you through the org. Fill in their contact details, then use the share link to send them a direct link to fill out their reference — no login needed.
-                  </p>
+                  <p className="text-xs text-blue-300/80 leading-relaxed">List your two references below. The Alpha team will reach out to them directly — you don't need to do anything else once you've submitted.</p>
                 </div>
               </div>
-
               {([
-                { n: 1, nameField: 'reference1_name', roleField: 'reference1_role', phoneField: 'reference1_phone', emailField: 'reference1_email' },
-                { n: 2, nameField: 'reference2_name', roleField: 'reference2_role', phoneField: 'reference2_phone', emailField: 'reference2_email' },
-              ] as const).map(({ n, nameField, roleField, phoneField, emailField }) => (
+                { n: 1, label: 'Reference 1 — Direct Manager or Dean of Parents / HoS', nameF: 'reference1_name', roleF: 'reference1_role', phoneF: 'reference1_phone', emailF: 'reference1_email' },
+                { n: 2, label: 'Reference 2', nameF: 'reference2_name', roleF: 'reference2_role', phoneF: 'reference2_phone', emailF: 'reference2_email' },
+              ] as const).map(({ n, label, nameF, roleF, phoneF, emailF }) => (
                 <div key={n} className="bg-white/[0.03] rounded-xl border border-white/8 p-5 space-y-4">
-                  <p className="text-xs font-black text-white/25 uppercase tracking-widest">Reference {n}</p>
+                  <p className="text-xs font-black text-white/25 uppercase tracking-widest">{label}</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input label="Name" name={nameField} value={form[nameField]} onChange={handleChange} placeholder="Full name" />
-                    <Input label="Role at Alpha" name={roleField} value={form[roleField]} onChange={handleChange} placeholder="e.g. Head of School, Guide" />
-                    <Input label="Phone" name={phoneField} value={form[phoneField]} onChange={handleChange} placeholder="+1 (555) 000-0000" />
-                    <Input label="Email" name={emailField} value={form[emailField]} onChange={handleChange} placeholder="ref@alpha.school" type="email" />
+                    <Input label="Name" name={nameF} value={form[nameF]} onChange={handleChange} placeholder="Full name" />
+                    <Input label="Role at Alpha" name={roleF} value={form[roleF]} onChange={handleChange} placeholder="e.g. Dean of Parents, Head of School" />
+                    <Input label="Phone" name={phoneF} value={form[phoneF]} onChange={handleChange} placeholder="+1 (555) 000-0000" />
+                    <Input label="Email" name={emailF} value={form[emailF]} onChange={handleChange} placeholder="ref@alpha.school" type="email" />
                   </div>
-                  <ReferenceShareLink refNumber={n} applicantName={form.full_name} applicantEmail={form.email} />
                 </div>
               ))}
-
               <div className="bg-blue-500/8 rounded-xl border border-blue-400/12 p-5 space-y-4">
-                <div>
-                  <p className="text-xs font-black text-blue-300 uppercase tracking-widest">Manager / Head of School Endorsement</p>
-                  <p className="text-xs text-white/25 mt-1">To be completed by the candidate&apos;s direct manager or Head of School — <em>not</em> by the candidate.</p>
+                <p className="text-xs font-black text-blue-300 uppercase tracking-widest">Manager / Dean of Parents / HoS endorsement status</p>
+                <div className="flex flex-wrap gap-2">
+                  {['Yes', 'No', 'Conversation pending'].map(opt => (
+                    <label key={opt} className={`flex items-center gap-2 px-4 py-2 rounded-full border cursor-pointer text-xs font-bold uppercase tracking-wide transition-all ${form.manager_endorsement_status === opt ? 'bg-blue-500/20 border-blue-400/30 text-blue-300' : 'border-white/15 text-white/25 hover:border-white/30'}`}>
+                      <input type="radio" name="manager_endorsement_status" value={opt} checked={form.manager_endorsement_status === opt} onChange={handleChange} className="sr-only" />{opt}
+                    </label>
+                  ))}
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-white/35 uppercase tracking-wider mb-2">Has this guide had your verbal support to apply?</label>
-                  <div className="flex flex-wrap gap-2">
-                    {['Yes', 'No', 'Conversation pending'].map(opt => (
-                      <label key={opt} className={`flex items-center gap-2 px-4 py-2 rounded-full border cursor-pointer text-xs font-bold uppercase tracking-wide transition-all ${form.manager_endorsement_status === opt ? 'bg-blue-500/20 border-blue-400/30 text-blue-300' : 'border-white/15 text-white/25 hover:border-white/30'}`}>
-                        <input type="radio" name="manager_endorsement_status" value={opt} checked={form.manager_endorsement_status === opt} onChange={handleChange} className="sr-only" />{opt}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <Textarea label="Endorsement Statement (150 words minimum)" name="manager_endorsement_text" value={form.manager_endorsement_text} onChange={handleChange}
-                  placeholder="In your judgment, is this guide ready for the demands of this role — physically, emotionally, and as a representative of Alpha to families, students, and partner communities? Why or why not?" rows={5} />
+                <Textarea label="Brief note (optional)" name="manager_endorsement_text" value={form.manager_endorsement_text} onChange={handleChange}
+                  placeholder="Anything you want the team to know about your reference conversations…" rows={3} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input label="Endorser Name" name="endorser_name" value={form.endorser_name} onChange={handleChange} />
                   <Input label="Endorser Role" name="endorser_role" value={form.endorser_role} onChange={handleChange} />
@@ -742,16 +748,14 @@ export default function ApplicationForm() {
             </div>
           )}
 
-          {/* Navigation */}
+          {/* Nav */}
           <div className="flex items-center justify-between mt-10 pt-5 border-t border-white/8">
-            <button
-              onClick={() => step === 1 ? setStarted(false) : handleStepChange(step - 1)}
-              className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-white/25 hover:text-white/55 transition-colors rounded-full border border-transparent hover:border-white/8"
-            >
+            <button onClick={() => step === 1 ? setStarted(false) : goStep(step - 1)}
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-white/25 hover:text-white/55 transition-colors rounded-full border border-transparent hover:border-white/8">
               <ArrowLeft className="w-4 h-4" /> {step === 1 ? 'Home' : 'Back'}
             </button>
             {step < totalSteps ? (
-              <button onClick={() => handleStepChange(step + 1)}
+              <button onClick={() => goStep(step + 1)}
                 className="flex items-center gap-2 px-8 py-3 bg-white text-[#08111f] font-black uppercase tracking-wider text-sm rounded-full hover:bg-white/90 transition-colors">
                 Continue <ArrowRight className="w-4 h-4" />
               </button>
