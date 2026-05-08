@@ -115,8 +115,6 @@ function HeaderLogo({ onClick, lightMode }: { onClick?: () => void; lightMode: b
   return (
     <button onClick={onClick} className="flex items-center gap-3 group">
       <div className="bg-blue-600 rounded-xl p-1.5 group-hover:bg-blue-500 transition-colors">
-    <button onClick={onClick} className="flex items-center gap-3">
-      <div className={`rounded-xl p-1.5 ${lightMode ? 'bg-blue-600' : 'bg-white/10'}`}>
         <img src="/alphahigh.png" alt="Alpha World School"
           className="h-7 w-auto object-contain"
           onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
