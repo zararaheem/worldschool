@@ -828,13 +828,6 @@ export default function ApplicationForm() {
 
         <div className={`flex-1 flex flex-col items-center justify-center px-6 py-14 text-center`}>
           <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">Inaugural Cohort · 2026–2027</p>
-       <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
-  <img
-    src="/awslogo.png"
-    alt="Alpha World School"
-    style={{ height: 100, width: 'auto', objectFit: 'contain', mixBlendMode: 'screen', display: 'block' }}
-  />
-</div>
           <h1 className={`text-4xl md:text-5xl font-black uppercase tracking-tight leading-none mb-8 ${lm ? 'text-blue-700' : 'text-blue-400'}`}>
             Guide<br/>Application
           </h1>
