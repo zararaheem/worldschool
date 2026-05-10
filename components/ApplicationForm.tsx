@@ -101,7 +101,7 @@ function HeaderLogo({ onClick, lightMode }: { onClick?: () => void; lightMode: b
   return (
     <button onClick={onClick} className="flex items-center gap-3 group">
       <img src="/alphahigh.png" alt="Alpha World School"
-          className={`h-7 w-auto object-contain ${lightMode ? '[filter:brightness(0)_saturate(100%)_invert(27%)_sepia(80%)_saturate(600%)_hue-rotate(195deg)_brightness(90%)]' : ''}`}
+          className="h-7 w-auto object-contain"
           onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
       <div className="leading-tight text-left">
         <div className={`font-black uppercase tracking-wider text-xs ${lightMode ? 'text-gray-900' : 'text-white'}`}>Alpha World</div>
@@ -471,21 +471,6 @@ function ConstraintSelector({ value, onChange, lm }: { value: string; onChange: 
 function LandingAccordion({ title, children, lm }: { title: string; children: React.ReactNode; lm?: boolean }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className={`rounded-xl border overflow-hidden ${lm ? 'border-blue-200 bg-blue-50' : 'border-white/10 bg-white/[0.03]'}`}>
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        className={`w-full flex items-center justify-between px-5 py-4 text-left transition-colors ${lm ? 'hover:bg-blue-100' : 'hover:bg-white/[0.05]'}`}>
-        <span className={`text-xs font-black uppercase tracking-widest ${lm ? 'text-blue-700' : 'text-blue-300'}`}>{title}</span>
-        <ChevronDown className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 ${open ? 'rotate-180' : ''} ${lm ? 'text-blue-400' : 'text-white/30'}`} />
-      </button>
-      <div className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-        <div className="overflow-hidden">
-          <div className={`px-5 pb-5 pt-2 border-t ${lm ? 'border-blue-100' : 'border-white/8'}`}>
-            {children}
-          </div>
-        </div>
-      </div>
     <div className={`rounded-xl border overflow-hidden transition-all ${lm ? 'border-blue-200 bg-blue-50' : 'border-white/10 bg-white/[0.03]'}`}>
       <button
         type="button"
@@ -794,7 +779,7 @@ export default function ApplicationForm() {
         <nav className={`flex items-center justify-between px-6 py-4 border-b ${border}`}>
           <div className="flex items-center gap-3">
             <img src="/alphahigh.png" alt="Alpha World School"
-              className={`h-7 w-auto object-contain ${lm ? '[filter:brightness(0)_saturate(100%)_invert(27%)_sepia(80%)_saturate(600%)_hue-rotate(195deg)_brightness(90%)]' : ''}`}
+              className="h-7 w-auto object-contain"
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
             <div className="leading-tight">
               <div className={`font-black uppercase tracking-wider text-xs ${lm ? 'text-blue-900' : 'text-white'}`}>Alpha World</div>
@@ -843,15 +828,6 @@ export default function ApplicationForm() {
 
         <div className={`flex-1 flex flex-col items-center justify-center px-6 py-14 text-center`}>
           <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">Inaugural Cohort · 2026–2027</p>
-          <div className="mb-2">
-            <img
-              src="/awslogo.png"
-              alt="Alpha World School"
-              className={`h-16 w-auto object-contain mx-auto ${lm ? '[mix-blend-mode:multiply]' : '[mix-blend-mode:screen] [filter:invert(1)_hue-rotate(180deg)]'}`}
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
-            <p className={`text-xs font-bold uppercase tracking-[0.25em] mt-1 ${lm ? 'text-blue-400' : 'text-white/35'}`}>Alpha World School</p>
-          </div>
           <h1 className={`text-4xl md:text-5xl font-black uppercase tracking-tight leading-none mb-8 ${lm ? 'text-blue-700' : 'text-blue-400'}`}>
             Guide<br/>Application
           </h1>
@@ -874,7 +850,6 @@ export default function ApplicationForm() {
 
             <LandingAccordion title="What the top 10% of Guides do differently" lm={lm}>
               <div className="space-y-2">
-                <p className={`text-sm mb-3 ${lm ? 'text-gray-500' : 'text-white/35'}`}>If you read this list and think &ldquo;that&rsquo;s me&rdquo; — keep going.</p>
                 <p className={`text-xs mb-3 ${lm ? 'text-gray-500' : 'text-white/35'}`}>If you read this list and think &ldquo;that&rsquo;s me&rdquo; — keep going.</p>
                 {[
                   'They anticipate problems before they happen',
@@ -900,26 +875,6 @@ export default function ApplicationForm() {
             </LandingAccordion>
           </div>
 
-          {/* Section overview */}
-          <div className="w-full max-w-xl mb-10">
-            <p className={`text-xs font-black uppercase tracking-widest text-center mb-4 ${lm ? 'text-blue-300' : 'text-white/20'}`}>5 Sections</p>
-            <div className="space-y-2">
-              {[
-                { n: 1, label: 'About You',        sub: 'Background & contact info' },
-                { n: 2, label: 'The Builds',       sub: '3 required + 1 optional' },
-                { n: 3, label: 'Submission Check', sub: 'Confirm all links' },
-                { n: 4, label: 'References',       sub: '2 references + endorsement' },
-                { n: 5, label: 'Sign & Submit',    sub: 'Acknowledgments & signature' },
-              ].map(({ n, label, sub }) => (
-                <div key={n} className={`flex items-center gap-4 px-4 py-3 rounded-xl border ${lm ? 'border-blue-100 bg-blue-50' : 'border-white/8 bg-white/[0.03]'}`}>
-                  <span className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-black flex-shrink-0 ${lm ? 'border-blue-200 text-blue-400' : 'border-white/20 text-white/35'}`}>{n}</span>
-                  <span className={`text-xs font-black uppercase tracking-wider ${lm ? 'text-blue-700' : 'text-white/70'}`}>{label}</span>
-                  <span className={`text-xs ml-1 ${lm ? 'text-gray-500' : 'text-white/30'}`}>{sub}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <div className="flex flex-col sm:flex-row items-center gap-3 mb-10">
             <button onClick={() => setPhase('gate')}
               className="flex items-center gap-2 px-8 py-3.5 bg-blue-500 hover:bg-blue-400 text-white font-black uppercase tracking-wider text-sm rounded-full transition-colors shadow-lg shadow-blue-500/20">
@@ -933,8 +888,6 @@ export default function ApplicationForm() {
 
           {/* Email resume */}
           <div className={`w-full max-w-sm rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.03] border-white/8'}`}>
-            <p className={`text-xs font-black uppercase tracking-wider ${lm ? 'text-gray-700' : 'text-white/50'}`}>Already started?</p>
-            <p className={`text-xs mb-3 mt-0.5 ${lm ? 'text-gray-500' : 'text-white/25'}`}>Continue where you left off</p>
             <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${lm ? 'text-gray-600' : 'text-white/30'}`}>Continue where you left off</p>
             <div className="flex gap-2">
               <input
@@ -967,7 +920,7 @@ export default function ApplicationForm() {
         <nav className={`flex items-center justify-between px-6 py-5 border-b ${border}`}>
           <button onClick={() => setPhase('landing')} className="flex items-center gap-3">
             <img src="/alphahigh.png" alt="Alpha World School"
-              className={`h-7 w-auto object-contain ${lm ? '[filter:brightness(0)_saturate(100%)_invert(27%)_sepia(80%)_saturate(600%)_hue-rotate(195deg)_brightness(90%)]' : ''}`}
+              className="h-7 w-auto object-contain"
               onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
             <div className="leading-tight text-left">
               <div className={`font-black uppercase tracking-wider text-xs ${lm ? 'text-blue-900' : 'text-white'}`}>Alpha World</div>
