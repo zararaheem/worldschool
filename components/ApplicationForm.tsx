@@ -486,6 +486,21 @@ function LandingAccordion({ title, children, lm }: { title: string; children: Re
           </div>
         </div>
       </div>
+    <div className={`rounded-xl border overflow-hidden transition-all ${lm ? 'border-blue-200 bg-blue-50' : 'border-white/10 bg-white/[0.03]'}`}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className={`w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors ${lm ? 'hover:bg-blue-100' : 'hover:bg-white/[0.04]'}`}>
+        <span className={`text-xs font-black uppercase tracking-widest ${lm ? 'text-blue-700' : 'text-blue-300'}`}>{title}</span>
+        {open
+          ? <ChevronDown className={`w-4 h-4 flex-shrink-0 ${lm ? 'text-blue-400' : 'text-white/30'}`} />
+          : <ChevronRight className={`w-4 h-4 flex-shrink-0 ${lm ? 'text-blue-400' : 'text-white/30'}`} />}
+      </button>
+      {open && (
+        <div className={`px-5 pb-5 pt-1 border-t ${lm ? 'border-blue-100' : 'border-white/8'}`}>
+          {children}
+        </div>
+      )}
     </div>
   )
 }
@@ -860,6 +875,7 @@ export default function ApplicationForm() {
             <LandingAccordion title="What the top 10% of Guides do differently" lm={lm}>
               <div className="space-y-2">
                 <p className={`text-sm mb-3 ${lm ? 'text-gray-500' : 'text-white/35'}`}>If you read this list and think &ldquo;that&rsquo;s me&rdquo; — keep going.</p>
+                <p className={`text-xs mb-3 ${lm ? 'text-gray-500' : 'text-white/35'}`}>If you read this list and think &ldquo;that&rsquo;s me&rdquo; — keep going.</p>
                 {[
                   'They anticipate problems before they happen',
                   'They never wait to be told what to do',
@@ -919,6 +935,7 @@ export default function ApplicationForm() {
           <div className={`w-full max-w-sm rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.03] border-white/8'}`}>
             <p className={`text-xs font-black uppercase tracking-wider ${lm ? 'text-gray-700' : 'text-white/50'}`}>Already started?</p>
             <p className={`text-xs mb-3 mt-0.5 ${lm ? 'text-gray-500' : 'text-white/25'}`}>Continue where you left off</p>
+            <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${lm ? 'text-gray-600' : 'text-white/30'}`}>Continue where you left off</p>
             <div className="flex gap-2">
               <input
                 type="email"
