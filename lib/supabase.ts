@@ -56,4 +56,5 @@ export interface GuideApplication {
   status: ApplicationStatus
   admin_notes: string
   draft_step: number
+  is_test: boolean
 }
