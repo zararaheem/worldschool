@@ -6,8 +6,16 @@ import {
   Users, Search, ChevronDown, ChevronUp, Eye, X,
   CheckCircle, Clock, XCircle, TrendingUp, Award, Filter,
   ExternalLink, MessageSquare, Download, RefreshCw,
-  Mail, Copy, Check, Settings, ToggleLeft, ToggleRight, Save
+  Mail, Copy, Check, Settings, ToggleLeft, ToggleRight, Save,
+  Undo2, Trash2, FlaskConical
 } from 'lucide-react'
+
+const PREV_STATUS: Record<string, string> = {
+  under_review: 'submitted',
+  advancing:    'under_review',
+  accepted:     'advancing',
+  rejected:     'under_review',
+}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -257,7 +265,7 @@ function RefereeNudgeComposer({ app, refNum, onClose }: { app: any; refNum: numb
 // ─── Detail Modal ─────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function DetailModal({ app, onClose, onStatusChange, onNotesChange }: { app: any; onClose: () => void; onStatusChange: (id: string, status: string) => void; onNotesChange: (id: string, notes: string) => void }) {
+function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest, onDelete }: { app: any; onClose: () => void; onStatusChange: (id: string, status: string) => void; onNotesChange: (id: string, notes: string) => void; onToggleTest: (id: string, isTest: boolean) => void; onDelete: (id: string) => void }) {
   const [notes, setNotes]       = useState(app.admin_notes || '')
   const [saving, setSaving]     = useState(false)
   const [savedMsg, setSavedMsg] = useState(false)
@@ -300,6 +308,11 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: { app: any
               <p className="text-gray-500 text-sm mt-0.5">{app.email} · {app.campus || '—'} · {app.role_at_alpha || '—'}</p>
               <div className="flex items-center gap-3 mt-2">
                 <StatusBadge status={app.status} />
+                {app.is_test && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                    <FlaskConical className="w-3 h-3" /> Test
+                  </span>
+                )}
                 <span className="text-xs text-gray-400">Submitted {new Date(app.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                 <span className="text-xs text-gray-400">{completedBuilds}/4 builds</span>
                 {allAcks && <span className="text-xs text-green-600 font-medium">All acks ✓</span>}
@@ -433,6 +446,24 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange }: { app: any
               </div>
               <F label="Applicant Signature" value={app.applicant_name} />
             </div>
+
+            <div className="pt-4 mt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
+              <button onClick={() => onToggleTest(app.id, !app.is_test)}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border transition-colors ${app.is_test
+                  ? 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100'
+                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+                <FlaskConical className="w-3.5 h-3.5" />
+                {app.is_test ? 'Unmark as test' : 'Mark as test'}
+              </button>
+              <button onClick={() => {
+                if (window.confirm(`Permanently delete the application for ${app.full_name || app.email || 'this applicant'}? This cannot be undone.`)) {
+                  onDelete(app.id)
+                }
+              }}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border bg-red-50 border-red-200 text-red-700 hover:bg-red-100 transition-colors">
+                <Trash2 className="w-3.5 h-3.5" /> Delete application
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -535,6 +566,7 @@ export default function AdminDashboard() {
   const [loading, setLoading]           = useState(false)
   const [search, setSearch]             = useState('')
   const [statusFilter, setStatusFilter] = useState('non_draft')
+  const [showTest, setShowTest]         = useState(false)
   const [selectedApp, setSelectedApp]   = useState<any>(null)
   const [sortField, setSortField]       = useState('created_at')
   const [sortDir, setSortDir]           = useState('desc')
@@ -606,12 +638,26 @@ export default function AdminDashboard() {
     setApplications(prev => prev.map(a => a.id === id ? { ...a, admin_notes } : a))
   }
 
+  const handleToggleTest = async (id: string, is_test: boolean) => {
+    await supabase.from('guide_applications').update({ is_test }).eq('id', id)
+    setApplications(prev => prev.map(a => a.id === id ? { ...a, is_test } : a))
+    if (selectedApp?.id === id) setSelectedApp((prev: any) => prev ? { ...prev, is_test } : null)
+  }
+
+  const handleDelete = async (id: string) => {
+    await supabase.from('guide_applications').delete().eq('id', id)
+    setApplications(prev => prev.filter(a => a.id !== id))
+    if (selectedApp?.id === id) setSelectedApp(null)
+  }
+
   const toggleSort = (field: string) => {
     if (sortField === field) setSortDir(p => p === 'asc' ? 'desc' : 'asc')
     else { setSortField(field); setSortDir('asc') }
   }
 
-  const filtered = applications
+  const visible = showTest ? applications : applications.filter(a => !a.is_test)
+
+  const filtered = visible
     .filter(a => {
       const q = search.toLowerCase()
       const statusMatch = statusFilter === 'all' ? true :
@@ -624,13 +670,15 @@ export default function AdminDashboard() {
       return sortDir === 'asc' ? (av < bv ? -1 : 1) : (av > bv ? -1 : 1)
     })
 
+  const testCount = applications.filter(a => a.is_test).length
+
   const stats = {
-    total:        applications.filter(a => a.status !== 'draft').length,
-    drafts:       applications.filter(a => a.status === 'draft').length,
-    under_review: applications.filter(a => a.status === 'under_review').length,
-    advancing:    applications.filter(a => a.status === 'advancing').length,
-    accepted:     applications.filter(a => a.status === 'accepted').length,
-    rejected:     applications.filter(a => a.status === 'rejected').length,
+    total:        visible.filter(a => a.status !== 'draft').length,
+    drafts:       visible.filter(a => a.status === 'draft').length,
+    under_review: visible.filter(a => a.status === 'under_review').length,
+    advancing:    visible.filter(a => a.status === 'advancing').length,
+    accepted:     visible.filter(a => a.status === 'accepted').length,
+    rejected:     visible.filter(a => a.status === 'rejected').length,
   }
 
   const exportCSV = () => {
@@ -767,6 +815,16 @@ export default function AdminDashboard() {
                   <option value="draft">Drafts only</option>
                 </select>
               </div>
+              {(testCount > 0 || showTest) && (
+                <button onClick={() => setShowTest(v => !v)}
+                  title={showTest ? 'Hide test applications' : 'Show test applications'}
+                  className={`flex items-center gap-2 px-4 py-2.5 text-sm rounded-lg border transition-colors ${showTest
+                    ? 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100'
+                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+                  <FlaskConical className="w-3.5 h-3.5" />
+                  {showTest ? `Showing ${testCount} test` : `${testCount} test hidden`}
+                </button>
+              )}
               <button onClick={fetchApplications} className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 text-sm rounded-lg border border-gray-300 transition-colors">
                 <RefreshCw className="w-3.5 h-3.5" /> Refresh
               </button>
@@ -847,9 +905,17 @@ export default function AdminDashboard() {
                                 ],
                               }
                               const actions = NEXT[app.status] || []
+                              const prev = PREV_STATUS[app.status]
                               return (
                                 <div className="space-y-1.5">
-                                  <StatusBadge status={app.status} />
+                                  <div className="flex items-center gap-1.5">
+                                    <StatusBadge status={app.status} />
+                                    {app.is_test && (
+                                      <span title="Test application" className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                                        TEST
+                                      </span>
+                                    )}
+                                  </div>
                                   {actions.map(a => (
                                     <button key={a.value}
                                       onClick={e => { e.stopPropagation(); handleStatusChange(app.id, a.value) }}
@@ -857,6 +923,14 @@ export default function AdminDashboard() {
                                       {a.label}
                                     </button>
                                   ))}
+                                  {prev && (
+                                    <button
+                                      onClick={e => { e.stopPropagation(); handleStatusChange(app.id, prev) }}
+                                      title={`Revert to ${STATUS_CONFIG[prev as keyof typeof STATUS_CONFIG]?.label}`}
+                                      className="flex items-center gap-1 w-full text-left px-2.5 py-1 rounded-lg border text-xs font-medium bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors">
+                                      <Undo2 className="w-3 h-3" /> Revert to {STATUS_CONFIG[prev as keyof typeof STATUS_CONFIG]?.label}
+                                    </button>
+                                  )}
                                   {app.admin_notes && (
                                     <div className="flex items-center gap-1 mt-1" title={app.admin_notes}>
                                       <MessageSquare className="w-3 h-3 text-gray-300" />
@@ -894,7 +968,8 @@ export default function AdminDashboard() {
 
       {selectedApp && (
         <DetailModal app={selectedApp} onClose={() => setSelectedApp(null)}
-          onStatusChange={handleStatusChange} onNotesChange={handleNotesChange} />
+          onStatusChange={handleStatusChange} onNotesChange={handleNotesChange}
+          onToggleTest={handleToggleTest} onDelete={handleDelete} />
       )}
     </div>
   )
