@@ -315,7 +315,7 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest
                 )}
                 <span className="text-xs text-gray-400">Submitted {new Date(app.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                 <span className="text-xs text-gray-400">{completedBuilds}/4 builds</span>
-                {allAcks && <span className="text-xs text-green-600 font-medium">All acks ✓</span>}
+                {allAcks && <span className="text-xs text-green-600 font-medium">All acknowledgments ✓</span>}
               </div>
             </div>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-4"><X className="w-5 h-5" /></button>
@@ -673,7 +673,7 @@ export default function AdminDashboard() {
   const testCount = applications.filter(a => a.is_test).length
 
   const stats = {
-    total:        visible.filter(a => a.status !== 'draft').length,
+    submitted:    visible.filter(a => a.status === 'submitted').length,
     drafts:       visible.filter(a => a.status === 'draft').length,
     under_review: visible.filter(a => a.status === 'under_review').length,
     advancing:    visible.filter(a => a.status === 'advancing').length,
@@ -782,7 +782,7 @@ export default function AdminDashboard() {
 
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
               {[
-                { label: 'Submitted',    value: stats.total,        Icon: Users,      color: 'text-gray-900',    click: () => setStatusFilter('non_draft') },
+                { label: 'Submitted',    value: stats.submitted,    Icon: Users,      color: 'text-blue-700',    click: () => setStatusFilter('submitted') },
                 { label: 'Drafts',       value: stats.drafts,       Icon: Clock,      color: 'text-gray-400',    click: () => setStatusFilter('draft') },
                 { label: 'Under Review', value: stats.under_review, Icon: Eye,        color: 'text-amber-600',   click: () => setStatusFilter('under_review') },
                 { label: 'Advancing',    value: stats.advancing,    Icon: TrendingUp, color: 'text-green-600',   click: () => setStatusFilter('advancing') },
