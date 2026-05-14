@@ -766,7 +766,7 @@ export default function ApplicationForm() {
             <CheckCircle className="w-8 h-8 text-emerald-400" />
           </div>
           <h2 className={`text-2xl font-black uppercase tracking-tight mb-3 ${lm ? 'text-blue-900' : 'text-white'}`}>Thank you for your application.</h2>
-          <p className={`text-sm leading-relaxed ${lm ? 'text-gray-600' : 'text-white/40'}`}>We&apos;ve received everything and will be in touch. In the meantime, feel free to reach out to the team with any questions.</p>
+          <p className={`text-sm leading-relaxed ${lm ? 'text-gray-600' : 'text-white/40'}`}>We&apos;ve received your application. Our team will be in touch soon. Please feel free to reach out to <a href="mailto:worldschool@alpha.school" className={`underline ${lm ? 'text-blue-700 hover:text-blue-900' : 'text-blue-300 hover:text-blue-200'}`}>worldschool@alpha.school</a> if you have any questions.</p>
         </div>
       </div>
     )
