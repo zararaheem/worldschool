@@ -680,6 +680,7 @@ export default function AdminDashboard() {
     accepted:     visible.filter(a => a.status === 'accepted').length,
     rejected:     visible.filter(a => a.status === 'rejected').length,
   }
+  const totalSubmitted = visible.filter(a => a.status !== 'draft').length
 
   const exportCSV = () => {
     const headers = ['Name','Email','Campus','Role','Status','Builds','Languages','Ref1 Email','Ref2 Email','Submitted']
@@ -779,6 +780,15 @@ export default function AdminDashboard() {
                 <button onClick={() => setNewCount(0)} className="text-green-500 text-xs ml-4">Dismiss</button>
               </div>
             )}
+
+            <div className="flex items-baseline justify-between mb-3">
+              <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Pipeline</h2>
+              <button onClick={() => setStatusFilter('non_draft')}
+                className="text-xs text-gray-500 hover:text-blue-600 transition-colors">
+                <span className="font-bold text-gray-900 text-base mr-1.5">{totalSubmitted}</span>
+                total applications submitted
+              </button>
+            </div>
 
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
               {[
