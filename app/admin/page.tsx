@@ -792,21 +792,29 @@ export default function AdminDashboard() {
 
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-8">
               {[
-                { label: 'Submitted',    value: stats.submitted,    Icon: Users,      color: 'text-blue-700',    click: () => setStatusFilter('submitted') },
-                { label: 'Drafts',       value: stats.drafts,       Icon: Clock,      color: 'text-gray-400',    click: () => setStatusFilter('draft') },
-                { label: 'Under Review', value: stats.under_review, Icon: Eye,        color: 'text-amber-600',   click: () => setStatusFilter('under_review') },
-                { label: 'Advancing',    value: stats.advancing,    Icon: TrendingUp, color: 'text-green-600',   click: () => setStatusFilter('advancing') },
-                { label: 'Accepted',     value: stats.accepted,     Icon: Award,      color: 'text-emerald-600', click: () => setStatusFilter('accepted') },
-                { label: 'Rejected',     value: stats.rejected,     Icon: XCircle,    color: 'text-red-400',     click: () => setStatusFilter('rejected') },
-              ].map(({ label, value, Icon, color, click }) => (
-                <button key={label} onClick={click} className="bg-white border border-gray-200 rounded-xl p-4 text-left hover:border-blue-200 hover:shadow-sm transition-all">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-gray-400">{label}</span>
-                    <Icon className={`w-4 h-4 ${color}`} />
-                  </div>
-                  <div className={`text-2xl font-black ${color}`}>{value}</div>
-                </button>
-              ))}
+                { label: 'Submitted',    value: stats.submitted,    Icon: Users,      color: 'text-blue-700',    filter: 'submitted' },
+                { label: 'Drafts',       value: stats.drafts,       Icon: Clock,      color: 'text-gray-400',    filter: 'draft' },
+                { label: 'Under Review', value: stats.under_review, Icon: Eye,        color: 'text-amber-600',   filter: 'under_review' },
+                { label: 'Advancing',    value: stats.advancing,    Icon: TrendingUp, color: 'text-green-600',   filter: 'advancing' },
+                { label: 'Accepted',     value: stats.accepted,     Icon: Award,      color: 'text-emerald-600', filter: 'accepted' },
+                { label: 'Rejected',     value: stats.rejected,     Icon: XCircle,    color: 'text-red-400',     filter: 'rejected' },
+              ].map(({ label, value, Icon, color, filter }) => {
+                const active = statusFilter === filter
+                return (
+                  <button key={label}
+                    onClick={() => setStatusFilter(active ? 'non_draft' : filter)}
+                    aria-pressed={active}
+                    className={`rounded-xl p-4 text-left border transition-all ${active
+                      ? 'bg-blue-50 border-blue-400 ring-2 ring-blue-200 shadow-sm'
+                      : 'bg-white border-gray-200 hover:border-blue-200 hover:shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`text-xs ${active ? 'text-blue-700 font-semibold' : 'text-gray-400'}`}>{label}</span>
+                      <Icon className={`w-4 h-4 ${color}`} />
+                    </div>
+                    <div className={`text-2xl font-black ${color}`}>{value}</div>
+                  </button>
+                )
+              })}
             </div>
 
             <div className="flex flex-col md:flex-row gap-3 mb-5">
