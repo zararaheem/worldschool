@@ -888,7 +888,7 @@ export default function ApplicationForm() {
 
           {/* Email resume */}
           <div className={`w-full max-w-sm rounded-2xl border p-5 ${lm ? 'bg-blue-50 border-blue-100' : 'bg-white/[0.03] border-white/8'}`}>
-            <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${lm ? 'text-gray-600' : 'text-white/30'}`}>Continue where you left off</p>
+            <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${lm ? 'text-gray-600' : 'text-white/30'}`}>Already started? Continue where you left off</p>
             <div className="flex gap-2">
               <input
                 type="email"
