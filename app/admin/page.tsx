@@ -65,6 +65,13 @@ const STATUS_CONFIG = {
   accepted:     { label: 'Accepted',     color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200',dot: 'bg-emerald-500' },
 }
 
+const CONSTRAINT_LABELS: Record<string, string> = {
+  conflict: 'Conflict by Week 5',
+  energy:   'Energy drops at mid-rotation',
+  cultural: 'Cultural missteps happen',
+  homesick: 'Someone wants to go home by Week 10',
+}
+
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.draft
   return (
@@ -346,12 +353,12 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest
               <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 pb-2 border-b border-gray-100">Builds</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
-                  { label: 'Build 1 — Workshop Sprint', value: app.build1_link, isVideo: false },
-                  { label: 'Build 2 — Design Doc', value: app.build2_design_link, isVideo: false },
-                  { label: 'Build 2 — Video', value: app.build2_video_link, isVideo: true },
-                  { label: 'Build 3 — The Video', value: app.build3_video_link, isVideo: true },
-                  { label: 'Build 4 — Language Tape', value: app.build4_language_link, isVideo: true },
-                ].map(({ label, value, isVideo }) => {
+                  { label: 'Build 1 — Workshop Sprint', value: app.build1_link, isVideo: false, meta: app.build1_focus_area ? `Focus area: ${app.build1_focus_area}` : null },
+                  { label: 'Build 2 — Design Doc', value: app.build2_design_link, isVideo: false, meta: app.build2_constraint ? `Constraint: ${CONSTRAINT_LABELS[app.build2_constraint] || app.build2_constraint}` : null },
+                  { label: 'Build 2 — Video', value: app.build2_video_link, isVideo: true, meta: null },
+                  { label: 'Build 3 — The Video', value: app.build3_video_link, isVideo: true, meta: null },
+                  { label: 'Build 4 — Language Tape', value: app.build4_language_link, isVideo: true, meta: null },
+                ].map(({ label, value, isVideo, meta }) => {
                   const isYoutube = value && (value.includes('youtube.com') || value.includes('youtu.be'))
                   const isLoom = value && value.includes('loom.com')
                   const isDrive = value && value.includes('drive.google.com')
@@ -362,6 +369,9 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest
                   return (
                   <div key={label} className={`p-3 rounded-lg border ${value ? 'border-green-100 bg-green-50' : 'border-gray-100 bg-gray-50'}`}>
                     <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">{label}</div>
+                    {meta && (
+                      <div className="inline-block mb-2 px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-xs font-semibold">{meta}</div>
+                    )}
                     {value ? (
                       <div className="space-y-2">
                         {canEmbed && embedUrl && (
@@ -376,9 +386,13 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest
                               className="w-full h-full" allow="autoplay" allowFullScreen title={label} />
                           </div>
                         )}
-                        <a href={value} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-500 break-all flex items-center gap-1">
-                          Open <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                        </a>
+                        <div>
+                          <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Submitted link</div>
+                          <a href={value} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-500 underline break-all flex items-start gap-1">
+                            <span className="break-all">{value}</span>
+                            <ExternalLink className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                          </a>
+                        </div>
                       </div>
                     ) : <span className="text-xs text-gray-400 italic">Not submitted</span>}
                   </div>
