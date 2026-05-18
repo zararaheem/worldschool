@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import {
   CheckCircle, AlertCircle, ChevronDown, ChevronRight,
-  ArrowRight, ArrowLeft, ExternalLink, Info, Upload, Link2, X, Sun, Moon
+  ArrowRight, ArrowLeft, ExternalLink, Info, Upload, Link2, X, Sun, Moon, Clock
 } from 'lucide-react'
 
 const supabase = createClient(
@@ -828,9 +828,13 @@ export default function ApplicationForm() {
 
         <div className={`flex-1 flex flex-col items-center justify-center px-6 py-14 text-center`}>
           <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">Inaugural Cohort · 2026–2027</p>
-          <h1 className={`text-4xl md:text-5xl font-black uppercase tracking-tight leading-none mb-8 ${lm ? 'text-blue-700' : 'text-blue-400'}`}>
+          <h1 className={`text-4xl md:text-5xl font-black uppercase tracking-tight leading-none mb-5 ${lm ? 'text-blue-700' : 'text-blue-400'}`}>
             Guide<br/>Application
           </h1>
+
+          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wide mb-8 ${lm ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-blue-500/10 text-blue-300 border border-blue-400/20'}`}>
+            <Clock className="w-3.5 h-3.5" /> Applications reviewed on a rolling basis — we&apos;d love yours by June 1, 2026
+          </div>
 
           {/* Intro text + accordions */}
           <div className="w-full max-w-xl space-y-2 mb-10 text-left">
