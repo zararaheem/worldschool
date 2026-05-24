@@ -11,6 +11,90 @@ function getAuth() {
   return jwt
 }
 
+function getGmailAuth(impersonate: string) {
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
+  const key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+  if (!email || !key) throw new Error('Missing Google service account credentials.')
+  return new google.auth.JWT({
+    email,
+    key,
+    scopes: ['https://www.googleapis.com/auth/gmail.send'],
+    subject: impersonate,
+  })
+}
+
+function encodeRfc822Base64Url(message: string): string {
+  return Buffer.from(message, 'utf-8').toString('base64')
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+function buildMimeMessage({ from, to, subject, text, html }: {
+  from: string; to: string; subject: string; text: string; html: string
+}): string {
+  const boundary = `boundary_${Date.now().toString(36)}`
+  const headers = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+  ].join('\r\n')
+  const body = [
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    text,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    html,
+    '',
+    `--${boundary}--`,
+    '',
+  ].join('\r\n')
+  return `${headers}\r\n${body}`
+}
+
+export async function sendNudgeEmail({ to, name, resumeUrl }: {
+  to: string; name: string; resumeUrl: string
+}): Promise<void> {
+  const sendAs = process.env.GMAIL_SEND_AS
+  if (!sendAs) throw new Error('Missing GMAIL_SEND_AS env var.')
+
+  const firstName = (name || '').trim().split(/\s+/)[0] || 'there'
+  const subject = 'A quick nudge on your Alpha World School guide application'
+  const text = [
+    `Hi ${firstName},`,
+    '',
+    "We noticed you started your Alpha World School guide application but haven't finished it yet. Your builds are the heart of the application — we'd love to see what you make.",
+    '',
+    `Pick up where you left off: ${resumeUrl}`,
+    '',
+    "Applications are reviewed on a rolling basis — we'd love yours by June 1, 2026.",
+    '',
+    'Questions? Just reply to this email, or write us at worldschool@alpha.school.',
+    '',
+    '— The Alpha World School team',
+  ].join('\n')
+  const html = `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1f2937;line-height:1.55;max-width:560px;margin:0 auto;padding:24px;">
+    <p>Hi ${firstName},</p>
+    <p>We noticed you started your Alpha World School guide application but haven't finished it yet. Your builds are the heart of the application — we'd love to see what you make.</p>
+    <p style="margin:24px 0;"><a href="${resumeUrl}" style="display:inline-block;background:#3b82f6;color:#fff;text-decoration:none;padding:12px 24px;border-radius:9999px;font-weight:700;">Pick up where you left off</a></p>
+    <p style="color:#4b5563;font-size:14px;">Or paste this link in your browser: <a href="${resumeUrl}">${resumeUrl}</a></p>
+    <p>Applications are reviewed on a rolling basis — we'd love yours by <strong>June 1, 2026</strong>.</p>
+    <p style="color:#4b5563;font-size:14px;">Questions? Just reply to this email, or write us at <a href="mailto:worldschool@alpha.school">worldschool@alpha.school</a>.</p>
+    <p style="color:#6b7280;font-size:13px;margin-top:32px;">— The Alpha World School team</p>
+  </body></html>`
+
+  const raw = encodeRfc822Base64Url(buildMimeMessage({ from: sendAs, to, subject, text, html }))
+  const gmail = google.gmail({ version: 'v1', auth: getGmailAuth(sendAs) })
+  await gmail.users.messages.send({ userId: 'me', requestBody: { raw } })
+}
+
 export async function uploadFileToDrive(
   buffer: Buffer,
   fileName: string,

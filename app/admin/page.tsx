@@ -272,7 +272,7 @@ function RefereeNudgeComposer({ app, refNum, onClose }: { app: any; refNum: numb
 // ─── Detail Modal ─────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest, onDelete }: { app: any; onClose: () => void; onStatusChange: (id: string, status: string) => void; onNotesChange: (id: string, notes: string) => void; onToggleTest: (id: string, isTest: boolean) => void; onDelete: (id: string) => void }) {
+function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest, onDelete, onNudge, nudging }: { app: any; onClose: () => void; onStatusChange: (id: string, status: string) => void; onNotesChange: (id: string, notes: string) => void; onToggleTest: (id: string, isTest: boolean) => void; onDelete: (id: string) => void; onNudge: (id: string) => void; nudging: boolean }) {
   const [notes, setNotes]       = useState(app.admin_notes || '')
   const [saving, setSaving]     = useState(false)
   const [savedMsg, setSavedMsg] = useState(false)
@@ -462,13 +462,23 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest
             </div>
 
             <div className="pt-4 mt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
-              <button onClick={() => onToggleTest(app.id, !app.is_test)}
-                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border transition-colors ${app.is_test
-                  ? 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100'
-                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
-                <FlaskConical className="w-3.5 h-3.5" />
-                {app.is_test ? 'Unmark as test' : 'Mark as test'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => onToggleTest(app.id, !app.is_test)}
+                  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border transition-colors ${app.is_test
+                    ? 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100'
+                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+                  <FlaskConical className="w-3.5 h-3.5" />
+                  {app.is_test ? 'Unmark as test' : 'Mark as test'}
+                </button>
+                {app.status === 'draft' && app.email && (
+                  <button onClick={() => onNudge(app.id)} disabled={nudging}
+                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 disabled:opacity-60 transition-colors"
+                    title={app.last_nudged_at ? `Last reminded ${new Date(app.last_nudged_at).toLocaleString()} · ${app.nudge_count || 0} total` : 'No reminders sent yet'}>
+                    <Mail className="w-3.5 h-3.5" />
+                    {nudging ? 'Sending…' : app.last_nudged_at ? `Send reminder (${app.nudge_count || 0} sent)` : 'Send reminder'}
+                  </button>
+                )}
+              </div>
               <button onClick={() => {
                 if (window.confirm(`Permanently delete the application for ${app.full_name || app.email || 'this applicant'}? This cannot be undone.`)) {
                   onDelete(app.id)
@@ -662,6 +672,37 @@ export default function AdminDashboard() {
     await supabase.from('guide_applications').delete().eq('id', id)
     setApplications(prev => prev.filter(a => a.id !== id))
     if (selectedApp?.id === id) setSelectedApp(null)
+  }
+
+  const [nudging, setNudging] = useState(false)
+  const handleNudge = async (ids?: string[]) => {
+    const targets = ids ?? applications.filter(a => a.status === 'draft' && !a.is_test && a.email).map(a => a.id)
+    if (!targets.length) { alert('No reachable drafts to nudge.'); return }
+    const label = ids?.length === 1 ? 'this applicant' : `${targets.length} draft applicant${targets.length === 1 ? '' : 's'}`
+    if (!window.confirm(`Send a reminder email to ${label}?`)) return
+    setNudging(true)
+    try {
+      const res = await fetch('/api/admin/nudge-drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+        body: JSON.stringify(ids ? { ids } : {}),
+      })
+      const data = await res.json()
+      if (!res.ok) { alert(data.error || 'Failed to send reminders.'); return }
+      const now = new Date().toISOString()
+      setApplications(prev => prev.map(a => targets.includes(a.id)
+        ? { ...a, last_nudged_at: now, nudge_count: (a.nudge_count || 0) + 1 }
+        : a))
+      if (selectedApp && targets.includes(selectedApp.id)) {
+        setSelectedApp((prev: any) => prev ? { ...prev, last_nudged_at: now, nudge_count: (prev.nudge_count || 0) + 1 } : null)
+      }
+      const failMsg = data.failed ? `\n\n${data.failed} failed:\n${data.failures.map((f: any) => `• ${f.email}: ${f.error}`).join('\n')}` : ''
+      alert(`Sent ${data.sent} reminder${data.sent === 1 ? '' : 's'}.${failMsg}`)
+    } catch (err) {
+      alert(`Failed to send reminders: ${err instanceof Error ? err.message : String(err)}`)
+    } finally {
+      setNudging(false)
+    }
   }
 
   const toggleSort = (field: string) => {
@@ -863,6 +904,12 @@ export default function AdminDashboard() {
               <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg font-medium transition-colors">
                 <Download className="w-3.5 h-3.5" /> Export CSV
               </button>
+              {statusFilter === 'draft' && (
+                <button onClick={() => handleNudge()} disabled={nudging}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white text-sm rounded-lg font-medium transition-colors">
+                  <Mail className="w-3.5 h-3.5" /> {nudging ? 'Sending…' : 'Send reminders to drafts'}
+                </button>
+              )}
             </div>
 
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
@@ -1001,7 +1048,8 @@ export default function AdminDashboard() {
       {selectedApp && (
         <DetailModal app={selectedApp} onClose={() => setSelectedApp(null)}
           onStatusChange={handleStatusChange} onNotesChange={handleNotesChange}
-          onToggleTest={handleToggleTest} onDelete={handleDelete} />
+          onToggleTest={handleToggleTest} onDelete={handleDelete}
+          onNudge={(id) => handleNudge([id])} nudging={nudging} />
       )}
     </div>
   )
