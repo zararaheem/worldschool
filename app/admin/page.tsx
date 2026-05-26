@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { buildReminderEmail, type ReminderTemplate } from '@/lib/email-templates'
 import {
   Users, Search, ChevronDown, ChevronUp, Eye, X,
   CheckCircle, Clock, XCircle, TrendingUp, Award, Filter,
@@ -272,11 +273,12 @@ function RefereeNudgeComposer({ app, refNum, onClose }: { app: any; refNum: numb
 // ─── Detail Modal ─────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest, onDelete, onNudge, nudging }: { app: any; onClose: () => void; onStatusChange: (id: string, status: string) => void; onNotesChange: (id: string, notes: string) => void; onToggleTest: (id: string, isTest: boolean) => void; onDelete: (id: string) => void; onNudge: (id: string) => void; nudging: boolean }) {
+function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest, onDelete, onSendReminder }: { app: any; onClose: () => void; onStatusChange: (id: string, status: string) => void; onNotesChange: (id: string, notes: string) => void; onToggleTest: (id: string, isTest: boolean) => void; onDelete: (id: string) => void; onSendReminder: (app: any, template: ReminderTemplate) => void }) {
   const [notes, setNotes]       = useState(app.admin_notes || '')
   const [saving, setSaving]     = useState(false)
   const [savedMsg, setSavedMsg] = useState(false)
   const [nudgeRef, setNudgeRef] = useState<number | null>(null)
+  const [showReminderMenu, setShowReminderMenu] = useState(false)
 
   const saveNotes = async () => {
     setSaving(true); await onNotesChange(app.id, notes); setSaving(false)
@@ -471,12 +473,32 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest
                   {app.is_test ? 'Unmark as test' : 'Mark as test'}
                 </button>
                 {app.status === 'draft' && app.email && (
-                  <button onClick={() => onNudge(app.id)} disabled={nudging}
-                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 disabled:opacity-60 transition-colors"
-                    title={app.last_nudged_at ? `Last reminded ${new Date(app.last_nudged_at).toLocaleString()} · ${app.nudge_count || 0} total` : 'No reminders sent yet'}>
-                    <Mail className="w-3.5 h-3.5" />
-                    {nudging ? 'Sending…' : app.last_nudged_at ? `Send reminder (${app.nudge_count || 0} sent)` : 'Send reminder'}
-                  </button>
+                  <div className="relative">
+                    <button onClick={() => setShowReminderMenu(v => !v)}
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 transition-colors"
+                      title={app.last_nudged_at ? `Last reminded ${new Date(app.last_nudged_at).toLocaleString()} · ${app.nudge_count || 0} sent` : 'No reminders sent yet'}>
+                      <Mail className="w-3.5 h-3.5" />
+                      {app.last_nudged_at ? `Send reminder (${app.nudge_count || 0} sent)` : 'Send reminder'}
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
+                    {showReminderMenu && (
+                      <>
+                        <div className="fixed inset-0 z-30" onClick={() => setShowReminderMenu(false)} />
+                        <div className="absolute z-40 left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                          <button onClick={() => { setShowReminderMenu(false); onSendReminder(app, 'general') }}
+                            className="w-full text-left px-3 py-2.5 hover:bg-amber-50 border-b border-gray-100">
+                            <div className="text-xs font-semibold text-gray-900">General reminder</div>
+                            <div className="text-[11px] text-gray-500 mt-0.5">"You started — pick up where you left off."</div>
+                          </button>
+                          <button onClick={() => { setShowReminderMenu(false); onSendReminder(app, 'builds') }}
+                            className="w-full text-left px-3 py-2.5 hover:bg-amber-50">
+                            <div className="text-xs font-semibold text-gray-900">Submit your builds</div>
+                            <div className="text-[11px] text-gray-500 mt-0.5">"The builds are the most important part — submit them."</div>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
               <button onClick={() => {
@@ -674,34 +696,19 @@ export default function AdminDashboard() {
     if (selectedApp?.id === id) setSelectedApp(null)
   }
 
-  const [nudging, setNudging] = useState(false)
-  const handleNudge = async (ids?: string[]) => {
-    const targets = ids ?? applications.filter(a => a.status === 'draft' && !a.is_test && a.email).map(a => a.id)
-    if (!targets.length) { alert('No reachable drafts to nudge.'); return }
-    const label = ids?.length === 1 ? 'this applicant' : `${targets.length} draft applicant${targets.length === 1 ? '' : 's'}`
-    if (!window.confirm(`Send a reminder email to ${label}?`)) return
-    setNudging(true)
-    try {
-      const res = await fetch('/api/admin/nudge-drafts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
-        body: JSON.stringify(ids ? { ids } : {}),
-      })
-      const data = await res.json()
-      if (!res.ok) { alert(data.error || 'Failed to send reminders.'); return }
-      const now = new Date().toISOString()
-      setApplications(prev => prev.map(a => targets.includes(a.id)
-        ? { ...a, last_nudged_at: now, nudge_count: (a.nudge_count || 0) + 1 }
-        : a))
-      if (selectedApp && targets.includes(selectedApp.id)) {
-        setSelectedApp((prev: any) => prev ? { ...prev, last_nudged_at: now, nudge_count: (prev.nudge_count || 0) + 1 } : null)
-      }
-      const failMsg = data.failed ? `\n\n${data.failed} failed:\n${data.failures.map((f: any) => `• ${f.email}: ${f.error}`).join('\n')}` : ''
-      alert(`Sent ${data.sent} reminder${data.sent === 1 ? '' : 's'}.${failMsg}`)
-    } catch (err) {
-      alert(`Failed to send reminders: ${err instanceof Error ? err.message : String(err)}`)
-    } finally {
-      setNudging(false)
+  const handleSendReminder = async (app: any, template: ReminderTemplate) => {
+    if (!app.email) { alert('This applicant has no email on file.'); return }
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const resumeUrl = `${origin}/?token=${encodeURIComponent(app.id)}`
+    const { subject, body } = buildReminderEmail({ name: app.full_name || '', resumeUrl, template })
+    const mailto = `mailto:${encodeURIComponent(app.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    window.open(mailto, '_blank')
+    const now = new Date().toISOString()
+    const nextCount = (app.nudge_count || 0) + 1
+    await supabase.from('guide_applications').update({ last_nudged_at: now, nudge_count: nextCount }).eq('id', app.id)
+    setApplications(prev => prev.map(a => a.id === app.id ? { ...a, last_nudged_at: now, nudge_count: nextCount } : a))
+    if (selectedApp?.id === app.id) {
+      setSelectedApp((prev: any) => prev ? { ...prev, last_nudged_at: now, nudge_count: nextCount } : null)
     }
   }
 
@@ -904,12 +911,6 @@ export default function AdminDashboard() {
               <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg font-medium transition-colors">
                 <Download className="w-3.5 h-3.5" /> Export CSV
               </button>
-              {statusFilter === 'draft' && (
-                <button onClick={() => handleNudge()} disabled={nudging}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-white text-sm rounded-lg font-medium transition-colors">
-                  <Mail className="w-3.5 h-3.5" /> {nudging ? 'Sending…' : 'Send reminders to drafts'}
-                </button>
-              )}
             </div>
 
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
@@ -1049,7 +1050,7 @@ export default function AdminDashboard() {
         <DetailModal app={selectedApp} onClose={() => setSelectedApp(null)}
           onStatusChange={handleStatusChange} onNotesChange={handleNotesChange}
           onToggleTest={handleToggleTest} onDelete={handleDelete}
-          onNudge={(id) => handleNudge([id])} nudging={nudging} />
+          onSendReminder={handleSendReminder} />
       )}
     </div>
   )
