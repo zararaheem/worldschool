@@ -16,9 +16,9 @@ export const DEFAULT_REMINDER_TEMPLATES: ReminderTemplateDef[] = [
     body: [
       'Hi {first_name},',
       '',
-      "We noticed you started your Alpha World School guide application but haven't finished it yet. You're closer than you think — and you can pick up right where you left off.",
+      "We noticed you started your Alpha World School guide application but haven't submitted it yet. You don't need to finish everything — getting just one build in is enough to move your application forward.",
       '',
-      'Continue your application: {resume_link}',
+      'Pick up where you left off: {resume_link}',
       '',
       "Applications are reviewed on a rolling basis — we'd love yours by June 1, 2026.",
       '',
