@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { buildReminderEmail, type ReminderTemplate } from '@/lib/email-templates'
+import { DEFAULT_REMINDER_TEMPLATES, renderTemplate, type ReminderTemplateDef } from '@/lib/email-templates'
 import {
   Users, Search, ChevronDown, ChevronUp, Eye, X,
   CheckCircle, Clock, XCircle, TrendingUp, Award, Filter,
@@ -160,7 +160,7 @@ function FieldConfigEditor({ config, onSave }: { config: FieldConfig; onSave: (c
 // ─── Nudge Composer ───────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function RowReminderButton({ app, onSendReminder }: { app: any; onSendReminder: (app: any, template: ReminderTemplate) => void }) {
+function RowReminderButton({ app, templates, onSendReminder }: { app: any; templates: ReminderTemplateDef[]; onSendReminder: (app: any, template: ReminderTemplateDef) => void }) {
   const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null)
   const openMenu = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -179,18 +179,15 @@ function RowReminderButton({ app, onSendReminder }: { app: any; onSendReminder: 
       {menuPos && (
         <>
           <div className="fixed inset-0 z-40" onClick={e => { e.stopPropagation(); setMenuPos(null) }} />
-          <div className="fixed z-50 w-60 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden"
+          <div className="fixed z-50 w-64 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden max-h-80 overflow-y-auto"
             style={{ top: menuPos.top, right: menuPos.right }}>
-            <button onClick={e => { e.stopPropagation(); setMenuPos(null); onSendReminder(app, 'general') }}
-              className="w-full text-left px-3 py-2.5 hover:bg-amber-50 border-b border-gray-100">
-              <div className="text-xs font-semibold text-gray-900">General reminder</div>
-              <div className="text-[11px] text-gray-500 mt-0.5">Pick up where you left off.</div>
-            </button>
-            <button onClick={e => { e.stopPropagation(); setMenuPos(null); onSendReminder(app, 'builds') }}
-              className="w-full text-left px-3 py-2.5 hover:bg-amber-50">
-              <div className="text-xs font-semibold text-gray-900">Submit your builds</div>
-              <div className="text-[11px] text-gray-500 mt-0.5">Nudge them to finish the builds.</div>
-            </button>
+            {templates.map(t => (
+              <button key={t.key} onClick={e => { e.stopPropagation(); setMenuPos(null); onSendReminder(app, t) }}
+                className="w-full text-left px-3 py-2.5 hover:bg-amber-50 border-b border-gray-100 last:border-b-0">
+                <div className="text-xs font-semibold text-gray-900">{t.label}</div>
+                <div className="text-[11px] text-gray-500 mt-0.5 truncate">{t.subject}</div>
+              </button>
+            ))}
           </div>
         </>
       )}
@@ -312,7 +309,7 @@ function RefereeNudgeComposer({ app, refNum, onClose }: { app: any; refNum: numb
 // ─── Detail Modal ─────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest, onDelete, onSendReminder }: { app: any; onClose: () => void; onStatusChange: (id: string, status: string) => void; onNotesChange: (id: string, notes: string) => void; onToggleTest: (id: string, isTest: boolean) => void; onDelete: (id: string) => void; onSendReminder: (app: any, template: ReminderTemplate) => void }) {
+function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest, onDelete, onSendReminder, reminderTemplates }: { app: any; onClose: () => void; onStatusChange: (id: string, status: string) => void; onNotesChange: (id: string, notes: string) => void; onToggleTest: (id: string, isTest: boolean) => void; onDelete: (id: string) => void; onSendReminder: (app: any, template: ReminderTemplateDef) => void; reminderTemplates: ReminderTemplateDef[] }) {
   const [notes, setNotes]       = useState(app.admin_notes || '')
   const [saving, setSaving]     = useState(false)
   const [savedMsg, setSavedMsg] = useState(false)
@@ -523,17 +520,14 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest
                     {showReminderMenu && (
                       <>
                         <div className="fixed inset-0 z-30" onClick={() => setShowReminderMenu(false)} />
-                        <div className="absolute z-40 left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-                          <button onClick={() => { setShowReminderMenu(false); onSendReminder(app, 'general') }}
-                            className="w-full text-left px-3 py-2.5 hover:bg-amber-50 border-b border-gray-100">
-                            <div className="text-xs font-semibold text-gray-900">General reminder</div>
-                            <div className="text-[11px] text-gray-500 mt-0.5">"You started — pick up where you left off."</div>
-                          </button>
-                          <button onClick={() => { setShowReminderMenu(false); onSendReminder(app, 'builds') }}
-                            className="w-full text-left px-3 py-2.5 hover:bg-amber-50">
-                            <div className="text-xs font-semibold text-gray-900">Submit your builds</div>
-                            <div className="text-[11px] text-gray-500 mt-0.5">"The builds are the most important part — submit them."</div>
-                          </button>
+                        <div className="absolute z-40 left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden max-h-80 overflow-y-auto">
+                          {reminderTemplates.map(t => (
+                            <button key={t.key} onClick={() => { setShowReminderMenu(false); onSendReminder(app, t) }}
+                              className="w-full text-left px-3 py-2.5 hover:bg-amber-50 border-b border-gray-100 last:border-b-0">
+                              <div className="text-xs font-semibold text-gray-900">{t.label}</div>
+                              <div className="text-[11px] text-gray-500 mt-0.5 truncate">{t.subject}</div>
+                            </button>
+                          ))}
                         </div>
                       </>
                     )}
@@ -566,6 +560,109 @@ const ADMIN_EMAILS = [
 // ─── Admin Users Panel ────────────────────────────────────────────────
 
 const SUPER_ADMINS = ['zara.raheem@alpha.school']
+
+// ─── Email Templates Panel ────────────────────────────────────────────
+
+function EmailTemplatesPanel({ templates, onSave }: { templates: ReminderTemplateDef[]; onSave: (t: ReminderTemplateDef[]) => Promise<void> }) {
+  const [list, setList]     = useState<ReminderTemplateDef[]>(templates)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved]   = useState(false)
+  const [openKey, setOpenKey] = useState<string | null>(null)
+
+  useEffect(() => { setList(templates) }, [templates])
+
+  const dirty = JSON.stringify(list) !== JSON.stringify(templates)
+
+  const update = (key: string, patch: Partial<ReminderTemplateDef>) =>
+    setList(prev => prev.map(t => t.key === key ? { ...t, ...patch } : t))
+
+  const resetBuiltin = (key: string) => {
+    const def = DEFAULT_REMINDER_TEMPLATES.find(t => t.key === key)
+    if (def) update(key, { label: def.label, subject: def.subject, body: def.body })
+  }
+
+  const remove = (key: string) => setList(prev => prev.filter(t => t.key !== key))
+
+  const add = () => {
+    let base = 'custom', key = base, i = 1
+    const keys = new Set(list.map(t => t.key))
+    while (keys.has(key)) { key = `${base}_${i++}` }
+    const t: ReminderTemplateDef = { key, label: 'New template', subject: '', body: 'Hi {first_name},\n\n{resume_link}\n\n— The Alpha World School team' }
+    setList(prev => [...prev, t]); setOpenKey(key)
+  }
+
+  const save = async () => {
+    setSaving(true); await onSave(list); setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000)
+  }
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+        <div>
+          <h2 className="text-sm font-bold text-gray-900">Reminder Email Templates</h2>
+          <p className="text-xs text-gray-400 mt-0.5">Templates shown in the &ldquo;Remind&rdquo; menu on draft applicants. Use <code className="text-gray-500">{'{first_name}'}</code> and <code className="text-gray-500">{'{resume_link}'}</code> as placeholders.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {saved && <span className="text-xs text-green-600 font-medium">✓ Saved</span>}
+          {dirty && !saving && <span className="text-xs text-amber-600 font-medium">Unsaved changes</span>}
+          <button onClick={save} disabled={!dirty || saving}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition-colors">
+            <Save className="w-3.5 h-3.5" /> {saving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+      </div>
+      <div className="divide-y divide-gray-100">
+        {list.map(t => {
+          const open = openKey === t.key
+          return (
+            <div key={t.key} className="px-5 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <button onClick={() => setOpenKey(open ? null : t.key)} className="flex items-center gap-2 text-left flex-1 min-w-0">
+                  {open ? <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />}
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-gray-900 truncate">{t.label || <span className="italic text-gray-400">Untitled</span>}
+                      {t.builtin && <span className="ml-2 text-[10px] uppercase tracking-wide bg-gray-100 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded-full">Built-in</span>}
+                    </div>
+                    <div className="text-xs text-gray-400 truncate">{t.subject || <span className="italic">No subject</span>}</div>
+                  </div>
+                </button>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {t.builtin
+                    ? <button onClick={() => resetBuiltin(t.key)} title="Reset to default" className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700"><Undo2 className="w-3.5 h-3.5" /> Reset</button>
+                    : <button onClick={() => remove(t.key)} title="Delete template" className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700"><Trash2 className="w-3.5 h-3.5" /> Delete</button>}
+                </div>
+              </div>
+              {open && (
+                <div className="mt-3 space-y-3 pl-6">
+                  {!t.builtin && (
+                    <div>
+                      <label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Menu label</label>
+                      <input value={t.label} onChange={e => update(t.key, { label: e.target.value })}
+                        className="mt-1 w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-500" />
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Subject</label>
+                    <input value={t.subject} onChange={e => update(t.key, { subject: e.target.value })}
+                      className="mt-1 w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-blue-500" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Body</label>
+                    <textarea value={t.body} onChange={e => update(t.key, { body: e.target.value })} rows={12}
+                      className="mt-1 w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 font-mono leading-relaxed focus:outline-none focus:border-blue-500" />
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <div className="px-5 py-4 border-t border-gray-100 bg-gray-50">
+        <button onClick={add} className="text-sm text-blue-600 hover:text-blue-800 font-medium">+ Add template</button>
+      </div>
+    </div>
+  )
+}
 
 function AdminUsersPanel({ currentEmail }: { currentEmail: string }) {
   const [adminList, setAdminList] = useState<string[]>(ADMIN_EMAILS)
@@ -658,6 +755,7 @@ export default function AdminDashboard() {
   const [newCount, setNewCount]         = useState(0)
   const [liveConnected, setLiveConnected] = useState(false)
   const [fieldConfig, setFieldConfig]   = useState<FieldConfig>(DEFAULT_FIELD_CONFIG)
+  const [reminderTemplates, setReminderTemplates] = useState<ReminderTemplateDef[]>(DEFAULT_REMINDER_TEMPLATES)
 
   const fetchApplications = useCallback(async () => {
     setLoading(true)
@@ -676,6 +774,17 @@ export default function AdminDashboard() {
     setFieldConfig(config)
   }
 
+  const fetchReminderTemplates = useCallback(async () => {
+    const { data } = await supabase.from('form_config').select('config').eq('id', 'reminder_templates').single()
+    const stored = (data?.config as { templates?: ReminderTemplateDef[] } | null)?.templates
+    if (stored && stored.length) setReminderTemplates(stored)
+  }, [])
+
+  const saveReminderTemplates = async (templates: ReminderTemplateDef[]) => {
+    await supabase.from('form_config').upsert({ id: 'reminder_templates', config: { templates } }, { onConflict: 'id' })
+    setReminderTemplates(templates)
+  }
+
   // Persist auth across refreshes within the session
   useEffect(() => {
     const saved = sessionStorage.getItem('admin_email')
@@ -689,7 +798,8 @@ export default function AdminDashboard() {
     if (!authed) return
     fetchApplications()
     fetchFieldConfig()
-  }, [authed, fetchApplications, fetchFieldConfig])
+    fetchReminderTemplates()
+  }, [authed, fetchApplications, fetchFieldConfig, fetchReminderTemplates])
 
   useEffect(() => {
     if (!authed) return
@@ -735,11 +845,11 @@ export default function AdminDashboard() {
     if (selectedApp?.id === id) setSelectedApp(null)
   }
 
-  const handleSendReminder = async (app: any, template: ReminderTemplate) => {
+  const handleSendReminder = async (app: any, template: ReminderTemplateDef) => {
     if (!app.email) { alert('This applicant has no email on file.'); return }
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
     const resumeUrl = `${origin}/?token=${encodeURIComponent(app.id)}`
-    const { subject, body } = buildReminderEmail({ name: app.full_name || '', resumeUrl, template })
+    const { subject, body } = renderTemplate(template, { name: app.full_name || '', resumeUrl })
     const mailto = `mailto:${encodeURIComponent(app.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
     window.open(mailto, '_blank')
     const now = new Date().toISOString()
@@ -868,6 +978,9 @@ export default function AdminDashboard() {
         {tab === 'settings' && (
           <div className="space-y-8">
             <FieldConfigEditor config={fieldConfig} onSave={saveFieldConfig} />
+            {SUPER_ADMINS.includes(adminEmail.toLowerCase()) && (
+              <EmailTemplatesPanel templates={reminderTemplates} onSave={saveReminderTemplates} />
+            )}
             <AdminUsersPanel currentEmail={adminEmail} />
           </div>
         )}
@@ -1071,7 +1184,7 @@ export default function AdminDashboard() {
                                 <Eye className="w-3 h-3" /> View
                               </button>
                               {app.status === 'draft' && app.email && (
-                                <RowReminderButton app={app} onSendReminder={handleSendReminder} />
+                                <RowReminderButton app={app} templates={reminderTemplates} onSendReminder={handleSendReminder} />
                               )}
                             </div>
                           </td>
@@ -1094,7 +1207,7 @@ export default function AdminDashboard() {
         <DetailModal app={selectedApp} onClose={() => setSelectedApp(null)}
           onStatusChange={handleStatusChange} onNotesChange={handleNotesChange}
           onToggleTest={handleToggleTest} onDelete={handleDelete}
-          onSendReminder={handleSendReminder} />
+          onSendReminder={handleSendReminder} reminderTemplates={reminderTemplates} />
       )}
     </div>
   )
