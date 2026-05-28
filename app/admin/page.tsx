@@ -160,6 +160,45 @@ function FieldConfigEditor({ config, onSave }: { config: FieldConfig; onSave: (c
 // ─── Nudge Composer ───────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function RowReminderButton({ app, onSendReminder }: { app: any; onSendReminder: (app: any, template: ReminderTemplate) => void }) {
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null)
+  const openMenu = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (menuPos) { setMenuPos(null); return }
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    setMenuPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+  }
+  return (
+    <>
+      <button onClick={openMenu}
+        title={app.last_nudged_at ? `Last reminded ${new Date(app.last_nudged_at).toLocaleString()} · ${app.nudge_count || 0} sent` : 'No reminders sent yet'}
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs rounded-lg font-medium transition-colors">
+        <Mail className="w-3 h-3" /> Remind{app.nudge_count ? ` (${app.nudge_count})` : ''}
+        <ChevronDown className="w-3 h-3" />
+      </button>
+      {menuPos && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={e => { e.stopPropagation(); setMenuPos(null) }} />
+          <div className="fixed z-50 w-60 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden"
+            style={{ top: menuPos.top, right: menuPos.right }}>
+            <button onClick={e => { e.stopPropagation(); setMenuPos(null); onSendReminder(app, 'general') }}
+              className="w-full text-left px-3 py-2.5 hover:bg-amber-50 border-b border-gray-100">
+              <div className="text-xs font-semibold text-gray-900">General reminder</div>
+              <div className="text-[11px] text-gray-500 mt-0.5">Pick up where you left off.</div>
+            </button>
+            <button onClick={e => { e.stopPropagation(); setMenuPos(null); onSendReminder(app, 'builds') }}
+              className="w-full text-left px-3 py-2.5 hover:bg-amber-50">
+              <div className="text-xs font-semibold text-gray-900">Submit your builds</div>
+              <div className="text-[11px] text-gray-500 mt-0.5">Nudge them to finish the builds.</div>
+            </button>
+          </div>
+        </>
+      )}
+    </>
+  )
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function RefereeNudgeComposer({ app, refNum, onClose }: { app: any; refNum: number; onClose: () => void }) {
   const refName  = refNum === 1 ? app.reference1_name  : app.reference2_name
   const refEmail = refNum === 1 ? app.reference1_email : app.reference2_email
@@ -1026,10 +1065,15 @@ export default function AdminDashboard() {
                             <div className="text-gray-300">{new Date(app.created_at).getFullYear()}</div>
                           </td>
                           <td className="px-5 py-4">
-                            <button onClick={() => setSelectedApp(app)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg font-medium transition-colors">
-                              <Eye className="w-3 h-3" /> View
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => setSelectedApp(app)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg font-medium transition-colors">
+                                <Eye className="w-3 h-3" /> View
+                              </button>
+                              {app.status === 'draft' && app.email && (
+                                <RowReminderButton app={app} onSendReminder={handleSendReminder} />
+                              )}
+                            </div>
                           </td>
                         </tr>
                       )
