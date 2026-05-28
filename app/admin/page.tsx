@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { buildReminderEmail, type ReminderTemplate } from '@/lib/email-templates'
 import {
   Users, Search, ChevronDown, ChevronUp, Eye, X,
   CheckCircle, Clock, XCircle, TrendingUp, Award, Filter,
@@ -159,6 +160,45 @@ function FieldConfigEditor({ config, onSave }: { config: FieldConfig; onSave: (c
 // ─── Nudge Composer ───────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function RowReminderButton({ app, onSendReminder }: { app: any; onSendReminder: (app: any, template: ReminderTemplate) => void }) {
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null)
+  const openMenu = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (menuPos) { setMenuPos(null); return }
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    setMenuPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+  }
+  return (
+    <>
+      <button onClick={openMenu}
+        title={app.last_nudged_at ? `Last reminded ${new Date(app.last_nudged_at).toLocaleString()} · ${app.nudge_count || 0} sent` : 'No reminders sent yet'}
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs rounded-lg font-medium transition-colors">
+        <Mail className="w-3 h-3" /> Remind{app.nudge_count ? ` (${app.nudge_count})` : ''}
+        <ChevronDown className="w-3 h-3" />
+      </button>
+      {menuPos && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={e => { e.stopPropagation(); setMenuPos(null) }} />
+          <div className="fixed z-50 w-60 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden"
+            style={{ top: menuPos.top, right: menuPos.right }}>
+            <button onClick={e => { e.stopPropagation(); setMenuPos(null); onSendReminder(app, 'general') }}
+              className="w-full text-left px-3 py-2.5 hover:bg-amber-50 border-b border-gray-100">
+              <div className="text-xs font-semibold text-gray-900">General reminder</div>
+              <div className="text-[11px] text-gray-500 mt-0.5">Pick up where you left off.</div>
+            </button>
+            <button onClick={e => { e.stopPropagation(); setMenuPos(null); onSendReminder(app, 'builds') }}
+              className="w-full text-left px-3 py-2.5 hover:bg-amber-50">
+              <div className="text-xs font-semibold text-gray-900">Submit your builds</div>
+              <div className="text-[11px] text-gray-500 mt-0.5">Nudge them to finish the builds.</div>
+            </button>
+          </div>
+        </>
+      )}
+    </>
+  )
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function RefereeNudgeComposer({ app, refNum, onClose }: { app: any; refNum: number; onClose: () => void }) {
   const refName  = refNum === 1 ? app.reference1_name  : app.reference2_name
   const refEmail = refNum === 1 ? app.reference1_email : app.reference2_email
@@ -272,11 +312,12 @@ function RefereeNudgeComposer({ app, refNum, onClose }: { app: any; refNum: numb
 // ─── Detail Modal ─────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest, onDelete }: { app: any; onClose: () => void; onStatusChange: (id: string, status: string) => void; onNotesChange: (id: string, notes: string) => void; onToggleTest: (id: string, isTest: boolean) => void; onDelete: (id: string) => void }) {
+function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest, onDelete, onSendReminder }: { app: any; onClose: () => void; onStatusChange: (id: string, status: string) => void; onNotesChange: (id: string, notes: string) => void; onToggleTest: (id: string, isTest: boolean) => void; onDelete: (id: string) => void; onSendReminder: (app: any, template: ReminderTemplate) => void }) {
   const [notes, setNotes]       = useState(app.admin_notes || '')
   const [saving, setSaving]     = useState(false)
   const [savedMsg, setSavedMsg] = useState(false)
   const [nudgeRef, setNudgeRef] = useState<number | null>(null)
+  const [showReminderMenu, setShowReminderMenu] = useState(false)
 
   const saveNotes = async () => {
     setSaving(true); await onNotesChange(app.id, notes); setSaving(false)
@@ -462,13 +503,43 @@ function DetailModal({ app, onClose, onStatusChange, onNotesChange, onToggleTest
             </div>
 
             <div className="pt-4 mt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
-              <button onClick={() => onToggleTest(app.id, !app.is_test)}
-                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border transition-colors ${app.is_test
-                  ? 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100'
-                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
-                <FlaskConical className="w-3.5 h-3.5" />
-                {app.is_test ? 'Unmark as test' : 'Mark as test'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => onToggleTest(app.id, !app.is_test)}
+                  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border transition-colors ${app.is_test
+                    ? 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100'
+                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+                  <FlaskConical className="w-3.5 h-3.5" />
+                  {app.is_test ? 'Unmark as test' : 'Mark as test'}
+                </button>
+                {app.status === 'draft' && app.email && (
+                  <div className="relative">
+                    <button onClick={() => setShowReminderMenu(v => !v)}
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 transition-colors"
+                      title={app.last_nudged_at ? `Last reminded ${new Date(app.last_nudged_at).toLocaleString()} · ${app.nudge_count || 0} sent` : 'No reminders sent yet'}>
+                      <Mail className="w-3.5 h-3.5" />
+                      {app.last_nudged_at ? `Send reminder (${app.nudge_count || 0} sent)` : 'Send reminder'}
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
+                    {showReminderMenu && (
+                      <>
+                        <div className="fixed inset-0 z-30" onClick={() => setShowReminderMenu(false)} />
+                        <div className="absolute z-40 left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                          <button onClick={() => { setShowReminderMenu(false); onSendReminder(app, 'general') }}
+                            className="w-full text-left px-3 py-2.5 hover:bg-amber-50 border-b border-gray-100">
+                            <div className="text-xs font-semibold text-gray-900">General reminder</div>
+                            <div className="text-[11px] text-gray-500 mt-0.5">"You started — pick up where you left off."</div>
+                          </button>
+                          <button onClick={() => { setShowReminderMenu(false); onSendReminder(app, 'builds') }}
+                            className="w-full text-left px-3 py-2.5 hover:bg-amber-50">
+                            <div className="text-xs font-semibold text-gray-900">Submit your builds</div>
+                            <div className="text-[11px] text-gray-500 mt-0.5">"The builds are the most important part — submit them."</div>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
               <button onClick={() => {
                 if (window.confirm(`Permanently delete the application for ${app.full_name || app.email || 'this applicant'}? This cannot be undone.`)) {
                   onDelete(app.id)
@@ -662,6 +733,22 @@ export default function AdminDashboard() {
     await supabase.from('guide_applications').delete().eq('id', id)
     setApplications(prev => prev.filter(a => a.id !== id))
     if (selectedApp?.id === id) setSelectedApp(null)
+  }
+
+  const handleSendReminder = async (app: any, template: ReminderTemplate) => {
+    if (!app.email) { alert('This applicant has no email on file.'); return }
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const resumeUrl = `${origin}/?token=${encodeURIComponent(app.id)}`
+    const { subject, body } = buildReminderEmail({ name: app.full_name || '', resumeUrl, template })
+    const mailto = `mailto:${encodeURIComponent(app.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    window.open(mailto, '_blank')
+    const now = new Date().toISOString()
+    const nextCount = (app.nudge_count || 0) + 1
+    await supabase.from('guide_applications').update({ last_nudged_at: now, nudge_count: nextCount }).eq('id', app.id)
+    setApplications(prev => prev.map(a => a.id === app.id ? { ...a, last_nudged_at: now, nudge_count: nextCount } : a))
+    if (selectedApp?.id === app.id) {
+      setSelectedApp((prev: any) => prev ? { ...prev, last_nudged_at: now, nudge_count: nextCount } : null)
+    }
   }
 
   const toggleSort = (field: string) => {
@@ -978,10 +1065,15 @@ export default function AdminDashboard() {
                             <div className="text-gray-300">{new Date(app.created_at).getFullYear()}</div>
                           </td>
                           <td className="px-5 py-4">
-                            <button onClick={() => setSelectedApp(app)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg font-medium transition-colors">
-                              <Eye className="w-3 h-3" /> View
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => setSelectedApp(app)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg font-medium transition-colors">
+                                <Eye className="w-3 h-3" /> View
+                              </button>
+                              {app.status === 'draft' && app.email && (
+                                <RowReminderButton app={app} onSendReminder={handleSendReminder} />
+                              )}
+                            </div>
                           </td>
                         </tr>
                       )
@@ -1001,7 +1093,8 @@ export default function AdminDashboard() {
       {selectedApp && (
         <DetailModal app={selectedApp} onClose={() => setSelectedApp(null)}
           onStatusChange={handleStatusChange} onNotesChange={handleNotesChange}
-          onToggleTest={handleToggleTest} onDelete={handleDelete} />
+          onToggleTest={handleToggleTest} onDelete={handleDelete}
+          onSendReminder={handleSendReminder} />
       )}
     </div>
   )

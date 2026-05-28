@@ -57,4 +57,6 @@ export interface GuideApplication {
   admin_notes: string
   draft_step: number
   is_test: boolean
+  last_nudged_at: string | null
+  nudge_count: number
 }
