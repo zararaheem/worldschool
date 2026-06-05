@@ -756,6 +756,8 @@ export default function AdminDashboard() {
   const [liveConnected, setLiveConnected] = useState(false)
   const [fieldConfig, setFieldConfig]   = useState<FieldConfig>(DEFAULT_FIELD_CONFIG)
   const [reminderTemplates, setReminderTemplates] = useState<ReminderTemplateDef[]>(DEFAULT_REMINDER_TEMPLATES)
+  const [sheetUrl, setSheetUrl]   = useState<string | null>(null)
+  const [syncing, setSyncing]     = useState(false)
 
   const fetchApplications = useCallback(async () => {
     setLoading(true)
@@ -799,7 +801,29 @@ export default function AdminDashboard() {
     fetchApplications()
     fetchFieldConfig()
     fetchReminderTemplates()
-  }, [authed, fetchApplications, fetchFieldConfig, fetchReminderTemplates])
+    fetch('/api/admin/sync-sheet/info', { headers: { 'x-admin-email': adminEmail } })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.configured) setSheetUrl(d.url) })
+      .catch(() => {})
+  }, [authed, adminEmail, fetchApplications, fetchFieldConfig, fetchReminderTemplates])
+
+  const handleSyncSheet = async () => {
+    if (!window.confirm('Resync wipes the Google Sheet and re-writes every non-draft application from the current DB state. Any manual edits in the sheet will be lost. Continue?')) return
+    setSyncing(true)
+    try {
+      const res = await fetch('/api/admin/sync-sheet', {
+        method: 'POST',
+        headers: { 'x-admin-email': adminEmail },
+      })
+      const data = await res.json()
+      if (!res.ok) { alert(data.error || 'Sync failed.'); return }
+      alert(`Synced ${data.written} application${data.written === 1 ? '' : 's'} to the Sheet.`)
+    } catch (err) {
+      alert(`Sync failed: ${err instanceof Error ? err.message : String(err)}`)
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   useEffect(() => {
     if (!authed) return
@@ -822,15 +846,25 @@ export default function AdminDashboard() {
     }
   }
 
+  const syncApplicationToSheet = (id: string) => {
+    fetch('/api/admin/sync-application', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+      body: JSON.stringify({ id }),
+    }).catch(err => console.error('Sheet sync failed:', err))
+  }
+
   const handleStatusChange = async (id: string, status: string) => {
     await supabase.from('guide_applications').update({ status }).eq('id', id)
     setApplications(prev => prev.map(a => a.id === id ? { ...a, status } : a))
     if (selectedApp?.id === id) setSelectedApp((prev: any) => prev ? { ...prev, status } : null)
+    syncApplicationToSheet(id)
   }
 
   const handleNotesChange = async (id: string, admin_notes: string) => {
     await supabase.from('guide_applications').update({ admin_notes }).eq('id', id)
     setApplications(prev => prev.map(a => a.id === id ? { ...a, admin_notes } : a))
+    syncApplicationToSheet(id)
   }
 
   const handleToggleTest = async (id: string, is_test: boolean) => {
@@ -1062,6 +1096,17 @@ export default function AdminDashboard() {
               </button>
               <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg font-medium transition-colors">
                 <Download className="w-3.5 h-3.5" /> Export CSV
+              </button>
+              {sheetUrl && (
+                <a href={sheetUrl} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 text-sm rounded-lg border border-gray-300 transition-colors">
+                  <ExternalLink className="w-3.5 h-3.5" /> Open Sheet
+                </a>
+              )}
+              <button onClick={handleSyncSheet} disabled={syncing}
+                title="Wipe and re-write the Google Sheet from the current DB state (status, notes, etc.)"
+                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white text-sm rounded-lg font-medium transition-colors">
+                <RefreshCw className="w-3.5 h-3.5" /> {syncing ? 'Syncing…' : 'Resync Sheet'}
               </button>
             </div>
 
