@@ -894,14 +894,19 @@ export default function AdminDashboard() {
   const totalSubmitted = visible.filter(a => a.status !== 'draft').length
 
   const exportCSV = () => {
-    const headers = ['Name','Email','Campus','Role','Status','Builds','Languages','Ref1 Email','Ref2 Email','Submitted']
+    const headers = ['Name','Email','Campus','Role','Status','Builds Submitted','Build 1 Focus','Build 1 Link','Build 2 Constraint','Build 2 Design','Build 2 Video','Build 3 Video','Build 4 Language','Languages','Ref1 Name','Ref1 Email','Ref2 Name','Ref2 Email','Submitted']
     const rows = filtered.map(a => [
       a.full_name||'', a.email||'', a.campus||'', a.role_at_alpha||'', a.status||'',
       [a.build1_link,a.build2_design_link,a.build2_video_link,a.build3_video_link].filter(Boolean).length,
-      a.languages_spoken||'', a.reference1_email||'', a.reference2_email||'',
+      a.build1_focus_area||'', a.build1_link||'',
+      a.build2_constraint||'', a.build2_design_link||'', a.build2_video_link||'',
+      a.build3_video_link||'', a.build4_language_link||'',
+      a.languages_spoken||'',
+      a.reference1_name||'', a.reference1_email||'',
+      a.reference2_name||'', a.reference2_email||'',
       new Date(a.created_at).toLocaleDateString(),
     ])
-    const csv = [headers,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n')
+    const csv = [headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n')
     const url = URL.createObjectURL(new Blob([csv],{type:'text/csv'}))
     Object.assign(document.createElement('a'),{href:url,download:'aws-applications.csv'}).click()
     URL.revokeObjectURL(url)
