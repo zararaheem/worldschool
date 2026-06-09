@@ -1,9 +1,23 @@
 import { google } from 'googleapis'
 import { Readable } from 'stream'
 
+function normalizePrivateKey(raw: string | undefined): string {
+  if (!raw) return ''
+  let k = raw.trim()
+  // Strip surrounding quotes if the env var was pasted with them (e.g. straight
+  // from the service-account JSON file).
+  if ((k.startsWith('"') && k.endsWith('"')) || (k.startsWith("'") && k.endsWith("'"))) {
+    k = k.slice(1, -1)
+  }
+  // Convert literal "\n" escapes back to real newlines. Idempotent — a key that
+  // already contains real newlines is unaffected.
+  k = k.replace(/\\n/g, '\n')
+  return k
+}
+
 function getAuth() {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
-  const key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+  const key = normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY)
   if (!email || !key) throw new Error('Missing Google service account credentials.')
   const jwt = new google.auth.JWT()
   jwt.fromJSON({ type: 'service_account', client_email: email, private_key: key })
