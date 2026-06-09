@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { appendSubmissionToSheet } from '@/lib/google'
+import { upsertApplicationToSheet } from '@/lib/google'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,8 +23,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to save application.' }, { status: 500 })
     }
 
-    // Log to Google Sheet (non-blocking — don't fail submission if Sheet write fails)
-    appendSubmissionToSheet(formData).catch(err => console.error('Sheet append failed:', err))
+    // Fetch the canonical row (with timestamps) and sync to the Sheet.
+    const { data: saved } = await supabase
+      .from('guide_applications')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (saved) {
+      upsertApplicationToSheet(saved).catch(err => console.error('Sheet upsert failed:', err))
+    }
 
     return NextResponse.json({ ok: true })
   } catch (err) {
