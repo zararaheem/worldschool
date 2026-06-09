@@ -879,6 +879,33 @@ export default function AdminDashboard() {
     if (selectedApp?.id === id) setSelectedApp(null)
   }
 
+  const [driveExporting, setDriveExporting] = useState(false)
+  const handleExportDrive = async () => {
+    const targets = applications.filter(a => a.status !== 'draft' && !a.is_test)
+    if (!targets.length) { alert('No non-draft applications to export.'); return }
+    if (!window.confirm(`Create or refresh a Drive subfolder for each of ${targets.length} non-draft application${targets.length === 1 ? '' : 's'}? Each folder gets an application.csv and summary.md.`)) return
+    setDriveExporting(true)
+    try {
+      const res = await fetch('/api/admin/export-drive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+        body: JSON.stringify({}),
+      })
+      const data = await res.json()
+      if (!res.ok) { alert(data.error || 'Export failed.'); return }
+      const failMsg = data.failures?.length
+        ? `\n\n${data.failures.length} failed:\n${data.failures.map((f: { name: string; error: string }) => `• ${f.name}: ${f.error}`).join('\n')}`
+        : ''
+      if (window.confirm(`Exported ${data.exported} applicant${data.exported === 1 ? '' : 's'} to Drive.${failMsg}\n\nOpen the parent folder?`)) {
+        window.open(data.parentFolderUrl, '_blank')
+      }
+    } catch (err) {
+      alert(`Export failed: ${err instanceof Error ? err.message : String(err)}`)
+    } finally {
+      setDriveExporting(false)
+    }
+  }
+
   const handleSendReminder = async (app: any, template: ReminderTemplateDef) => {
     if (!app.email) { alert('This applicant has no email on file.'); return }
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
@@ -1112,6 +1139,11 @@ export default function AdminDashboard() {
                 title="Wipe and re-write the Google Sheet from the current DB state (status, notes, etc.)"
                 className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white text-sm rounded-lg font-medium transition-colors">
                 <RefreshCw className="w-3.5 h-3.5" /> {syncing ? 'Syncing…' : 'Resync Sheet'}
+              </button>
+              <button onClick={handleExportDrive} disabled={driveExporting}
+                title="Create a Drive subfolder per non-draft applicant with their CSV and a summary"
+                className="flex items-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-60 text-white text-sm rounded-lg font-medium transition-colors">
+                <ExternalLink className="w-3.5 h-3.5" /> {driveExporting ? 'Exporting…' : 'Export to Drive'}
               </button>
             </div>
 
